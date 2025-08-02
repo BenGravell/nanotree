@@ -38,6 +38,8 @@ int main() {
         }
         BeginDrawing();
         DrawRectangle(0, 0, 800, 900, Fade(BLACK, 0.1f));
+        DrawCircleLinesV(mouse, 50, DARKGRAY);
+        DrawCircleV(mouse, 5, LIGHTGRAY);
         for (auto obstacle : obstacles) DrawCircleV(obstacle, 50, DARKGRAY);
         for (auto node : nodes)
             if (node->parent) DrawLineEx(node->parent->pos, node->pos, 2, BLUE);
