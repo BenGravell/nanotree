@@ -13,7 +13,7 @@ int main() {
     std::vector<std::shared_ptr<Node>> nodes;
     std::vector<std::shared_ptr<Node>> path;
     int num_nodes = 1000;
-    const std::vector<int> schedule = {0, 50, 100, 200, 500, 1000, 2000, 5000};
+    const std::vector<int> schedule = {0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000};
     while (!WindowShouldClose()) {
         if (int scroll = GetMouseWheelMove()) num_nodes = schedule[std::clamp(int(std::lower_bound(schedule.begin(), schedule.end(), num_nodes) - schedule.begin()) + ((scroll > 0) - (scroll < 0)), 0, int(schedule.size() - 1))];
         Vector2 mouse = {std::clamp(GetMousePosition().x, 0.0f, 800.0f), std::clamp(GetMousePosition().y, 0.0f, 800.0f)};
