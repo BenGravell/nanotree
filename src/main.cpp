@@ -26,7 +26,7 @@ int main() {
                 if (!std::any_of(obstacles.begin(), obstacles.end(), [&pos](auto& obs) { return Vector2Distance(obs, pos) < 50; })) nodes.push_back(std::make_shared<Node>(pos, parent));
             }
             path.clear();
-            std::shared_ptr<Node> node = nodes.back();
+            std::shared_ptr<Node> node = *std::min_element(nodes.begin(), nodes.end(), [&goal]( std::shared_ptr<Node>& a,  std::shared_ptr<Node>& b) { return Vector2Distance(a->pos, goal) < Vector2Distance(b->pos, goal); });
             while (node->parent) {
                 path.push_back(node);
                 node = node->parent;
@@ -34,7 +34,7 @@ int main() {
             std::reverse(path.begin(), path.end());
         }
         BeginDrawing();
-        ClearBackground(BLACK);
+        DrawRectangle(0, 0, 800, 800, Fade(BLACK, 0.1f));
         for (auto obstacle : obstacles) DrawCircleV(obstacle, 50, DARKGRAY);
         for (auto node : nodes) if (node->parent) DrawLineEx(node->parent->pos, node->pos, 2, BLUE);
         for (auto node : path) DrawLineEx(node->parent->pos, node->pos, 8, RAYWHITE);
