@@ -40,12 +40,12 @@ int main() {
     bool solved = Vector2Distance(path.back()->pos, goal) < 20;
     BeginDrawing();
     DrawRectangle(0, 0, 1000, 500, Fade(BLACK, 0.1f));
-    DrawRing(mouse, 45, 50, 0, 360, 0, DARKGRAY);
-    DrawCircleV(mouse, 5, LIGHTGRAY);
     for (auto obstacle : obstacles) DrawCircleV(obstacle, 50, DARKGRAY);
     for (auto node : nodes)
       if (node->parent) DrawLineEx(node->parent->pos, node->pos, 2, BLUE);
     for (auto node : path) DrawLineEx(node->parent->pos, node->pos, 8, RAYWHITE);
+    DrawRing(mouse, 45, 50, 0, 360, 0, DARKGRAY);
+    DrawCircleV(mouse, 5, LIGHTGRAY);
     DrawRectangle(goal.x - 12, goal.y - 12, 24, 24, solved ? GOLD : RED);
     DrawRectangle(0, 500, 1000, 100, {40, 40, 40, 255});
     for (int y = 500; y < 600; y += 50) for (int x = 0; x < 1000; x += 250) DrawRectangleLines(x, y, 250, 50, LIGHTGRAY);
