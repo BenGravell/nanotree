@@ -49,7 +49,12 @@
       canvas.emscripten {
         border: 0px none;
         background: black;
-        width: 100%;
+        max-width: 100vw;
+        max-height: 100vh;
+        width: auto;
+        height: auto;
+        display: block;
+        margin: 0 auto;
       }
 
       .spinner {
@@ -128,7 +133,7 @@
       </div>
     </div>
 
-    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
 
     <script type='text/javascript' src="https://cdn.jsdelivr.net/gh/eligrey/FileSaver.js/dist/FileSaver.min.js"> </script>
     <script type='text/javascript'>
