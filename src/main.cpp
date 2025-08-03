@@ -7,7 +7,7 @@
 
 int main() {
   struct Node { Vector2 pos; std::shared_ptr<Node> parent; };
-  SetTraceLogLevel(LOG_NONE);
+  SetTraceLogLevel(LOG_ERROR); 
   InitWindow(1000, 600, "nanotree");
   Vector2 goal = {500, 250};
   std::vector<Vector2> obstacles = {{380, 130}, {380, 190}, {380, 250}, {380, 310}, {380, 370}, {440, 130}, {440, 370}, {500, 130}, {500, 370}, {560, 130}, {560, 370}, {620, 130}, {620, 190}, {620, 310}, {620, 370}};
