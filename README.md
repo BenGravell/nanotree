@@ -1,6 +1,6 @@
 # nanotree
 
-Tiny RRT Raylib app.
+Tiny RRT planner, built on raylib.
 
 ## Build
 
