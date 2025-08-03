@@ -42,31 +42,6 @@
         background-color: #888888;
       }
 
-      /* NOTE: raylib logo is embedded in the page as base64 png image */
-      #logo {
-        width:64px;
-        height:64px;
-        float:left;
-        position:relative;
-        margin:10px;
-        background-image:url('data:image/png;base64,\
-iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADs\
-MAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjExR/NCNwAAA7JJREFUaEPtk0FyWzEMQ+37X7fZhxX4\
-YY3AD1OKF1nkzTRlSBCCLeVBnvl/AUdaELOunPno1kts1kixdtEZKVs+xIxebBkZsVknn/L5nFGDLR8T4zVC9fX19S/+tTFijr\
-YK4jUjbPUtqBHpnEE6PkZD7jQZV8n5Recw1XQKciZuPaEtR6UjNs5ENVGMsBVqpPtER0ZMOhpyp8m4YL4OjD9yxsyZxnQycfMJ\
-ETNSzsRE1+dihK3YMiJmpHTW3xpmXPC6BXlCHfqnBlsjY5hxf/6EVEOM2BTEi0fYCX4ONSI6Kq3Blg/prIOMq2CsRur4KQ0x64\
-SdjOufEDEdHZGOhmz5RDHCVqhRuQ86YsVskbc+GXchLiHnFyYH+UigQDVGnImbT8hwFkgLg2qiM8JO6Ylx1FNLa3DmYwqCTsZd\
-4BPqGJG7MwKzpeiWKTKxXkLMVE3MSOmsdwxLH6Rd/wCCLSNDx6djeKfJuArGeoYamRHpaEjnCBYZVy8hZqo2GI36qPjsiOiMsB\
-XGcev4Mx9TLGTchbgEjN/uz6jGrBvDjg+LTNx8Qp2CbG2xMKgmOiPslJ4Yxx+eSnSkzlosZNwFPiHl7FRTkLNRJm4+IeVM0ymI\
-H42wE/wcKalQI4MRl4EW3p6VcRWMua8F6WjIlqZDxvVPiHQ6CjVbYkV9ohhhp/Rk1wiYgpyJ78i4CsZbjkb8Qx+ihvzu3RPaKo\
-gZkY6GlEeMsKdPSOFIC8VoOusg44L5c+T8ouOoGhWbdWJ8tMi4egkxo4hoh2yNTGf3iIyr5Lyic4bRENXo+lvDjAt4C1Hk/OKt\
-UaAj0+n4dMSZ2D+hrYJsaYh2SClG2jV9kJKKzhlGQ1SsW299Mq6C8dYZHTExo8fzieI5ivipYnYy7nwJqGKmOYyRwfiUBXITfh\
-5qSHRGWEkfqJqURgvsdHyWYv7Ko8DnYYegk3EB00cxprdrJRzFd7YQzawu8L1GMTYS/KpPaAFTkIn1EmJmspJSs5xBzSyGhlkB\
-mlxfNFiP5mw4wlbMh4F5Ddxp5jNINBdCEz9zPOC1zD7Q0HBdmXndwv0TMtydEdzlWJT4VZ8Qt9Qn4/onxMIwa5ZYGJU5yufBiC\
-jwE50AGjLCVuS8Yt4H7OgZLKK5EKOsLviEWJSL/+0uMi7gLUSBseYwqEbXvSHCec1CJvZPyHCmYQffaBBfOTCGHM2aEbZi1+gO\
-1XTWVXMnzrhAn5DSOZVsiQlHnSITKzGj6DeTcZWc/3oy7h9//PF4PL4BlvsWrb6RE+oAAAAASUVORK5CYII=');
-      }
-
       .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
       div.emscripten { text-align: center; }
       div.emscripten_border { border: 1px solid black; }
@@ -128,23 +103,6 @@ jwE50AGjLCVuS8Yt4H7OgZLKK5EKOsLviEWJSL/+0uMi7gLUSBseYwqEbXvSHCec1CJvZPyHCmYQffaB
         width: 0px;
       }
 
-      #output {
-        border-left: 0px none;
-        border-right: 0px none;
-        border-bottom: 0px none;
-        padding-left: 0;
-        padding-right: 0;
-        width: 100%;
-        height: 140px;
-        margin: 0 auto;
-        margin-top: 10px;
-        display: block;
-        background-color: black;
-        color: rgb(37, 174, 38);
-        font-family: 'Lucida Console', Monaco, monospace;
-        outline: none;
-      }
-
       input[type=button] {
         background-color: lightgray;
         border: 4px solid darkgray;
@@ -163,22 +121,17 @@ jwE50AGjLCVuS8Yt4H7OgZLKK5EKOsLviEWJSL/+0uMi7gLUSBseYwqEbXvSHCec1CJvZPyHCmYQffaB
     </style>
   </head>
   <body>
-    <div id="header">
-        <a id="logo" href="https://www.raylib.com"></a>
-
-        <div class="spinner" id='spinner'></div>
-        <div class="emscripten" id="status">Downloading...</div>
-
-        <div class="emscripten">
+    <div style="display: none;">
+      <div class="spinner" id='spinner'></div>
+      <div class="emscripten" id="status">Downloading...</div>
+      <div class="emscripten">
           <progress value="0" max="100" id="progress" hidden=1></progress>
-        </div>
+      </div>
     </div>
 
     <div class="emscripten_border">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
     </div>
-
-    <textarea id="output" rows="8"></textarea>
 
     <script type='text/javascript' src="https://cdn.jsdelivr.net/gh/eligrey/FileSaver.js/dist/FileSaver.min.js"> </script>
     <script type='text/javascript'>
@@ -206,26 +159,6 @@ jwE50AGjLCVuS8Yt4H7OgZLKK5EKOsLviEWJSL/+0uMi7gLUSBseYwqEbXvSHCec1CJvZPyHCmYQffaB
         var Module = {
             preRun: [],
             postRun: [],
-            print: (function() {
-                var element = document.querySelector('#output');
-
-                if (element) element.value = '';    // Clear browser cache
-
-                return function(text) {
-                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-                    // These replacements are necessary if you render to raw HTML
-                    //text = text.replace(/&/g, "&amp;");
-                    //text = text.replace(/</g, "&lt;");
-                    //text = text.replace(/>/g, "&gt;");
-                    //text = text.replace('\n', '<br>', 'g');
-                    console.log(text);
-
-                    if (element) {
-                        element.value += text + "\n";
-                        element.scrollTop = element.scrollHeight; // focus on bottom
-                    }
-                };
-            })(),
             printErr: function(text) {
                 if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
 
@@ -277,43 +210,6 @@ jwE50AGjLCVuS8Yt4H7OgZLKK5EKOsLviEWJSL/+0uMi7gLUSBseYwqEbXvSHCec1CJvZPyHCmYQffaB
         };
 
         Module.setStatus('Downloading...');
-
-        window.onerror = function() {
-            Module.setStatus('Exception thrown, see JavaScript console');
-            spinnerElement.style.display = 'none';
-            Module.setStatus = function(text) { if (text) Module.printErr('[post-exception status] ' + text); };
-        };
-    </script>
-
-    <!-- REF: https://developers.google.com/web/updates/2018/11/web-audio-autoplay -->
-    <script type='text/javascript'>
-        var audioBtn = document.querySelector('#btn-audio');
-
-        // An array of all contexts to resume on the page
-        const audioContexList = [];
-        (function() {
-            // A proxy object to intercept AudioContexts and
-            // add them to the array for tracking and resuming later
-            self.AudioContext = new Proxy(self.AudioContext, {
-                construct(target, args) {
-                    const result = new target(...args);
-                    audioContexList.push(result);
-                    if (result.state == "suspended") audioBtn.value = "🔈 RESUME";
-                    return result;
-                }
-            });
-        })();
-
-        function toggleAudio() {
-            var resumed = false;
-            audioContexList.forEach(ctx => {
-                if (ctx.state == "suspended") { ctx.resume(); resumed = true; }
-                else if (ctx.state == "running") ctx.suspend();
-            });
-
-            if (resumed) audioBtn.value = "🔇 MUTE";
-            else audioBtn.value = "🔈 RESUME";
-        }
     </script>
     {{{ SCRIPT }}}
   </body>
