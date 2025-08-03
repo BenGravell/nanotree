@@ -99,11 +99,8 @@ cd ~/emsdk
 source emsdk_env.sh
 cd ~/nanotree
 
-# create output directory
-mkdir web
-
 # build using em++
-em++ -o web/index.html src/main.cpp -Os -Wall -I ~/emsdk/upstream/emscripten/cache/sysroot/include \
+em++ -o index.html src/main.cpp -Os -Wall -I ~/emsdk/upstream/emscripten/cache/sysroot/include \
 -L ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a -s USE_GLFW=3 -s ASYNCIFY \
 --shell-file shell.html -DPLATFORM_WEB ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a
 ```
@@ -116,5 +113,5 @@ cd ~/emsdk
 source emsdk_env.sh
 cd ~/nanotree
 
-emrun web/index.html
+emrun index.html
 ```
