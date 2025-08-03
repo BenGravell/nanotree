@@ -66,7 +66,7 @@ git clone https://github.com/raysan5/raylib
 # Enter the repo directory
 cd raylib
 
-emcmake cmake . -DPLATFORM=Web
+emcmake cmake . -DPLATFORM=Web -DSUPPORT_TRACELOG=OFF
 
 emmake make
 
@@ -76,7 +76,7 @@ sudo make install
 #### build raylib for for desktop
 
 ```bash
-cmake -B build -DPLATFORM=PLATFORM_DESKTOP -DPLATFORM=Desktop;Web .
+cmake -B build -DPLATFORM=PLATFORM_DESKTOP -DPLATFORM=Desktop;Web -DSUPPORT_TRACELOG=OFF
 cmake --build build
 sudo cmake --install build/
 ```
@@ -100,7 +100,7 @@ source emsdk_env.sh
 cd ~/nanotree
 
 # build using em++
-em++ -o index.html src/main.cpp -Os -Wall -I ~/emsdk/upstream/emscripten/cache/sysroot/include \
+em++ -o index.html src/main.cpp -O3 -Wall -I ~/emsdk/upstream/emscripten/cache/sysroot/include \
 -L ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a -s USE_GLFW=3 -s ASYNCIFY \
 --shell-file shell.html -DPLATFORM_WEB ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a
 ```
