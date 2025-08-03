@@ -18,15 +18,15 @@ int main() {
     if (int scroll = GetMouseWheelMove()) samples = samples_options[std::clamp(int(std::lower_bound(samples_options.begin(), samples_options.end(), samples) - samples_options.begin()) + ((scroll > 0) - (scroll < 0)), 0, int(samples_options.size() - 1))];
     Vector2 mouse = {std::clamp(GetMousePosition().x, 0.0f, 1000.0f), std::clamp(GetMousePosition().y, 0.0f, 500.0f)};
     if (IsMouseButtonDown(0)) goal = mouse;
-    if (IsMouseButtonDown(1) && !std::ranges::any_of(obstacles, [&](auto& o) { return Vector2Distance(o, mouse) < 5; })) obstacles.push_back(mouse);
+    if (IsMouseButtonDown(1) && std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o){ return Vector2Distance(o, mouse) < 5; })) obstacles.push_back(mouse);
     if (IsMouseButtonDown(2)) obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, mouse) < 50; }), obstacles.end());
     if (IsMouseButtonDown(0) || IsMouseButtonDown(1) || IsMouseButtonDown(2) || nodes.empty()) {
       nodes = {std::make_shared<Node>(Node{{50, 250}, nullptr})};
       for (int i = 0; i <= samples; ++i) {
-        Vector2 pos = (i == samples) ? goal : Vector2(1000 * float(std::rand()) / RAND_MAX, 500 * float(std::rand()) / RAND_MAX);
+        Vector2 pos = (i == samples) ? goal : Vector2{1000 * float(std::rand()) / RAND_MAX, 500 * float(std::rand()) / RAND_MAX};
         std::shared_ptr<Node> parent = *std::min_element(nodes.begin(), nodes.end(), [&pos](std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) { return Vector2Distance(a->pos, pos) < Vector2Distance(b->pos, pos); });
         pos = Vector2Add(parent->pos, Vector2Scale(Vector2Subtract(pos, parent->pos), std::min(1.0f, 40.0f / Vector2Distance(parent->pos, pos))));
-        if (!std::any_of(obstacles.begin(), obstacles.end(), [&pos](auto& obs) { return Vector2Distance(obs, pos) < 50; })) nodes.push_back(std::make_shared<Node>(pos, parent));
+        if (!std::any_of(obstacles.begin(), obstacles.end(), [&pos](auto& obs) { return Vector2Distance(obs, pos) < 50; })) nodes.push_back(std::make_shared<Node>(Node{pos, parent}));
       }
       path.clear();
       std::shared_ptr<Node> node = *std::min_element(nodes.begin(), nodes.end(), [&goal](std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) { return Vector2Distance(a->pos, goal) < Vector2Distance(b->pos, goal); });
