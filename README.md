@@ -2,7 +2,9 @@
 
 Tiny RRT planner, built on raylib.
 
-## Build
+## Local app
+
+### Build
 
 ```bash
 conan install . --build=missing -of=build/conan --settings=build_type=Release
@@ -10,20 +12,22 @@ cmake -B build/release -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCH
 cmake --build build/release --config Release
 ```
 
-## Run
+### Run
 
 ```bash
 build/release/nanotree
 ```
 
-## Build out to WASM using Emscripten
+## Web app
 
 Follow the guides
 
 - <https://anguscheng.com/post/2023-12-12-wasm-game-in-c-raylib/>
 - <https://dev.to/marcosplusplus/how-to-install-raylib-with-web-support-l71>
 
-### Get EMSDK
+### Build
+
+#### Get EMSDK
 
 ```bash
 # Change to home dir
@@ -39,7 +43,7 @@ cd emsdk
 ./emsdk install latest
 ```
 
-### Activate EMSDK
+#### Activate EMSDK
 
 ```bash
 # Change to emsdk dir
@@ -52,7 +56,6 @@ cd ~/emsdk
 source ./emsdk_env.sh
 ```
 
-### Get raylib and build
 
 #### build raylib for web
 
@@ -81,7 +84,7 @@ cmake --build build
 sudo cmake --install build/
 ```
 
-### Get HTML base file
+#### Get HTML base file
 
 ```bash
 # Change directory up out of emsdk
@@ -91,7 +94,7 @@ cd ~/nanotree
 wget https://raw.githubusercontent.com/raysan5/raylib/refs/heads/master/src/shell.html
 ```
 
-### Build to Web Assembly
+#### Build to Web Assembly
 
 ```bash
 # Get EMSDK on the PATH
@@ -105,7 +108,7 @@ em++ -o index.html src/main.cpp -O3 -Wall -I ~/emsdk/upstream/emscripten/cache/s
 --shell-file shell.html -DPLATFORM_WEB ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a
 ```
 
-### Run the game
+#### Run
 
 ```bash
 # Get EMSDK on the PATH
