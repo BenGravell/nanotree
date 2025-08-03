@@ -40,7 +40,7 @@ int main() {
     bool solved = Vector2Distance(path.back()->pos, goal) < 20;
     BeginDrawing();
     DrawRectangle(0, 0, 1000, 500, Fade(BLACK, 0.1f));
-    DrawCircleLinesV(mouse, 50, DARKGRAY);
+    DrawRing(mouse, 45, 50, 0, 360, 0, DARKGRAY);
     DrawCircleV(mouse, 5, LIGHTGRAY);
     for (auto obstacle : obstacles) DrawCircleV(obstacle, 50, DARKGRAY);
     for (auto node : nodes)
