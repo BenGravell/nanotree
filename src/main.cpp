@@ -13,11 +13,11 @@ int main() {
   std::vector<Vector2> obstacles = {{380, 130}, {380, 190}, {380, 250}, {380, 310}, {380, 370}, {440, 130}, {440, 370}, {500, 130}, {500, 370}, {560, 130}, {560, 370}, {620, 130}, {620, 190}, {620, 310}, {620, 370}};
   std::vector<std::shared_ptr<Node>> nodes;
   std::vector<std::shared_ptr<Node>> path;
-  int samples = 1000;
-  std::vector<int> samples_options = {0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000};
+  int samples = 2000;
+  std::vector<int> samples_options = {0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
   while (!WindowShouldClose()) {
     if (int scroll = GetMouseWheelMove()) samples = samples_options[std::clamp(int(std::lower_bound(samples_options.begin(), samples_options.end(), samples) - samples_options.begin()) + ((scroll > 0) - (scroll < 0)), 0, int(samples_options.size() - 1))];
-    Vector2 mouse = {std::clamp(GetMousePosition().x, 0.0f, 1000.0f), std::clamp(GetMousePosition().y, 0.0f, 500.0f)};
+    Vector2 mouse = Vector2Clamp(GetMousePosition(), {0, 0}, {1000, 500});
     if (IsMouseButtonDown(0)) goal = mouse;
     if (IsMouseButtonDown(1) && std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o){ return Vector2Distance(o, mouse) < 5; })) obstacles.push_back(mouse);
     if (IsMouseButtonDown(2)) obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, mouse) < 50; }), obstacles.end());
@@ -26,7 +26,12 @@ int main() {
       for (int i = 0; i <= samples; ++i) {
         Vector2 pos = (i == samples) ? goal : Vector2{1000 * float(std::rand()) / RAND_MAX, 500 * float(std::rand()) / RAND_MAX};
         std::shared_ptr<Node> parent = *std::min_element(nodes.begin(), nodes.end(), [&pos](std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) { return Vector2Distance(a->pos, pos) < Vector2Distance(b->pos, pos); });
-        pos = Vector2Add(parent->pos, Vector2Scale(Vector2Subtract(pos, parent->pos), std::min(1.0f, 40.0f / Vector2Distance(parent->pos, pos))));
+        Vector2 sdir = Vector2Normalize(Vector2Subtract(pos, parent->pos));
+        Vector2 pdir = parent->parent ? Vector2Normalize(Vector2Subtract(parent->pos, parent->parent->pos)) : sdir;
+        float angle = std::clamp(Vector2Angle(pdir, sdir), -30.0f * DEG2RAD, 30.0f * DEG2RAD);
+        sdir = Vector2Rotate(pdir, angle);
+        pos = Vector2Add(parent->pos, Vector2Scale(sdir, std::min(40.0f, Vector2Distance(pos, parent->pos))));
+        pos = Vector2Clamp(pos, {0, 0}, {1000, 500});
         if (!std::any_of(obstacles.begin(), obstacles.end(), [&pos](auto& obs) { return Vector2Distance(obs, pos) < 50; })) nodes.push_back(std::make_shared<Node>(Node{pos, parent}));
       }
       path.clear();
@@ -37,7 +42,7 @@ int main() {
       }
       std::reverse(path.begin(), path.end());
     }
-    bool solved = Vector2Distance(path.back()->pos, goal) < 20;
+    bool solved = Vector2Distance(path.empty() ? nodes.front()->pos : path.back()->pos, goal) < 20;
     BeginDrawing();
     DrawRectangle(0, 0, 1000, 500, Fade(BLACK, 0.1f));
     for (auto obstacle : obstacles) DrawCircleV(obstacle, 50, DARKGRAY);
