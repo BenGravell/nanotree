@@ -127,7 +127,7 @@ void DrawSelector(const Vector2 pos) {
     static constexpr int num_segments = 8;
     static constexpr int delta_angle = 360 / (2 * num_segments);
     static constexpr int ring_outer_radius = OBSTACLE_RADIUS;
-    static constexpr int ring_width = 0.1 * OBSTACLE_RADIUS;
+    static constexpr int ring_width = 0.2 * OBSTACLE_RADIUS;
 
     const float current_time = GetTime();
     const int offset_angle = fmodf(current_time / selector_orbit_period, 1.0f) * 360;
