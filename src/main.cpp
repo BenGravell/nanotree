@@ -33,8 +33,8 @@ struct Node {
     std::shared_ptr<Node> parent;
 };
 
-Vector2 clampToEnvironment(const Vector2 position) {
-    return Vector2Clamp(position, {0, 0}, {ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT});
+Vector2 clampToEnvironment(const Vector2 pos) {
+    return Vector2Clamp(pos, {0, 0}, {ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT});
 }
 
 Vector2 sample() {
@@ -45,17 +45,32 @@ Vector2 sample() {
 
 static constexpr float DEVIATION_DISTANCE_MAX = 80.0f;
 static constexpr float DEVIATION_ANGLE_MAX = 30.0f * DEG2RAD;
+static constexpr float RADIUS_OF_CURVATURE_MIN = 1.2f * OBSTACLE_RADIUS;
 
-Vector2 attract(const Vector2 pos, const std::shared_ptr<Node> parent) {
-    const Vector2 sdir = Vector2Normalize(Vector2Subtract(pos, parent->pos));
+Vector2 attractByDistance(const Vector2 pos, const std::shared_ptr<Node> parent) {
+    const Vector2 direction = Vector2Normalize(pos - parent->pos);
+    const float distance = std::min(DEVIATION_DISTANCE_MAX, Vector2Distance(parent->pos, pos));
+    return Vector2Add(parent->pos, direction * distance);
+}
 
-    const Vector2 pdir = parent->parent ? Vector2Normalize(Vector2Subtract(parent->pos, parent->parent->pos)) : sdir;
+Vector2 attractByAngle(const Vector2 pos, const std::shared_ptr<Node> parent) {
+    const Vector2 x = parent->parent ? parent->parent->pos : parent->pos - (pos - parent->pos);
+    const Vector2 y = parent->pos;
+    const Vector2 z = pos;
 
-    const float angle = std::clamp(Vector2Angle(pdir, sdir), -DEVIATION_ANGLE_MAX, DEVIATION_ANGLE_MAX);
+    const Vector2 direction_yz = Vector2Normalize(z - y);
+    const Vector2 direction_xy = Vector2Normalize(y - x);
 
-    const Vector2 new_dir = Vector2Rotate(pdir, angle);
+    const float distance_yz = Vector2Distance(y, z);
+    const float distance_xy = Vector2Distance(x, y);
 
-    return Vector2Add(parent->pos, Vector2Scale(new_dir, std::min(DEVIATION_DISTANCE_MAX, Vector2Distance(pos, parent->pos))));
+    const float deviation_angle_max = std::asin(std::clamp(0.5f * (distance_xy + distance_yz) / RADIUS_OF_CURVATURE_MIN, 0.0f, 1.0f));
+
+    const float angle = std::clamp(Vector2Angle(direction_xy, direction_yz), -deviation_angle_max, deviation_angle_max);
+
+    const Vector2 direction_out = Vector2Rotate(direction_xy, angle);
+
+    return Vector2Add(parent->pos, direction_out * distance_yz);
 }
 
 int main() {
@@ -106,7 +121,8 @@ int main() {
 
                 std::shared_ptr<Node> parent = *std::min_element(nodes.begin(), nodes.end(), [&pos](std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) { return Vector2Distance(a->pos, pos) < Vector2Distance(b->pos, pos); });
 
-                pos = attract(pos, parent);
+                pos = attractByDistance(pos, parent);
+                pos = attractByAngle(pos, parent);
                 pos = clampToEnvironment(pos);
 
                 if (std::any_of(obstacles.begin(), obstacles.end(), [&pos](auto& obs) { return Vector2Distance(obs, pos) < OBSTACLE_RADIUS; })) {
