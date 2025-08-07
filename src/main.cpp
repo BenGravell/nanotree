@@ -6,6 +6,8 @@
 #include <random>
 #include <vector>
 
+std::mt19937 rng(std::random_device{}());
+
 static constexpr int ENVIRONMENT_WIDTH = 2000;
 static constexpr int ENVIRONMENT_HEIGHT = 1000;
 
@@ -26,15 +28,37 @@ static constexpr int OBSTACLE_RADIUS = 100;
 // TODO make static constexpr std::array
 const std::vector<int> samples_options = {0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
 
+struct Node {
+    Vector2 pos;
+    std::shared_ptr<Node> parent;
+};
+
 Vector2 clampToEnvironment(const Vector2 position) {
     return Vector2Clamp(position, {0, 0}, {ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT});
 }
 
+Vector2 sample() {
+    static std::uniform_real_distribution<float> dist_x(0.0f, ENVIRONMENT_WIDTH);
+    static std::uniform_real_distribution<float> dist_y(0.0f, ENVIRONMENT_HEIGHT);
+    return Vector2{dist_x(rng), dist_y(rng)};
+}
+
+static constexpr float DEVIATION_DISTANCE_MAX = 80.0f;
+static constexpr float DEVIATION_ANGLE_MAX = 30.0f * DEG2RAD;
+
+Vector2 attract(const Vector2 pos, const std::shared_ptr<Node> parent) {
+    const Vector2 sdir = Vector2Normalize(Vector2Subtract(pos, parent->pos));
+
+    const Vector2 pdir = parent->parent ? Vector2Normalize(Vector2Subtract(parent->pos, parent->parent->pos)) : sdir;
+
+    const float angle = std::clamp(Vector2Angle(pdir, sdir), -DEVIATION_ANGLE_MAX, DEVIATION_ANGLE_MAX);
+
+    const Vector2 new_dir = Vector2Rotate(pdir, angle);
+
+    return Vector2Add(parent->pos, Vector2Scale(new_dir, std::min(DEVIATION_DISTANCE_MAX, Vector2Distance(pos, parent->pos))));
+}
+
 int main() {
-    struct Node {
-        Vector2 pos;
-        std::shared_ptr<Node> parent;
-    };
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "nanotree");
 
@@ -56,25 +80,40 @@ int main() {
 
         Vector2 mouse = clampToEnvironment(GetMousePosition());
 
-        if (IsMouseButtonDown(0)) goal = mouse;
+        const bool is_down_lmb = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+        const bool is_down_rmb = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
+        const bool is_down_mmb = IsMouseButtonDown(MOUSE_BUTTON_MIDDLE);
+        const bool is_down_mb = is_down_lmb || is_down_rmb || is_down_mmb;
 
-        if (IsMouseButtonDown(1) && std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, mouse) < 10; })) obstacles.push_back(mouse);
+        if (is_down_lmb) {
+            goal = mouse;
+        }
 
-        if (IsMouseButtonDown(2)) obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, mouse) < OBSTACLE_RADIUS; }), obstacles.end());
+        if (is_down_rmb && std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, mouse) < 10; })) {
+            obstacles.push_back(mouse);
+        }
 
-        if (IsMouseButtonDown(0) || IsMouseButtonDown(1) || IsMouseButtonDown(2) || nodes.empty()) {
+        if (is_down_mmb) {
+            obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, mouse) < OBSTACLE_RADIUS; }), obstacles.end());
+        }
+        const bool do_update = is_down_mb || nodes.empty();
+        if (do_update) {
             // TODO const start node
             nodes = {std::make_shared<Node>(Node{{100, 500}, nullptr})};
+
             for (int i = 0; i <= samples; ++i) {
-                Vector2 pos = (i == samples) ? goal : Vector2{2000 * float(std::rand()) / RAND_MAX, 1000 * float(std::rand()) / RAND_MAX};
+                Vector2 pos = (i == samples) ? goal : sample();
+
                 std::shared_ptr<Node> parent = *std::min_element(nodes.begin(), nodes.end(), [&pos](std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) { return Vector2Distance(a->pos, pos) < Vector2Distance(b->pos, pos); });
-                Vector2 sdir = Vector2Normalize(Vector2Subtract(pos, parent->pos));
-                Vector2 pdir = parent->parent ? Vector2Normalize(Vector2Subtract(parent->pos, parent->parent->pos)) : sdir;
-                float angle = std::clamp(Vector2Angle(pdir, sdir), -30.0f * DEG2RAD, 30.0f * DEG2RAD);
-                sdir = Vector2Rotate(pdir, angle);
-                pos = Vector2Add(parent->pos, Vector2Scale(sdir, std::min(80.0f, Vector2Distance(pos, parent->pos))));
+
+                pos = attract(pos, parent);
                 pos = clampToEnvironment(pos);
-                if (!std::any_of(obstacles.begin(), obstacles.end(), [&pos](auto& obs) { return Vector2Distance(obs, pos) < OBSTACLE_RADIUS; })) nodes.push_back(std::make_shared<Node>(Node{pos, parent}));
+
+                if (std::any_of(obstacles.begin(), obstacles.end(), [&pos](auto& obs) { return Vector2Distance(obs, pos) < OBSTACLE_RADIUS; })) {
+                    continue;
+                }
+
+                nodes.push_back(std::make_shared<Node>(Node{pos, parent}));
             }
 
             path.clear();
