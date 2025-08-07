@@ -10,20 +10,17 @@ std::mt19937 rng(std::random_device{}());
 
 static constexpr int ENVIRONMENT_WIDTH = 2000;
 static constexpr int ENVIRONMENT_HEIGHT = 1000;
-
 static constexpr int RIBBON_NUM_COLS = 4;
 static constexpr int RIBBON_NUM_ROWS = 2;
-
 static constexpr int RIBBON_WIDTH = ENVIRONMENT_WIDTH;
 static constexpr int RIBBON_HEIGHT = 200;
-
 static constexpr int RIBBON_COL_WIDTH = RIBBON_WIDTH / RIBBON_NUM_COLS;
 static constexpr int RIBBON_ROW_HEIGHT = RIBBON_HEIGHT / RIBBON_NUM_ROWS;
-
 static constexpr int SCREEN_WIDTH = ENVIRONMENT_WIDTH;
 static constexpr int SCREEN_HEIGHT = ENVIRONMENT_HEIGHT + RIBBON_HEIGHT;
-
 static constexpr int OBSTACLE_RADIUS = 100;
+static constexpr float DEVIATION_DISTANCE_MAX = 0.8f * OBSTACLE_RADIUS;
+static constexpr float RADIUS_OF_CURVATURE_MIN = 1.1f * OBSTACLE_RADIUS;
 
 // TODO make static constexpr std::array
 const std::vector<int> samples_options = {0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
@@ -33,19 +30,19 @@ struct Node {
     std::shared_ptr<Node> parent;
 };
 
-Vector2 clampToEnvironment(const Vector2 pos) {
-    return Vector2Clamp(pos, {0, 0}, {ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT});
-}
-
 Vector2 sample() {
     static std::uniform_real_distribution<float> dist_x(0.0f, ENVIRONMENT_WIDTH);
     static std::uniform_real_distribution<float> dist_y(0.0f, ENVIRONMENT_HEIGHT);
     return Vector2{dist_x(rng), dist_y(rng)};
 }
 
-static constexpr float DEVIATION_DISTANCE_MAX = 80.0f;
-static constexpr float DEVIATION_ANGLE_MAX = 30.0f * DEG2RAD;
-static constexpr float RADIUS_OF_CURVATURE_MIN = 1.2f * OBSTACLE_RADIUS;
+bool insideEnvironment(const Vector2 pos) {
+    return (0.0f < pos.x) && (pos.x < ENVIRONMENT_WIDTH) && (0.0f < pos.y) && (pos.y < ENVIRONMENT_HEIGHT);
+}
+
+Vector2 clampToEnvironment(const Vector2 pos) {
+    return Vector2Clamp(pos, {0, 0}, {ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT});
+}
 
 Vector2 attractByDistance(const Vector2 pos, const std::shared_ptr<Node> parent) {
     const Vector2 direction = Vector2Normalize(pos - parent->pos);
@@ -57,19 +54,13 @@ Vector2 attractByAngle(const Vector2 pos, const std::shared_ptr<Node> parent) {
     const Vector2 x = parent->parent ? parent->parent->pos : parent->pos - (pos - parent->pos);
     const Vector2 y = parent->pos;
     const Vector2 z = pos;
-
     const Vector2 direction_yz = Vector2Normalize(z - y);
     const Vector2 direction_xy = Vector2Normalize(y - x);
-
     const float distance_yz = Vector2Distance(y, z);
     const float distance_xy = Vector2Distance(x, y);
-
     const float deviation_angle_max = std::asin(std::clamp(0.5f * (distance_xy + distance_yz) / RADIUS_OF_CURVATURE_MIN, 0.0f, 1.0f));
-
-    const float angle = std::clamp(Vector2Angle(direction_xy, direction_yz), -deviation_angle_max, deviation_angle_max);
-
-    const Vector2 direction_out = Vector2Rotate(direction_xy, angle);
-
+    const float deviation_angle = std::clamp(Vector2Angle(direction_xy, direction_yz), -deviation_angle_max, deviation_angle_max);
+    const Vector2 direction_out = Vector2Rotate(direction_xy, deviation_angle);
     return Vector2Add(parent->pos, direction_out * distance_yz);
 }
 
@@ -86,9 +77,6 @@ int main() {
     std::vector<std::shared_ptr<Node>> path;
 
     int samples = 2000;
-
-    float last_time = GetTime();
-    float current_time = GetTime();
 
     while (!WindowShouldClose()) {
         if (int scroll = GetMouseWheelMove()) samples = samples_options[std::clamp(int(std::lower_bound(samples_options.begin(), samples_options.end(), samples) - samples_options.begin()) + ((scroll > 0) - (scroll < 0)), 0, int(samples_options.size() - 1))];
@@ -121,9 +109,13 @@ int main() {
 
                 std::shared_ptr<Node> parent = *std::min_element(nodes.begin(), nodes.end(), [&pos](std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) { return Vector2Distance(a->pos, pos) < Vector2Distance(b->pos, pos); });
 
+                pos = clampToEnvironment(pos);
                 pos = attractByDistance(pos, parent);
                 pos = attractByAngle(pos, parent);
-                pos = clampToEnvironment(pos);
+                
+                if (!insideEnvironment(pos)) {
+                    continue;
+                }
 
                 if (std::any_of(obstacles.begin(), obstacles.end(), [&pos](auto& obs) { return Vector2Distance(obs, pos) < OBSTACLE_RADIUS; })) {
                     continue;
@@ -155,7 +147,7 @@ int main() {
             DrawCircleV(node->pos, 10, RAYWHITE);
         }
 
-        current_time = GetTime();
+        const float current_time = GetTime();
 
         // ring selector orbiter
         static constexpr float selector_orbit_period = 5.0f;
@@ -194,8 +186,6 @@ int main() {
         DrawText("[Scroll] # samples", 1520, 1130, 40, RAYWHITE);
 
         EndDrawing();
-
-        last_time = current_time;
     }
 
     CloseWindow();
