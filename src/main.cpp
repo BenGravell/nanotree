@@ -6,6 +6,14 @@
 #include <random>
 #include <vector>
 
+#include "roma_r.h"
+
+inline Color mapToColor(const float x, const std::array<std::array<uint8_t, 3>, 256>& colormap) {
+    const int idx = std::clamp(static_cast<int>(x * 255.0f + 0.5f), 0, 255);
+    const auto& rgb = colormap[idx];
+    return Color{rgb[0], rgb[1], rgb[2], 255};
+}
+
 std::mt19937 rng(std::random_device{}());
 
 static constexpr int ENVIRONMENT_WIDTH = 2000;
@@ -18,6 +26,12 @@ static constexpr int RIBBON_COL_WIDTH = RIBBON_WIDTH / RIBBON_NUM_COLS;
 static constexpr int RIBBON_ROW_HEIGHT = RIBBON_HEIGHT / RIBBON_NUM_ROWS;
 static constexpr int SCREEN_WIDTH = ENVIRONMENT_WIDTH;
 static constexpr int SCREEN_HEIGHT = ENVIRONMENT_HEIGHT + RIBBON_HEIGHT;
+static constexpr int TEXT_HEIGHT = 40;
+
+static constexpr Color GOAL_REACHED_COLOR = BLUE;
+static constexpr Color GOAL_NOT_REACHED_COLOR = RED;
+static constexpr Color NODE_COUNT_COLOR = PURPLE;
+
 static constexpr int OBSTACLE_RADIUS = 100;
 static constexpr float DEVIATION_DISTANCE_MAX = 0.8f * OBSTACLE_RADIUS;
 static constexpr float RADIUS_OF_CURVATURE_MIN = 1.1f * OBSTACLE_RADIUS;
@@ -26,8 +40,9 @@ static constexpr float RADIUS_OF_CURVATURE_MIN = 1.1f * OBSTACLE_RADIUS;
 const std::vector<int> samples_options = {0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
 
 struct Node {
-    Vector2 pos;
     std::shared_ptr<Node> parent;
+    Vector2 pos;
+    float cost_to_come;
 };
 
 Vector2 sample() {
@@ -102,7 +117,7 @@ int main() {
         const bool do_update = is_down_mb || nodes.empty();
         if (do_update) {
             // TODO const start node
-            nodes = {std::make_shared<Node>(Node{{100, 500}, nullptr})};
+            nodes = {std::make_shared<Node>(Node{nullptr, {100, 500}, 0.0f})};
 
             for (int i = 0; i <= samples; ++i) {
                 Vector2 pos = (i == samples) ? goal : sample();
@@ -112,7 +127,7 @@ int main() {
                 pos = clampToEnvironment(pos);
                 pos = attractByDistance(pos, parent);
                 pos = attractByAngle(pos, parent);
-                
+
                 if (!insideEnvironment(pos)) {
                     continue;
                 }
@@ -121,7 +136,8 @@ int main() {
                     continue;
                 }
 
-                nodes.push_back(std::make_shared<Node>(Node{pos, parent}));
+                const float cost = Vector2Distance(parent->pos, pos);
+                nodes.push_back(std::make_shared<Node>(Node{parent, pos, parent->cost_to_come + cost}));
             }
 
             path.clear();
@@ -140,8 +156,32 @@ int main() {
         BeginDrawing();
         DrawRectangle(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, BLACK);
         for (auto obstacle : obstacles) DrawCircleV(obstacle, OBSTACLE_RADIUS, DARKGRAY);
-        for (auto node : nodes)
-            if (node->parent) DrawLineEx(node->parent->pos, node->pos, 2, PURPLE);
+
+        float cost_to_come_goal = 1.0f;
+        float cost_to_come_max = 2.0f * cost_to_come_goal;
+        for (auto node : path) {
+            cost_to_come_goal = std::max(cost_to_come_goal, node->cost_to_come);
+        }
+        for (auto node : nodes) {
+            cost_to_come_max = std::max(cost_to_come_max, node->cost_to_come);
+        }
+
+        for (auto node : nodes) {
+            if (!node->parent) {
+                continue;
+            }
+
+            float c = 0.0f;
+            if (node->cost_to_come < cost_to_come_goal) {
+                c = Remap(node->cost_to_come / cost_to_come_goal, 0.0f, 1.0f, 0.0f, 0.5f);
+            } else {
+                c = Remap((node->cost_to_come - cost_to_come_goal) / (cost_to_come_max - cost_to_come_goal), 0.0f, 1.0f, 0.5f, 1.0f);
+            }
+            c = std::clamp(c, 0.0f, 1.0f);
+            const Color color = mapToColor(c, roma_r_colormap);
+            DrawLineEx(node->parent->pos, node->pos, 2, color);
+        }
+
         for (auto node : path) {
             DrawLineEx(node->parent->pos, node->pos, 10, RAYWHITE);
             DrawCircleV(node->pos, 10, RAYWHITE);
@@ -167,23 +207,23 @@ int main() {
         }
 
         DrawCircleV(mouse, 10, LIGHTGRAY);
-        DrawRectangle(goal.x - 25, goal.y - 25, 50, 50, solved ? BLUE : RED);
+        DrawRectangle(goal.x - 25, goal.y - 25, 50, 50, solved ? GOAL_REACHED_COLOR : GOAL_NOT_REACHED_COLOR);
         DrawRectangle(0, ENVIRONMENT_HEIGHT, ENVIRONMENT_WIDTH, 200, {40, 40, 40, 255});
         for (int y = ENVIRONMENT_HEIGHT; y < SCREEN_HEIGHT; y += RIBBON_ROW_HEIGHT) {
             for (int x = 0; x < ENVIRONMENT_WIDTH; x += RIBBON_COL_WIDTH) {
                 DrawRectangleLines(x, y, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT, LIGHTGRAY);
             }
         }
-        DrawText(std::string(solved ? "Reached Goal" : "Did Not Reach Goal").c_str(), 20, 1030, 40, solved ? BLUE : RED);
+        DrawText(std::string(solved ? "Reached Goal" : "Did Not Reach Goal").c_str(), 20, 1030, TEXT_HEIGHT, solved ? GOAL_REACHED_COLOR : GOAL_NOT_REACHED_COLOR);
         int fps = GetFPS();
-        DrawText(TextFormat("%2i FPS", fps), 520, 1030, 40, (fps < 15) ? RED : ((fps < 30) ? GOLD : BLUE));
-        DrawText((std::to_string(nodes.size()) + " nodes").c_str(), 1020, 1030, 40, PURPLE);
-        DrawText((std::to_string(samples) + " samples").c_str(), 1520, 1030, 40, PURPLE);
+        DrawText(TextFormat("%2i FPS", fps), 520, 1030, TEXT_HEIGHT, (fps < 15) ? RED : ((fps < 30) ? GOLD : BLUE));
+        DrawText((std::to_string(nodes.size()) + " nodes").c_str(), 1020, 1030, TEXT_HEIGHT, NODE_COUNT_COLOR);
+        DrawText((std::to_string(samples) + " samples").c_str(), 1520, 1030, TEXT_HEIGHT, NODE_COUNT_COLOR);
 
-        DrawText("[LMB] move goal", 20, 1130, 40, RAYWHITE);
-        DrawText("[RMB] insert obstacle", 520, 1130, 40, RAYWHITE);
-        DrawText("[MMB] delete obstacle", 1020, 1130, 40, RAYWHITE);
-        DrawText("[Scroll] # samples", 1520, 1130, 40, RAYWHITE);
+        DrawText("[LMB] move goal", 20, 1130, TEXT_HEIGHT, RAYWHITE);
+        DrawText("[RMB] insert obstacle", 520, 1130, TEXT_HEIGHT, RAYWHITE);
+        DrawText("[MMB] delete obstacle", 1020, 1130, TEXT_HEIGHT, RAYWHITE);
+        DrawText("[Scroll] # samples", 1520, 1130, TEXT_HEIGHT, RAYWHITE);
 
         EndDrawing();
     }
