@@ -27,17 +27,17 @@ static constexpr Color GOAL_NOT_REACHED_COLOR = RED;
 static constexpr Color NODE_COUNT_COLOR = PURPLE;
 
 static constexpr int OBSTACLE_RADIUS = 100;
-static constexpr float DEVIATION_DISTANCE_MAX = 0.8f * OBSTACLE_RADIUS;
-static constexpr float RADIUS_OF_CURVATURE_MIN = 1.1f * OBSTACLE_RADIUS;
+static constexpr float DEVIATION_DISTANCE_MAX = 0.6f * OBSTACLE_RADIUS;
+static constexpr float RADIUS_OF_CURVATURE_MIN = 0.9f * OBSTACLE_RADIUS;
 
 static constexpr int MOUSE_CENTER_RADIUS = 10;
 static constexpr int OBSTACLE_SPACING_MIN = 10;
 
 static constexpr int LINE_WIDTH_PATH = 12;
-static constexpr int LINE_WIDTH_TREE = 3;
-static constexpr int NODE_RADIUS_PATH = 1.5 * LINE_WIDTH_PATH;
+static constexpr int LINE_WIDTH_TREE = 4;
+static constexpr int NODE_WIDTH_PATH = 30;
 
-static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 0.8f * DEVIATION_DISTANCE_MAX;
+static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 0.25f * DEVIATION_DISTANCE_MAX;
 static constexpr float GOAL_REACHED_RADIUS = 40.0f;
 
 // TODO make static constexpr std::array
@@ -124,21 +124,19 @@ inline Color mapToColor(const float x, const std::array<std::array<uint8_t, 3>, 
 
 void DrawSelector(const Vector2 pos) {
     static constexpr float selector_orbit_period = 5.0f;
-    static constexpr int num_segments = 8;
+    static constexpr int num_segments = 12;
     static constexpr int delta_angle = 360 / (2 * num_segments);
     static constexpr int ring_outer_radius = OBSTACLE_RADIUS;
     static constexpr int ring_width = 0.2 * OBSTACLE_RADIUS;
+    static constexpr int ring_inner_radius = ring_outer_radius - ring_width;
 
     const float current_time = GetTime();
     const int offset_angle = fmodf(current_time / selector_orbit_period, 1.0f) * 360;
-    const int offset_angle2 = fmodf(-current_time / selector_orbit_period, 1.0f) * 360;
     DrawCircleV(pos, OBSTACLE_RADIUS, Fade(GRAY, 0.4f));
     DrawRing(pos, ring_outer_radius - ring_width, ring_outer_radius, 0, 360, 0, Fade(GRAY, 0.6f));
     for (int i = 0; i < num_segments; ++i) {
         const int start_angle = 2 * i * delta_angle + offset_angle;
-        const int start_angle2 = 2 * i * delta_angle + offset_angle2;
-        DrawRing(pos, ring_outer_radius - ring_width / 2, ring_outer_radius, start_angle, start_angle + delta_angle, 0, LIGHTGRAY);
-        DrawRing(pos, ring_outer_radius - ring_width, ring_outer_radius - ring_width / 2, start_angle2, start_angle2 + delta_angle, 0, LIGHTGRAY);
+        DrawRing(pos, ring_inner_radius, ring_outer_radius, start_angle, start_angle + delta_angle, 0, LIGHTGRAY);
     }
 }
 
@@ -250,12 +248,16 @@ int main() {
         // TODO func DrawPath
         for (auto node : path) {
             DrawLineEx(node->parent->pos, node->pos, LINE_WIDTH_PATH, RAYWHITE);
-            DrawCircleV(node->pos, NODE_RADIUS_PATH, RAYWHITE);
+            DrawCircleV(node->pos, NODE_WIDTH_PATH / 2, RAYWHITE);
         }
+
+        const Color solved_color = solved ? GOAL_REACHED_COLOR : GOAL_NOT_REACHED_COLOR;
 
         DrawSelector(mouse);
         DrawCircleV(mouse, MOUSE_CENTER_RADIUS, LIGHTGRAY);
-        DrawRectangle(goal.x - 25, goal.y - 25, 50, 50, solved ? GOAL_REACHED_COLOR : GOAL_NOT_REACHED_COLOR);
+
+        DrawCircleV(goal, GOAL_REACHED_RADIUS, solved_color);
+
         DrawRectangle(0, ENVIRONMENT_HEIGHT, ENVIRONMENT_WIDTH, 200, {40, 40, 40, 255});
         for (int y = ENVIRONMENT_HEIGHT; y < SCREEN_HEIGHT; y += RIBBON_ROW_HEIGHT) {
             for (int x = 0; x < ENVIRONMENT_WIDTH; x += RIBBON_COL_WIDTH) {
@@ -263,7 +265,7 @@ int main() {
             }
         }
 
-        DrawText(std::string(solved ? "Reached Goal" : "Did Not Reach Goal").c_str(), 20, 1030, TEXT_HEIGHT, solved ? GOAL_REACHED_COLOR : GOAL_NOT_REACHED_COLOR);
+        DrawText(std::string(solved ? "Goal reached" : "Goal not reached").c_str(), 20, 1030, TEXT_HEIGHT, solved_color);
         int fps = GetFPS();
         DrawText(TextFormat("%2i FPS", fps), 520, 1030, TEXT_HEIGHT, fpsColor(fps));
         DrawText((std::to_string(nodes.size()) + " nodes").c_str(), 1020, 1030, TEXT_HEIGHT, NODE_COUNT_COLOR);
