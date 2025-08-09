@@ -28,8 +28,8 @@ static constexpr int SCREEN_WIDTH = ENVIRONMENT_WIDTH;
 static constexpr int SCREEN_HEIGHT = ENVIRONMENT_HEIGHT + RIBBON_HEIGHT;
 static constexpr int TEXT_HEIGHT = 40;
 
-static constexpr int MOUSE_CENTER_RADIUS = 10;
 static constexpr int OBSTACLE_SPACING_MIN = 10;
+static constexpr int OBSTACLE_DEL_RADIUS = 20;
 
 static constexpr int LINE_WIDTH_PATH = 12;
 static constexpr int LINE_WIDTH_TREE = 4;
@@ -125,17 +125,14 @@ inline float normalizeCost(const float c, const float c_goal, const float c_max)
     return std::clamp(x, 0.0f, 1.0f);
 }
 
-void DrawSelector(const Vector2 pos) {
-    static constexpr float selector_orbit_period_sec = 5.0f;
-    static constexpr int num_segments = 12;
-    static constexpr int delta_angle = 360 / (2 * num_segments);
-    static constexpr int ring_outer_radius = OBSTACLE_RADIUS;
-    static constexpr int ring_width = 0.2 * OBSTACLE_RADIUS;
-    static constexpr int ring_inner_radius = ring_outer_radius - ring_width;
-
+void DrawSelector(const Vector2 pos, const float radius, const float ring_width_frac, const int num_segments, const float selector_orbit_period_sec) {
+    const float delta_angle = 360.0f / (2.0f * num_segments);
+    const float ring_outer_radius = radius;
+    const float ring_width = ring_width_frac * radius;
+    const float ring_inner_radius = ring_outer_radius - ring_width;
     const float current_time = GetTime();
     const float offset_angle = fmodf(current_time / selector_orbit_period_sec, 1.0f) * 360.0f;
-    DrawCircleV(pos, OBSTACLE_RADIUS, Fade(GRAY, 0.4f));
+    DrawCircleV(pos, radius, Fade(GRAY, 0.4f));
     DrawRing(pos, ring_outer_radius - ring_width, ring_outer_radius, 0, 360, 0, Fade(GRAY, 0.6f));
     for (int i = 0; i < num_segments; ++i) {
         const float start_angle = 2 * i * delta_angle + offset_angle;
@@ -157,31 +154,77 @@ int main() {
 
     int samples = 2000;
 
-    while (!WindowShouldClose()) {
-        if (int scroll = GetMouseWheelMove()) samples = samples_options[std::clamp(int(std::lower_bound(samples_options.begin(), samples_options.end(), samples) - samples_options.begin()) + ((scroll > 0) - (scroll < 0)), 0, int(samples_options.size() - 1))];
+    int mode = 1;
 
-        Vector2 mouse = clampToEnvironment(GetMousePosition());
+    const Rectangle place_goal_button = {0 + 0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+    const Rectangle add_obstacle_button = {0 + 1 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+    const Rectangle del_obstacle_button = {0 + 2 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+    const Rectangle dec_num_samples_button = {0 + 3 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
+    const Rectangle inc_num_samples_button = {0 + 3.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
+
+    while (!WindowShouldClose()) {
+        Vector2 mouse = GetMousePosition();
+
+        const bool mouse_in_place_goal_button = CheckCollisionPointRec(mouse, place_goal_button);
+        const bool mouse_in_add_obstacle_button = CheckCollisionPointRec(mouse, add_obstacle_button);
+        const bool mouse_in_del_obstacle_button = CheckCollisionPointRec(mouse, del_obstacle_button);
+        const bool mouse_in_inc_num_samples_button = CheckCollisionPointRec(mouse, inc_num_samples_button);
+        const bool mouse_in_dec_num_samples_button = CheckCollisionPointRec(mouse, dec_num_samples_button);
 
         const bool is_down_lmb = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
         const bool is_down_rmb = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
         const bool is_down_mmb = IsMouseButtonDown(MOUSE_BUTTON_MIDDLE);
-        const bool is_down_mb = is_down_lmb || is_down_rmb || is_down_mmb;
 
         if (is_down_lmb) {
-            goal = mouse;
-        }
-
-        if (is_down_rmb) {
-            if (std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, mouse) < OBSTACLE_SPACING_MIN; })) {
-                obstacles.push_back(mouse);
+            if (mouse_in_place_goal_button) {
+                mode = 1;
+            }
+            if (mouse_in_add_obstacle_button) {
+                mode = 2;
+            }
+            if (mouse_in_del_obstacle_button) {
+                mode = 3;
             }
         }
 
-        if (is_down_mmb) {
-            obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, mouse) < OBSTACLE_RADIUS; }), obstacles.end());
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            int scroll = 0;
+            if (mouse_in_inc_num_samples_button) {
+                scroll = 1;
+            }
+            if (mouse_in_dec_num_samples_button) {
+                scroll = -1;
+            }
+            samples = samples_options[std::clamp(int(std::lower_bound(samples_options.begin(), samples_options.end(), samples) - samples_options.begin()) + ((scroll > 0) - (scroll < 0)), 0, int(samples_options.size() - 1))];
+        } else if (int scroll = GetMouseWheelMove()) {
+            samples = samples_options[std::clamp(int(std::lower_bound(samples_options.begin(), samples_options.end(), samples) - samples_options.begin()) + ((scroll > 0) - (scroll < 0)), 0, int(samples_options.size() - 1))];
         }
 
-        const bool do_update = is_down_mb || nodes.empty();
+        const bool mouse_in_environment = insideEnvironment(mouse);
+        mouse = clampToEnvironment(mouse);
+
+        bool problem_changed = false;
+
+        if (mouse_in_environment) {
+            if (is_down_lmb && mode == 1) {
+                goal = mouse;
+                problem_changed = true;
+            }
+
+            if ((is_down_lmb && mode == 2) || is_down_rmb) {
+                if (std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, mouse) < OBSTACLE_SPACING_MIN; })) {
+                    obstacles.push_back(mouse);
+                }
+                problem_changed = true;
+            }
+
+            if ((is_down_lmb && mode == 3) || is_down_mmb) {
+                obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, mouse) < (OBSTACLE_RADIUS + OBSTACLE_DEL_RADIUS); }), obstacles.end());
+                problem_changed = true;
+            }
+        }
+
+        const bool do_update = problem_changed || nodes.empty();
         if (do_update) {
             // TODO const start node
             nodes = {std::make_shared<Node>(Node{nullptr, {100, 500}, 0.0f})};
@@ -253,8 +296,15 @@ int main() {
             DrawCircleV(node->pos, NODE_WIDTH_PATH / 2, COLOR_PATH);
         }
 
-        DrawSelector(mouse);
-        DrawCircleV(mouse, MOUSE_CENTER_RADIUS, LIGHTGRAY);
+        if (mode == 1) {
+            DrawSelector(mouse, GOAL_REACHED_RADIUS, 0.4f, 8, 4.0f);
+        }
+        if (mode == 2) {
+            DrawSelector(mouse, OBSTACLE_RADIUS, 0.2f, 12, 5.0f);
+        }
+        if (mode == 3) {
+            DrawSelector(mouse, OBSTACLE_DEL_RADIUS, 0.6f, 6, 3.0f);
+        }
 
         const Color goal_color = goal_reached ? COLOR_GOAL_REACHED : COLOR_GOAL_NOT_REACHED;
         DrawCircleV(goal, GOAL_REACHED_RADIUS, Fade(goal_color, 0.8f));
@@ -263,26 +313,46 @@ int main() {
         // Ribbon
         DrawRectangle(0, ENVIRONMENT_HEIGHT, ENVIRONMENT_WIDTH, RIBBON_HEIGHT, COLOR_RIBBON_BACKGROUND);
 
+        // TODO
+        DrawRectangleLinesEx(inc_num_samples_button, 1, LIGHTGRAY);
+        DrawRectangleLinesEx(dec_num_samples_button, 1, LIGHTGRAY);
+
         for (int y = ENVIRONMENT_HEIGHT; y < SCREEN_HEIGHT; y += RIBBON_ROW_HEIGHT) {
             for (int x = 0; x < ENVIRONMENT_WIDTH; x += RIBBON_COL_WIDTH) {
                 DrawRectangleLines(x, y, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT, LIGHTGRAY);
             }
         }
 
+        for (int m = 1; m <= 3; ++m) {
+            if (m == mode) {
+                int x = (m - 1) * RIBBON_COL_WIDTH;
+                int y = ENVIRONMENT_HEIGHT;
+                DrawRectangle(x, y, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT, LIGHTGRAY);
+            }
+        }
+
         static constexpr int TEXT_MARGIN_WIDTH = 20;
 
-        static constexpr int RIBBON_ROW_1_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + (RIBBON_ROW_HEIGHT - TEXT_HEIGHT) / 2;
+        static constexpr int RIBBON_ROW_1A_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 5;
+        static constexpr int RIBBON_ROW_1B_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 50;
         static constexpr int RIBBON_ROW_2_Y = ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT + (RIBBON_ROW_HEIGHT - TEXT_HEIGHT) / 2;
 
-        DrawText(std::string(goal_reached ? "Goal reached" : "Goal not reached").c_str(), 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y, TEXT_HEIGHT, goal_color);
-        DrawText(TextFormat("%2i FPS", fps), 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y, TEXT_HEIGHT, fpsColor(fps));
-        DrawText((std::to_string(nodes.size()) + " nodes").c_str(), 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y, TEXT_HEIGHT, COLOR_NODE_COUNT);
-        DrawText((std::to_string(samples) + " samples").c_str(), 3 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y, TEXT_HEIGHT, COLOR_NODE_COUNT);
+        DrawText(std::string(goal_reached ? "Goal reached" : "Goal not reached").c_str(), 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, goal_color);
+        DrawText(TextFormat("%2i FPS", fps), 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, fpsColor(fps));
+        DrawText((std::to_string(nodes.size()) + " nodes").c_str(), 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_NODE_COUNT);
+        DrawText((std::to_string(samples) + " samples").c_str(), 3 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_NODE_COUNT);
 
-        DrawText("[LMB] move goal", 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_KEYMAP);
-        DrawText("[RMB] insert obstacle", 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_KEYMAP);
-        DrawText("[MMB] delete obstacle", 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_KEYMAP);
-        DrawText("[Scroll] # samples", 3 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_KEYMAP);
+        DrawText("Move goal", 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT, (mode == 1) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("Insert obstacle", 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT, (mode == 2) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("Delete obstacle", 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT, (mode == 3) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("- samples", 3.0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT, COLOR_KEYMAP);
+        DrawText("+ samples", 3.5 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT, COLOR_KEYMAP);
+
+        DrawText("[LMB]", 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT, (mode == 1) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("[RMB]", 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT, (mode == 2) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("[MMB]", 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT, (mode == 3) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("[Scroll]", 3.0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT, COLOR_KEYMAP);
+        DrawText("[Scroll]", 3.5 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT, COLOR_KEYMAP);
 
         EndDrawing();
     }
