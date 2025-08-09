@@ -54,18 +54,26 @@ struct Node {
     float cost_to_come;
 };
 
-Vector2 sample() {
-    static std::uniform_real_distribution<float> dist_x(0.0f, ENVIRONMENT_WIDTH);
-    static std::uniform_real_distribution<float> dist_y(0.0f, ENVIRONMENT_HEIGHT);
-    return Vector2{dist_x(rng), dist_y(rng)};
-}
-
 bool insideEnvironment(const Vector2 pos) {
     return (0.0f < pos.x) && (pos.x < ENVIRONMENT_WIDTH) && (0.0f < pos.y) && (pos.y < ENVIRONMENT_HEIGHT);
 }
 
 Vector2 clampToEnvironment(const Vector2 pos) {
     return Vector2Clamp(pos, {0, 0}, {ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT});
+}
+
+Vector2 sample(const Vector2 goal) {
+    static std::uniform_real_distribution<float> dist_select(0.0f, 1.0f);
+    static std::uniform_real_distribution<float> dist_x(0.0f, ENVIRONMENT_WIDTH);
+    static std::uniform_real_distribution<float> dist_y(0.0f, ENVIRONMENT_HEIGHT);
+    static std::uniform_real_distribution<float> dist_goal_x(-GOAL_REACHED_RADIUS, GOAL_REACHED_RADIUS);
+    static std::uniform_real_distribution<float> dist_goal_y(-GOAL_REACHED_RADIUS, GOAL_REACHED_RADIUS);
+
+    if (dist_select(rng) > 0.95) {
+        return clampToEnvironment(goal + Vector2{dist_goal_x(rng), dist_goal_y(rng)});
+    }
+
+    return Vector2{dist_x(rng), dist_y(rng)};
 }
 
 Vector2 attractByDistance(const Vector2 pos, const std::shared_ptr<Node> parent) {
@@ -197,7 +205,7 @@ int main() {
             nodes = {std::make_shared<Node>(Node{nullptr, {100, 500}, 0.0f})};
 
             for (int i = 0; i <= samples; ++i) {
-                Vector2 pos = (i == samples) ? goal : sample();
+                Vector2 pos = (i == samples) ? goal : sample(goal);
 
                 std::shared_ptr<Node> parent = chooseParent(pos, nodes);
 
@@ -265,7 +273,7 @@ int main() {
         DrawSelector(mouse);
         DrawCircleV(mouse, MOUSE_CENTER_RADIUS, LIGHTGRAY);
 
-        const Color goal_color = goal_reached ? COLOR_GOAL_REACHED : COLOR_GOAL_NOT_REACHED;
+        const Color goal_color = Fade(goal_reached ? COLOR_GOAL_REACHED : COLOR_GOAL_NOT_REACHED, 0.8f);
         DrawCircleV(goal, GOAL_REACHED_RADIUS, goal_color);
 
         // Ribbon
