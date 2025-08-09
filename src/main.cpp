@@ -33,7 +33,6 @@ static constexpr int LINE_WIDTH_PATH = 12;
 static constexpr int LINE_WIDTH_TREE = 4;
 static constexpr int NODE_WIDTH_PATH = 30;
 
-static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 0.25f * DEVIATION_DISTANCE_MAX;
 static constexpr float GOAL_REACHED_RADIUS = 40.0f;
 
 static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
@@ -99,26 +98,6 @@ Vector2 attractByAngle(const Vector2 pos, const std::shared_ptr<Node> parent) {
 }
 
 std::shared_ptr<Node> chooseParent(const Vector2 pos, const std::vector<std::shared_ptr<Node>>& nodes) {
-    auto cheapest_it = std::min_element(nodes.begin(), nodes.end(),
-                                        [&pos](const std::shared_ptr<Node>& a, const std::shared_ptr<Node>& b) {
-                                            float da = Vector2Distance(a->pos, pos);
-                                            float db = Vector2Distance(b->pos, pos);
-                                            bool a_valid = da < CHEAP_PARENT_SEARCH_RADIUS;
-                                            bool b_valid = db < CHEAP_PARENT_SEARCH_RADIUS;
-
-                                            if (a_valid && b_valid)
-                                                return (a->cost_to_come + da) < (b->cost_to_come + db);
-                                            if (a_valid)
-                                                return true;
-                                            if (b_valid)
-                                                return false;
-                                            return false;
-                                        });
-
-    if (Vector2Distance((*cheapest_it)->pos, pos) < CHEAP_PARENT_SEARCH_RADIUS) {
-        return *cheapest_it;
-    }
-
     return *std::min_element(nodes.begin(), nodes.end(),
                              [&pos](const std::shared_ptr<Node>& a, const std::shared_ptr<Node>& b) {
                                  return Vector2Distance(a->pos, pos) < Vector2Distance(b->pos, pos);
@@ -140,7 +119,7 @@ inline Color mapToColor(float x) {
 
 inline float normalizeCost(const float c, const float c_goal, const float c_max) {
     float x = 0.0f;
-    if (x < c_goal) {
+    if (c < c_goal) {
         x = Remap(c / c_goal, 0.0f, 1.0f, 0.0f, 0.5f);
     } else {
         x = Remap((c - c_goal) / (c_max - c_goal), 0.0f, 1.0f, 0.5f, 1.0f);
