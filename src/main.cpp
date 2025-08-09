@@ -10,6 +10,12 @@
 
 std::mt19937 rng(std::random_device{}());
 
+static constexpr int OBSTACLE_RADIUS = 100;
+static constexpr float DEVIATION_DISTANCE_MAX = 0.6f * OBSTACLE_RADIUS;
+static constexpr float RADIUS_OF_CURVATURE_MIN = 0.9f * OBSTACLE_RADIUS;
+static constexpr float GOAL_REACHED_RADIUS = 40.0f;
+static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
+
 static constexpr int ENVIRONMENT_WIDTH = 2000;
 static constexpr int ENVIRONMENT_HEIGHT = 1000;
 static constexpr int RIBBON_NUM_COLS = 4;
@@ -22,20 +28,12 @@ static constexpr int SCREEN_WIDTH = ENVIRONMENT_WIDTH;
 static constexpr int SCREEN_HEIGHT = ENVIRONMENT_HEIGHT + RIBBON_HEIGHT;
 static constexpr int TEXT_HEIGHT = 40;
 
-static constexpr int OBSTACLE_RADIUS = 100;
-static constexpr float DEVIATION_DISTANCE_MAX = 0.6f * OBSTACLE_RADIUS;
-static constexpr float RADIUS_OF_CURVATURE_MIN = 0.9f * OBSTACLE_RADIUS;
-
 static constexpr int MOUSE_CENTER_RADIUS = 10;
 static constexpr int OBSTACLE_SPACING_MIN = 10;
 
 static constexpr int LINE_WIDTH_PATH = 12;
 static constexpr int LINE_WIDTH_TREE = 4;
 static constexpr int NODE_WIDTH_PATH = 30;
-
-static constexpr float GOAL_REACHED_RADIUS = 40.0f;
-
-static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
 
 static constexpr Color COLOR_GOAL_REACHED = BLUE;
 static constexpr Color COLOR_GOAL_NOT_REACHED = RED;
@@ -261,6 +259,7 @@ int main() {
         const Color goal_color = goal_reached ? COLOR_GOAL_REACHED : COLOR_GOAL_NOT_REACHED;
         DrawCircleV(goal, GOAL_REACHED_RADIUS, Fade(goal_color, 0.8f));
 
+        // TODO func DrawRibbon
         // Ribbon
         DrawRectangle(0, ENVIRONMENT_HEIGHT, ENVIRONMENT_WIDTH, RIBBON_HEIGHT, COLOR_RIBBON_BACKGROUND);
 
