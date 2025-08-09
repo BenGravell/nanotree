@@ -36,6 +36,8 @@ static constexpr int NODE_WIDTH_PATH = 30;
 static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 0.25f * DEVIATION_DISTANCE_MAX;
 static constexpr float GOAL_REACHED_RADIUS = 40.0f;
 
+static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
+
 static constexpr Color COLOR_GOAL_REACHED = BLUE;
 static constexpr Color COLOR_GOAL_NOT_REACHED = RED;
 static constexpr Color COLOR_NODE_COUNT = PURPLE;
@@ -69,7 +71,7 @@ Vector2 sample(const Vector2 goal) {
     static std::uniform_real_distribution<float> dist_goal_x(-GOAL_REACHED_RADIUS, GOAL_REACHED_RADIUS);
     static std::uniform_real_distribution<float> dist_goal_y(-GOAL_REACHED_RADIUS, GOAL_REACHED_RADIUS);
 
-    if (dist_select(rng) > 0.95) {
+    if (dist_select(rng) < GOAL_SAMPLE_PROBABILITY) {
         return clampToEnvironment(goal + Vector2{dist_goal_x(rng), dist_goal_y(rng)});
     }
 
@@ -192,13 +194,16 @@ int main() {
             goal = mouse;
         }
 
-        if (is_down_rmb && std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, mouse) < OBSTACLE_SPACING_MIN; })) {
-            obstacles.push_back(mouse);
+        if (is_down_rmb) {
+            if (std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, mouse) < OBSTACLE_SPACING_MIN; })) {
+                obstacles.push_back(mouse);
+            }
         }
 
         if (is_down_mmb) {
             obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, mouse) < OBSTACLE_RADIUS; }), obstacles.end());
         }
+
         const bool do_update = is_down_mb || nodes.empty();
         if (do_update) {
             // TODO const start node
@@ -225,6 +230,7 @@ int main() {
                 nodes.push_back(std::make_shared<Node>(Node{parent, pos, parent->cost_to_come + cost}));
             }
 
+            // TODO func extractPath(nodes, goal)
             path.clear();
             std::shared_ptr<Node> node = *std::min_element(nodes.begin(), nodes.end(), [&goal](std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) { return Vector2Distance(a->pos, goal) < Vector2Distance(b->pos, goal); });
             while (node->parent) {
@@ -234,11 +240,11 @@ int main() {
             std::reverse(path.begin(), path.end());
         }
 
-        float cost_to_come_goal = 1.0f;
-        float cost_to_come_max = 2.0f * cost_to_come_goal;
+        float cost_to_come_goal = 0.0f;
         for (auto node : path) {
             cost_to_come_goal = std::max(cost_to_come_goal, node->cost_to_come);
         }
+        float cost_to_come_max = 0.0f;
         for (auto node : nodes) {
             cost_to_come_max = std::max(cost_to_come_max, node->cost_to_come);
         }
@@ -273,11 +279,11 @@ int main() {
         DrawSelector(mouse);
         DrawCircleV(mouse, MOUSE_CENTER_RADIUS, LIGHTGRAY);
 
-        const Color goal_color = Fade(goal_reached ? COLOR_GOAL_REACHED : COLOR_GOAL_NOT_REACHED, 0.8f);
-        DrawCircleV(goal, GOAL_REACHED_RADIUS, goal_color);
+        const Color goal_color = goal_reached ? COLOR_GOAL_REACHED : COLOR_GOAL_NOT_REACHED;
+        DrawCircleV(goal, GOAL_REACHED_RADIUS, Fade(goal_color, 0.8f));
 
         // Ribbon
-        DrawRectangle(0, ENVIRONMENT_HEIGHT, ENVIRONMENT_WIDTH, 200, COLOR_RIBBON_BACKGROUND);
+        DrawRectangle(0, ENVIRONMENT_HEIGHT, ENVIRONMENT_WIDTH, RIBBON_HEIGHT, COLOR_RIBBON_BACKGROUND);
 
         for (int y = ENVIRONMENT_HEIGHT; y < SCREEN_HEIGHT; y += RIBBON_ROW_HEIGHT) {
             for (int x = 0; x < ENVIRONMENT_WIDTH; x += RIBBON_COL_WIDTH) {
@@ -285,15 +291,20 @@ int main() {
             }
         }
 
-        DrawText(std::string(goal_reached ? "Goal reached" : "Goal not reached").c_str(), 20, 1030, TEXT_HEIGHT, goal_color);
-        DrawText(TextFormat("%2i FPS", fps), 520, 1030, TEXT_HEIGHT, fpsColor(fps));
-        DrawText((std::to_string(nodes.size()) + " nodes").c_str(), 1020, 1030, TEXT_HEIGHT, COLOR_NODE_COUNT);
-        DrawText((std::to_string(samples) + " samples").c_str(), 1520, 1030, TEXT_HEIGHT, COLOR_NODE_COUNT);
+        static constexpr int TEXT_MARGIN_WIDTH = 20;
 
-        DrawText("[LMB] move goal", 20, 1130, TEXT_HEIGHT, COLOR_KEYMAP);
-        DrawText("[RMB] insert obstacle", 520, 1130, TEXT_HEIGHT, COLOR_KEYMAP);
-        DrawText("[MMB] delete obstacle", 1020, 1130, TEXT_HEIGHT, COLOR_KEYMAP);
-        DrawText("[Scroll] # samples", 1520, 1130, TEXT_HEIGHT, COLOR_KEYMAP);
+        static constexpr int RIBBON_ROW_1_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + (RIBBON_ROW_HEIGHT - TEXT_HEIGHT) / 2;
+        static constexpr int RIBBON_ROW_2_Y = ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT + (RIBBON_ROW_HEIGHT - TEXT_HEIGHT) / 2;
+
+        DrawText(std::string(goal_reached ? "Goal reached" : "Goal not reached").c_str(), 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y, TEXT_HEIGHT, goal_color);
+        DrawText(TextFormat("%2i FPS", fps), 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y, TEXT_HEIGHT, fpsColor(fps));
+        DrawText((std::to_string(nodes.size()) + " nodes").c_str(), 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y, TEXT_HEIGHT, COLOR_NODE_COUNT);
+        DrawText((std::to_string(samples) + " samples").c_str(), 3 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y, TEXT_HEIGHT, COLOR_NODE_COUNT);
+
+        DrawText("[LMB] move goal", 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_KEYMAP);
+        DrawText("[RMB] insert obstacle", 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_KEYMAP);
+        DrawText("[MMB] delete obstacle", 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_KEYMAP);
+        DrawText("[Scroll] # samples", 3 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_KEYMAP);
 
         EndDrawing();
     }
