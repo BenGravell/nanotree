@@ -225,7 +225,7 @@ int main() {
                 nodes.push_back(std::make_shared<Node>(Node{parent, pos, parent->cost_to_come + cost}));
             }
         }
-        const Path path = extractPath(nodes);
+        const Path path = extractPath(nodes, goal);
 
         float cost_to_come_goal = 0.0f;
         for (auto node : path) {
