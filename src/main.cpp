@@ -6,43 +6,10 @@
 #include <random>
 #include <vector>
 
+#include "config.h"
 #include "pride.h"
 
 std::mt19937 rng(std::random_device{}());
-
-static constexpr int OBSTACLE_RADIUS = 100;
-static constexpr float DEVIATION_DISTANCE_MAX = 0.6f * OBSTACLE_RADIUS;
-static constexpr float RADIUS_OF_CURVATURE_MIN = 0.9f * OBSTACLE_RADIUS;
-static constexpr float GOAL_REACHED_RADIUS = 40.0f;
-static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
-
-static constexpr int ENVIRONMENT_WIDTH = 2000;
-static constexpr int ENVIRONMENT_HEIGHT = 1000;
-static constexpr int RIBBON_NUM_COLS = 4;
-static constexpr int RIBBON_NUM_ROWS = 2;
-static constexpr int RIBBON_WIDTH = ENVIRONMENT_WIDTH;
-static constexpr int RIBBON_HEIGHT = 200;
-static constexpr int RIBBON_COL_WIDTH = RIBBON_WIDTH / RIBBON_NUM_COLS;
-static constexpr int RIBBON_ROW_HEIGHT = RIBBON_HEIGHT / RIBBON_NUM_ROWS;
-static constexpr int SCREEN_WIDTH = ENVIRONMENT_WIDTH;
-static constexpr int SCREEN_HEIGHT = ENVIRONMENT_HEIGHT + RIBBON_HEIGHT;
-static constexpr int TEXT_HEIGHT = 40;
-
-static constexpr int OBSTACLE_SPACING_MIN = 10;
-static constexpr int OBSTACLE_DEL_RADIUS = 20;
-
-static constexpr int LINE_WIDTH_PATH = 12;
-static constexpr int LINE_WIDTH_TREE = 4;
-static constexpr int NODE_WIDTH_PATH = 30;
-
-static constexpr Color COLOR_GOAL_REACHED = BLUE;
-static constexpr Color COLOR_GOAL_NOT_REACHED = RED;
-static constexpr Color COLOR_NODE_COUNT = PURPLE;
-static constexpr Color COLOR_BACKGROUND = {16, 16, 16, 255};
-static constexpr Color COLOR_RIBBON_BACKGROUND = {32, 32, 32, 255};
-static constexpr Color COLOR_OBSTACLE = {64, 64, 64, 255};
-static constexpr Color COLOR_PATH = RAYWHITE;
-static constexpr Color COLOR_KEYMAP = RAYWHITE;
 
 // TODO make static constexpr std::array
 const std::vector<int> samples_options = {0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
@@ -103,13 +70,13 @@ std::shared_ptr<Node> chooseParent(const Vector2 pos, const std::vector<std::sha
 }
 
 inline Color fpsColor(const int fps) {
-    if (fps < 15) return RED;
-    if (fps < 30) return GOLD;
-    return BLUE;
+    if (fps < 15) return COLOR_FPS_LOW;
+    if (fps < 30) return COLOR_FPS_MID;
+    return COLOR_FPS_HIGH;
 }
 
 inline Color mapToColor(float x) {
-    x = Remap(x, 0.0f, 1.0f, 0.1f, 0.9f);
+    x = Remap(x, 0.0f, 1.0f, 0.2f, 0.8f);
     const int idx = std::clamp(static_cast<int>(x * 255.0f + 0.5f), 0, 255);
     const auto& rgb = pride_colormap[idx];
     return Color{rgb[0], rgb[1], rgb[2], 255};
@@ -147,7 +114,8 @@ int main() {
     // TODO const goal init
     Vector2 goal = {1000, 500};
 
-    std::vector<Vector2> obstacles = {{820, 260}, {820, 380}, {820, 500}, {820, 620}, {820, 740}, {940, 260}, {940, 740}, {1060, 260}, {1060, 740}, {1180, 260}, {1180, 380}, {1180, 620}, {1180, 740}};
+    std::vector<Vector2> obstacles = {
+        {760, 260}, {760, 380}, {760, 500}, {760, 620}, {760, 740}, {880, 260}, {880, 740}, {1000, 260}, {1000, 740}, {1120, 260}, {1120, 740}, {1240, 260}, {1240, 380}, {1240, 620}, {1240, 740}};
 
     std::vector<std::shared_ptr<Node>> nodes;
     std::vector<std::shared_ptr<Node>> path;
@@ -187,16 +155,16 @@ int main() {
             }
         }
 
+        int scroll = GetMouseWheelMove();
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            int scroll = 0;
             if (mouse_in_inc_num_samples_button) {
                 scroll = 1;
             }
             if (mouse_in_dec_num_samples_button) {
                 scroll = -1;
             }
-            samples = samples_options[std::clamp(int(std::lower_bound(samples_options.begin(), samples_options.end(), samples) - samples_options.begin()) + ((scroll > 0) - (scroll < 0)), 0, int(samples_options.size() - 1))];
-        } else if (int scroll = GetMouseWheelMove()) {
+        }
+        if (scroll != 0) {
             samples = samples_options[std::clamp(int(std::lower_bound(samples_options.begin(), samples_options.end(), samples) - samples_options.begin()) + ((scroll > 0) - (scroll < 0)), 0, int(samples_options.size() - 1))];
         }
 
@@ -310,49 +278,54 @@ int main() {
         DrawCircleV(goal, GOAL_REACHED_RADIUS, Fade(goal_color, 0.8f));
 
         // TODO func DrawRibbon
-        // Ribbon
         DrawRectangle(0, ENVIRONMENT_HEIGHT, ENVIRONMENT_WIDTH, RIBBON_HEIGHT, COLOR_RIBBON_BACKGROUND);
 
         // TODO
-        DrawRectangleLinesEx(inc_num_samples_button, 1, LIGHTGRAY);
-        DrawRectangleLinesEx(dec_num_samples_button, 1, LIGHTGRAY);
+        DrawRectangleLinesEx(place_goal_button, 1, COLOR_KEYMAP);
+        DrawRectangleLinesEx(add_obstacle_button, 1, COLOR_KEYMAP);
+        DrawRectangleLinesEx(del_obstacle_button, 1, COLOR_KEYMAP);
+        DrawRectangleLinesEx(inc_num_samples_button, 1, COLOR_KEYMAP);
+        DrawRectangleLinesEx(dec_num_samples_button, 1, COLOR_KEYMAP);
 
-        for (int y = ENVIRONMENT_HEIGHT; y < SCREEN_HEIGHT; y += RIBBON_ROW_HEIGHT) {
+        for (int y = ENVIRONMENT_HEIGHT + RIBBON_ROW_HEIGHT; y < SCREEN_HEIGHT; y += RIBBON_ROW_HEIGHT) {
             for (int x = 0; x < ENVIRONMENT_WIDTH; x += RIBBON_COL_WIDTH) {
-                DrawRectangleLines(x, y, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT, LIGHTGRAY);
+                DrawRectangleLines(x, y, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT, COLOR_KEYMAP);
             }
         }
 
+        // TODO use the Rectangle objects directly
+        // TODO make class for clickable button to handle color of button and text
         for (int m = 1; m <= 3; ++m) {
             if (m == mode) {
                 int x = (m - 1) * RIBBON_COL_WIDTH;
                 int y = ENVIRONMENT_HEIGHT;
-                DrawRectangle(x, y, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT, LIGHTGRAY);
+                DrawRectangle(x, y, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT, COLOR_KEYMAP);
             }
         }
 
         static constexpr int TEXT_MARGIN_WIDTH = 20;
 
-        static constexpr int RIBBON_ROW_1A_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 5;
-        static constexpr int RIBBON_ROW_1B_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 50;
-        static constexpr int RIBBON_ROW_2_Y = ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT + (RIBBON_ROW_HEIGHT - TEXT_HEIGHT) / 2;
+        static constexpr int RIBBON_ROW_1A_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 10;
+        static constexpr int RIBBON_ROW_1B_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 60;
+        static constexpr int RIBBON_ROW_2_Y = ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT + (RIBBON_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
 
-        DrawText(std::string(goal_reached ? "Goal reached" : "Goal not reached").c_str(), 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, goal_color);
-        DrawText(TextFormat("%2i FPS", fps), 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, fpsColor(fps));
-        DrawText((std::to_string(nodes.size()) + " nodes").c_str(), 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_NODE_COUNT);
-        DrawText((std::to_string(samples) + " samples").c_str(), 3 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT, COLOR_NODE_COUNT);
+        // TODO center all text
+        DrawText(std::string(goal_reached ? "Goal reached" : "Goal not reached").c_str(), 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, goal_color);
+        DrawText(TextFormat("%2i FPS", fps), 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, fpsColor(fps));
+        DrawText((std::to_string(nodes.size()) + " nodes").c_str(), 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, COLOR_NODE_COUNT);
+        DrawText((std::to_string(samples) + " samples").c_str(), 3 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, COLOR_NODE_COUNT);
 
-        DrawText("Move goal", 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT, (mode == 1) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
-        DrawText("Insert obstacle", 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT, (mode == 2) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
-        DrawText("Delete obstacle", 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT, (mode == 3) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
-        DrawText("- samples", 3.0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT, COLOR_KEYMAP);
-        DrawText("+ samples", 3.5 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT, COLOR_KEYMAP);
+        DrawText("Move goal", 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_STAT, (mode == 1) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("Insert obstacle", 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_STAT, (mode == 2) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("Delete obstacle", 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_STAT, (mode == 3) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("- samples", 3.0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_STAT, COLOR_KEYMAP);
+        DrawText("+ samples", 3.5 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_STAT, COLOR_KEYMAP);
 
-        DrawText("[LMB]", 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT, (mode == 1) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
-        DrawText("[RMB]", 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT, (mode == 2) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
-        DrawText("[MMB]", 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT, (mode == 3) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
-        DrawText("[Scroll]", 3.0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT, COLOR_KEYMAP);
-        DrawText("[Scroll]", 3.5 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT, COLOR_KEYMAP);
+        DrawText("[LMB to engage]", 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, (mode == 1) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("[LMB to engage] or [RMB]", 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, (mode == 2) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("[LMB to engage] or [MMB]", 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, (mode == 3) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+        DrawText("[LMB here] or [Scroll Up]", 3.0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, COLOR_KEYMAP);
+        DrawText("[LMB here] or [Scroll Down]", 3.5 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, COLOR_KEYMAP);
 
         EndDrawing();
     }
