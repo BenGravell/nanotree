@@ -1,5 +1,6 @@
 #include <raylib.h>
 
+// Physical elements
 static constexpr int OBSTACLE_RADIUS = 100;
 static constexpr float DEVIATION_DISTANCE_MAX = 0.6f * OBSTACLE_RADIUS;
 static constexpr float RADIUS_OF_CURVATURE_MIN = 0.9f * OBSTACLE_RADIUS;
@@ -9,6 +10,13 @@ static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
 static constexpr int OBSTACLE_SPACING_MIN = 10;
 static constexpr int OBSTACLE_DEL_RADIUS = 20;
 
+static constexpr Vector2 DEFAULT_START = {100, 500};
+static constexpr Vector2 DEFAULT_GOAL = {1000, 500};
+
+const std::vector<Vector2> DEFAULT_OBSTACLES = {
+        {760, 260}, {760, 380}, {760, 500}, {760, 620}, {760, 740}, {880, 260}, {880, 740}, {1000, 260}, {1000, 740}, {1120, 260}, {1120, 740}, {1240, 260}, {1240, 380}, {1240, 620}, {1240, 740}};
+
+// UI sizes
 static constexpr int ENVIRONMENT_WIDTH = 2000;
 static constexpr int ENVIRONMENT_HEIGHT = 1000;
 static constexpr int RIBBON_NUM_COLS = 4;
@@ -26,6 +34,7 @@ static constexpr int LINE_WIDTH_PATH = 12;
 static constexpr int LINE_WIDTH_TREE = 4;
 static constexpr int NODE_WIDTH_PATH = 30;
 
+// Colors
 static constexpr Color COLOR_BACKGROUND = {16, 16, 16, 255};
 static constexpr Color COLOR_RIBBON_BACKGROUND = {32, 32, 32, 255};
 static constexpr Color COLOR_OBSTACLE = {96, 96, 96, 255};

@@ -20,6 +20,20 @@ struct Node {
     float cost_to_come;
 };
 
+using Nodes = std::vector<std::shared_ptr<Node>>;
+using Path = std::vector<std::shared_ptr<Node>>;
+
+Path extractPath(const Nodes& nodes, const Vector2 goal) {
+    Path path;
+    std::shared_ptr<Node> node = *std::min_element(nodes.begin(), nodes.end(), [&goal](std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) { return Vector2Distance(a->pos, goal) < Vector2Distance(b->pos, goal); });
+    while (node->parent) {
+        path.push_back(node);
+        node = node->parent;
+    }
+    std::reverse(path.begin(), path.end());
+    return path;
+}
+
 bool insideEnvironment(const Vector2 pos) {
     return (0.0f < pos.x) && (pos.x < ENVIRONMENT_WIDTH) && (0.0f < pos.y) && (pos.y < ENVIRONMENT_HEIGHT);
 }
@@ -111,17 +125,11 @@ int main() {
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "nanotree");
 
-    // TODO const goal init
-    Vector2 goal = {1000, 500};
-
-    std::vector<Vector2> obstacles = {
-        {760, 260}, {760, 380}, {760, 500}, {760, 620}, {760, 740}, {880, 260}, {880, 740}, {1000, 260}, {1000, 740}, {1120, 260}, {1120, 740}, {1240, 260}, {1240, 380}, {1240, 620}, {1240, 740}};
-
-    std::vector<std::shared_ptr<Node>> nodes;
-    std::vector<std::shared_ptr<Node>> path;
+    Vector2 goal = DEFAULT_GOAL;
+    std::vector<Vector2> obstacles = DEFAULT_OBSTACLES;
+    Nodes nodes;
 
     int samples = 2000;
-
     int mode = 1;
 
     const Rectangle place_goal_button = {0 + 0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
@@ -194,8 +202,7 @@ int main() {
 
         const bool do_update = problem_changed || nodes.empty();
         if (do_update) {
-            // TODO const start node
-            nodes = {std::make_shared<Node>(Node{nullptr, {100, 500}, 0.0f})};
+            nodes = {std::make_shared<Node>(Node{nullptr, DEFAULT_START, 0.0f})};
 
             for (int i = 0; i <= samples; ++i) {
                 Vector2 pos = (i == samples) ? goal : sample(goal);
@@ -217,16 +224,8 @@ int main() {
                 const float cost = Vector2Distance(parent->pos, pos);
                 nodes.push_back(std::make_shared<Node>(Node{parent, pos, parent->cost_to_come + cost}));
             }
-
-            // TODO func extractPath(nodes, goal)
-            path.clear();
-            std::shared_ptr<Node> node = *std::min_element(nodes.begin(), nodes.end(), [&goal](std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) { return Vector2Distance(a->pos, goal) < Vector2Distance(b->pos, goal); });
-            while (node->parent) {
-                path.push_back(node);
-                node = node->parent;
-            }
-            std::reverse(path.begin(), path.end());
         }
+        const Path path = extractPath(nodes);
 
         float cost_to_come_goal = 0.0f;
         for (auto node : path) {
