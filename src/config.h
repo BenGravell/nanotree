@@ -1,4 +1,8 @@
+#pragma once
+
 #include <raylib.h>
+
+#include <array>
 
 // Physical elements
 static constexpr int OBSTACLE_RADIUS = 100;
@@ -14,7 +18,9 @@ static constexpr Vector2 DEFAULT_START = {100, 500};
 static constexpr Vector2 DEFAULT_GOAL = {1000, 500};
 
 const std::vector<Vector2> DEFAULT_OBSTACLES = {
-        {760, 260}, {760, 380}, {760, 500}, {760, 620}, {760, 740}, {880, 260}, {880, 740}, {1000, 260}, {1000, 740}, {1120, 260}, {1120, 740}, {1240, 260}, {1240, 380}, {1240, 620}, {1240, 740}};
+    {760, 260}, {760, 380}, {760, 500}, {760, 620}, {760, 740}, {880, 260}, {880, 740}, {1000, 260}, {1000, 740}, {1120, 260}, {1120, 740}, {1240, 260}, {1240, 380}, {1240, 620}, {1240, 740}};
+
+static constexpr std::array<int, 11> NUM_SAMPLES_OPTIONS = {0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
 
 // UI sizes
 static constexpr int ENVIRONMENT_WIDTH = 2000;

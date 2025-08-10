@@ -7,135 +7,20 @@
 #include <vector>
 
 #include "config.h"
-#include "pride.h"
-
-std::mt19937 rng(std::random_device{}());
-
-// TODO make static constexpr std::array
-const std::vector<int> samples_options = {0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
-
-struct Node {
-    std::shared_ptr<Node> parent;
-    Vector2 pos;
-    float cost_to_come;
-};
-
-using Nodes = std::vector<std::shared_ptr<Node>>;
-using Path = std::vector<std::shared_ptr<Node>>;
-
-struct TargetDistanceComparator {
-    Vector2 target;
-    bool operator()(const std::shared_ptr<Node>& a, const std::shared_ptr<Node>& b) const {
-        return Vector2Distance(a->pos, target) < Vector2Distance(b->pos, target);
-    }
-};
-
-std::shared_ptr<Node> getNearest(const Vector2 target, const Nodes& nodes) {
-    return *std::min_element(nodes.begin(), nodes.end(), TargetDistanceComparator{target});
-}
-
-Path extractPath(const Vector2 target, const Nodes& nodes) {
-    Path path;
-    std::shared_ptr<Node> node = getNearest(target, nodes);
-    while (node->parent) {
-        path.push_back(node);
-        node = node->parent;
-    }
-    std::reverse(path.begin(), path.end());
-    return path;
-}
-
-bool insideEnvironment(const Vector2 pos) {
-    return (0.0f < pos.x) && (pos.x < ENVIRONMENT_WIDTH) && (0.0f < pos.y) && (pos.y < ENVIRONMENT_HEIGHT);
-}
-
-Vector2 clampToEnvironment(const Vector2 pos) {
-    return Vector2Clamp(pos, {0, 0}, {ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT});
-}
-
-Vector2 sample(const Vector2 goal) {
-    static std::uniform_real_distribution<float> dist_select(0.0f, 1.0f);
-    static std::uniform_real_distribution<float> dist_x(0.0f, ENVIRONMENT_WIDTH);
-    static std::uniform_real_distribution<float> dist_y(0.0f, ENVIRONMENT_HEIGHT);
-    static std::uniform_real_distribution<float> dist_goal_x(-GOAL_REACHED_RADIUS, GOAL_REACHED_RADIUS);
-    static std::uniform_real_distribution<float> dist_goal_y(-GOAL_REACHED_RADIUS, GOAL_REACHED_RADIUS);
-
-    if (dist_select(rng) < GOAL_SAMPLE_PROBABILITY) {
-        return clampToEnvironment(goal + Vector2{dist_goal_x(rng), dist_goal_y(rng)});
-    }
-
-    return Vector2{dist_x(rng), dist_y(rng)};
-}
-
-Vector2 attractByDistance(const Vector2 pos, const std::shared_ptr<Node> parent) {
-    const Vector2 direction = Vector2Normalize(pos - parent->pos);
-    const float distance = std::min(DEVIATION_DISTANCE_MAX, Vector2Distance(parent->pos, pos));
-    return Vector2Add(parent->pos, direction * distance);
-}
-
-Vector2 attractByAngle(const Vector2 pos, const std::shared_ptr<Node> parent) {
-    const Vector2 x = parent->parent ? parent->parent->pos : parent->pos - (pos - parent->pos);
-    const Vector2 y = parent->pos;
-    const Vector2 z = pos;
-    const Vector2 direction_yz = Vector2Normalize(z - y);
-    const Vector2 direction_xy = Vector2Normalize(y - x);
-    const float distance_yz = Vector2Distance(y, z);
-    const float distance_xy = Vector2Distance(x, y);
-    const float deviation_angle_max = std::asin(std::clamp(0.5f * (distance_xy + distance_yz) / RADIUS_OF_CURVATURE_MIN, 0.0f, 1.0f));
-    const float deviation_angle = std::clamp(Vector2Angle(direction_xy, direction_yz), -deviation_angle_max, deviation_angle_max);
-    const Vector2 direction_out = Vector2Rotate(direction_xy, deviation_angle);
-    return Vector2Add(parent->pos, direction_out * distance_yz);
-}
-
-
-
-Color fpsColor(const int fps) {
-    if (fps < 15) return COLOR_FPS_LOW;
-    if (fps < 30) return COLOR_FPS_MID;
-    return COLOR_FPS_HIGH;
-}
-
-Color mapToColor(float x) {
-    x = Remap(x, 0.0f, 1.0f, 0.2f, 0.8f);
-    const int idx = std::clamp(static_cast<int>(x * 255.0f + 0.5f), 0, 255);
-    const auto& rgb = pride_colormap[idx];
-    return Color{rgb[0], rgb[1], rgb[2], 255};
-}
-
-float normalizeCost(const float c, const float c_goal, const float c_max) {
-    float x = 0.0f;
-    if (c < c_goal) {
-        x = Remap(c / c_goal, 0.0f, 1.0f, 0.0f, 0.5f);
-    } else {
-        x = Remap((c - c_goal) / (c_max - c_goal), 0.0f, 1.0f, 0.5f, 1.0f);
-    }
-    return std::clamp(x, 0.0f, 1.0f);
-}
-
-void DrawSelector(const Vector2 pos, const float radius, const float ring_width_frac, const int num_segments, const float selector_orbit_period_sec) {
-    const float delta_angle = 360.0f / (2.0f * num_segments);
-    const float ring_outer_radius = radius;
-    const float ring_width = ring_width_frac * radius;
-    const float ring_inner_radius = ring_outer_radius - ring_width;
-    const float current_time = GetTime();
-    const float offset_angle = fmodf(current_time / selector_orbit_period_sec, 1.0f) * 360.0f;
-    DrawCircleV(pos, radius, Fade(GRAY, 0.4f));
-    DrawRing(pos, ring_outer_radius - ring_width, ring_outer_radius, 0, 360, 0, Fade(GRAY, 0.6f));
-    for (int i = 0; i < num_segments; ++i) {
-        const float start_angle = 2 * i * delta_angle + offset_angle;
-        DrawRing(pos, ring_inner_radius, ring_outer_radius, start_angle, start_angle + delta_angle, 0, LIGHTGRAY);
-    }
-}
+#include "draw.h"
+#include "obstacle.h"
+#include "rng.h"
+#include "tree.h"
 
 int main() {
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "nanotree");
 
     Vector2 goal = DEFAULT_GOAL;
-    std::vector<Vector2> obstacles = DEFAULT_OBSTACLES;
-    Nodes nodes;
+    Obstacles obstacles = DEFAULT_OBSTACLES;
+    Tree tree;
 
-    int samples = 2000;
+    int num_samples = 2000;
     int mode = 1;
 
     const Rectangle place_goal_button = {0 + 0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
@@ -179,7 +64,10 @@ int main() {
             }
         }
         if (scroll != 0) {
-            samples = samples_options[std::clamp(int(std::lower_bound(samples_options.begin(), samples_options.end(), samples) - samples_options.begin()) + ((scroll > 0) - (scroll < 0)), 0, int(samples_options.size() - 1))];
+            const int scroll_sign = (scroll > 0) - (scroll < 0);
+            const int old_idx = int(std::lower_bound(NUM_SAMPLES_OPTIONS.begin(), NUM_SAMPLES_OPTIONS.end(), num_samples) - NUM_SAMPLES_OPTIONS.begin());
+            const int new_idx = std::clamp(old_idx + scroll_sign, 0, int(NUM_SAMPLES_OPTIONS.size() - 1));
+            num_samples = NUM_SAMPLES_OPTIONS[new_idx];
         }
 
         const bool mouse_in_environment = insideEnvironment(mouse);
@@ -206,77 +94,26 @@ int main() {
             }
         }
 
-        const bool do_update = problem_changed || nodes.empty();
-        if (do_update) {
-            nodes = {std::make_shared<Node>(Node{nullptr, DEFAULT_START, 0.0f})};
-
-            for (int i = 0; i <= samples; ++i) {
-                Vector2 pos = (i == samples) ? goal : sample(goal);
-                std::shared_ptr<Node> parent = getNearest(pos, nodes);
-                pos = clampToEnvironment(pos);
-                pos = attractByDistance(pos, parent);
-                pos = attractByAngle(pos, parent);
-
-                if (!insideEnvironment(pos)) {
-                    continue;
-                }
-
-                if (std::any_of(obstacles.begin(), obstacles.end(), [&pos](auto& obs) { return Vector2Distance(obs, pos) < OBSTACLE_RADIUS; })) {
-                    continue;
-                }
-
-                const float cost = Vector2Distance(parent->pos, pos);
-                nodes.push_back(std::make_shared<Node>(Node{parent, pos, parent->cost_to_come + cost}));
-            }
+        const bool grow_new_tree = problem_changed || tree.nodes.empty();
+        if (grow_new_tree) {
+            tree.nodes = {std::make_shared<Node>(Node{nullptr, DEFAULT_START, 0.0f})};
+            tree.grow(num_samples, goal, obstacles);
         }
-        const Path path = extractPath(goal, nodes);
+        const Path path = extractPath(goal, tree.nodes);
 
-        float cost_to_come_goal = 0.0f;
-        for (auto node : path) {
-            cost_to_come_goal = std::max(cost_to_come_goal, node->cost_to_come);
-        }
-        float cost_to_come_max = 0.0f;
-        for (auto node : nodes) {
-            cost_to_come_max = std::max(cost_to_come_max, node->cost_to_come);
-        }
-
-        const bool goal_reached = Vector2Distance(path.empty() ? nodes.front()->pos : path.back()->pos, goal) < GOAL_REACHED_RADIUS;
+        const bool goal_reached = Vector2Distance(path.empty() ? tree.nodes.front()->pos : path.back()->pos, goal) < GOAL_REACHED_RADIUS;
 
         const int fps = GetFPS();
 
         // DRAWING SECTION
         BeginDrawing();
         DrawRectangle(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_BACKGROUND);
+        DrawObstacles(obstacles);
+        DrawTree(tree, path);
+        DrawPath(path);
+        DrawSelectorByMode(mouse, mode);
 
-        for (const Vector2 obstacle : obstacles) {
-            DrawCircleV(obstacle, OBSTACLE_RADIUS, COLOR_OBSTACLE);
-        }
-
-        // TODO func DrawTree
-        for (const auto node : nodes) {
-            if (!node->parent) {
-                continue;
-            }
-            const Color color = mapToColor(normalizeCost(node->cost_to_come, cost_to_come_goal, cost_to_come_max));
-            DrawLineEx(node->parent->pos, node->pos, LINE_WIDTH_TREE, color);
-        }
-
-        // TODO func DrawPath
-        for (const auto node : path) {
-            DrawLineEx(node->parent->pos, node->pos, LINE_WIDTH_PATH, COLOR_PATH);
-            DrawCircleV(node->pos, NODE_WIDTH_PATH / 2, COLOR_PATH);
-        }
-
-        if (mode == 1) {
-            DrawSelector(mouse, GOAL_REACHED_RADIUS, 0.4f, 8, 4.0f);
-        }
-        if (mode == 2) {
-            DrawSelector(mouse, OBSTACLE_RADIUS, 0.2f, 12, 5.0f);
-        }
-        if (mode == 3) {
-            DrawSelector(mouse, OBSTACLE_DEL_RADIUS, 0.6f, 6, 3.0f);
-        }
-
+        // TODO func DrawGoal
         const Color goal_color = goal_reached ? COLOR_GOAL_REACHED : COLOR_GOAL_NOT_REACHED;
         DrawCircleV(goal, GOAL_REACHED_RADIUS, Fade(goal_color, 0.8f));
 
@@ -315,8 +152,8 @@ int main() {
         // TODO center all text
         DrawText(std::string(goal_reached ? "Goal reached" : "Goal not reached").c_str(), 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, goal_color);
         DrawText(TextFormat("%2i FPS", fps), 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, fpsColor(fps));
-        DrawText((std::to_string(nodes.size()) + " nodes").c_str(), 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, COLOR_NODE_COUNT);
-        DrawText((std::to_string(samples) + " samples").c_str(), 3 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, COLOR_NODE_COUNT);
+        DrawText((std::to_string(tree.nodes.size()) + " nodes").c_str(), 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, COLOR_NODE_COUNT);
+        DrawText((std::to_string(num_samples) + " samples").c_str(), 3 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, COLOR_NODE_COUNT);
 
         DrawText("Move goal", 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_STAT, (mode == 1) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
         DrawText("Insert obstacle", 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_STAT, (mode == 2) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
@@ -327,8 +164,8 @@ int main() {
         DrawText("[LMB to engage]", 0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, (mode == 1) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
         DrawText("[LMB to engage] or [RMB]", 1 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, (mode == 2) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
         DrawText("[LMB to engage] or [MMB]", 2 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, (mode == 3) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
-        DrawText("[LMB here] or [Scroll Up]", 3.0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, COLOR_KEYMAP);
-        DrawText("[LMB here] or [Scroll Down]", 3.5 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, COLOR_KEYMAP);
+        DrawText("[LMB here] or [Scroll]", 3.0 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, COLOR_KEYMAP);
+        DrawText("[LMB here] or [Scroll]", 3.5 * 500 + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL, COLOR_KEYMAP);
 
         EndDrawing();
     }
