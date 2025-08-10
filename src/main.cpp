@@ -23,9 +23,20 @@ struct Node {
 using Nodes = std::vector<std::shared_ptr<Node>>;
 using Path = std::vector<std::shared_ptr<Node>>;
 
-Path extractPath(const Nodes& nodes, const Vector2 goal) {
+struct TargetDistanceComparator {
+    Vector2 target;
+    bool operator()(const std::shared_ptr<Node>& a, const std::shared_ptr<Node>& b) const {
+        return Vector2Distance(a->pos, target) < Vector2Distance(b->pos, target);
+    }
+};
+
+std::shared_ptr<Node> getNearest(const Vector2 target, const Nodes& nodes) {
+    return *std::min_element(nodes.begin(), nodes.end(), TargetDistanceComparator{target});
+}
+
+Path extractPath(const Vector2 target, const Nodes& nodes) {
     Path path;
-    std::shared_ptr<Node> node = *std::min_element(nodes.begin(), nodes.end(), [&goal](std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) { return Vector2Distance(a->pos, goal) < Vector2Distance(b->pos, goal); });
+    std::shared_ptr<Node> node = getNearest(target, nodes);
     while (node->parent) {
         path.push_back(node);
         node = node->parent;
@@ -76,27 +87,22 @@ Vector2 attractByAngle(const Vector2 pos, const std::shared_ptr<Node> parent) {
     return Vector2Add(parent->pos, direction_out * distance_yz);
 }
 
-std::shared_ptr<Node> chooseParent(const Vector2 pos, const std::vector<std::shared_ptr<Node>>& nodes) {
-    return *std::min_element(nodes.begin(), nodes.end(),
-                             [&pos](const std::shared_ptr<Node>& a, const std::shared_ptr<Node>& b) {
-                                 return Vector2Distance(a->pos, pos) < Vector2Distance(b->pos, pos);
-                             });
-}
 
-inline Color fpsColor(const int fps) {
+
+Color fpsColor(const int fps) {
     if (fps < 15) return COLOR_FPS_LOW;
     if (fps < 30) return COLOR_FPS_MID;
     return COLOR_FPS_HIGH;
 }
 
-inline Color mapToColor(float x) {
+Color mapToColor(float x) {
     x = Remap(x, 0.0f, 1.0f, 0.2f, 0.8f);
     const int idx = std::clamp(static_cast<int>(x * 255.0f + 0.5f), 0, 255);
     const auto& rgb = pride_colormap[idx];
     return Color{rgb[0], rgb[1], rgb[2], 255};
 }
 
-inline float normalizeCost(const float c, const float c_goal, const float c_max) {
+float normalizeCost(const float c, const float c_goal, const float c_max) {
     float x = 0.0f;
     if (c < c_goal) {
         x = Remap(c / c_goal, 0.0f, 1.0f, 0.0f, 0.5f);
@@ -206,9 +212,7 @@ int main() {
 
             for (int i = 0; i <= samples; ++i) {
                 Vector2 pos = (i == samples) ? goal : sample(goal);
-
-                std::shared_ptr<Node> parent = chooseParent(pos, nodes);
-
+                std::shared_ptr<Node> parent = getNearest(pos, nodes);
                 pos = clampToEnvironment(pos);
                 pos = attractByDistance(pos, parent);
                 pos = attractByAngle(pos, parent);
@@ -225,7 +229,7 @@ int main() {
                 nodes.push_back(std::make_shared<Node>(Node{parent, pos, parent->cost_to_come + cost}));
             }
         }
-        const Path path = extractPath(nodes, goal);
+        const Path path = extractPath(goal, nodes);
 
         float cost_to_come_goal = 0.0f;
         for (auto node : path) {
