@@ -29,17 +29,42 @@ struct TargetDistanceComparator {
     }
 };
 
+struct TargetCostComparator {
+    Vector2 target;
+
+    bool operator()(const std::shared_ptr<Node>& a, const std::shared_ptr<Node>& b) const {
+        return (a->cost_to_come + Vector2Distance(a->pos, target)) < (b->cost_to_come + Vector2Distance(b->pos, target));
+    }
+};
+
 std::shared_ptr<Node> getNearest(const Vector2 target, const Nodes& nodes) {
     return *std::min_element(nodes.begin(), nodes.end(), TargetDistanceComparator{target});
 }
 
+std::shared_ptr<Node> getCheapest(const Vector2 target, const Nodes& nodes, const float max_dist) {
+    std::vector<std::shared_ptr<Node>> within_range;
+    within_range.reserve(nodes.size());
+    for (const auto& node : nodes) {
+        if (Vector2Distance(node->pos, target) <= max_dist) {
+            within_range.push_back(node);
+        }
+    }
+
+    if (!within_range.empty()) {
+        return *std::min_element(within_range.begin(), within_range.end(), TargetCostComparator{target});
+    }
+
+    return getNearest(target, nodes);
+}
+
 Path extractPath(const Vector2 target, const Nodes& nodes) {
     Path path;
-    std::shared_ptr<Node> node = getNearest(target, nodes);
+    std::shared_ptr<Node> node = getCheapest(target, nodes, GOAL_REACHED_RADIUS);
     while (node->parent) {
         path.push_back(node);
         node = node->parent;
     }
+    path.push_back(node);
     std::reverse(path.begin(), path.end());
     return path;
 }
@@ -84,7 +109,7 @@ struct Tree {
     void grow(const int num_samples, const Vector2 goal, const Obstacles& obstacles) {
         for (int i = 0; i <= num_samples; ++i) {
             Vector2 pos = (i == num_samples) ? goal : sample(goal);
-            std::shared_ptr<Node> parent = getNearest(pos, nodes);
+            std::shared_ptr<Node> parent = getCheapest(pos, nodes, CHEAP_PARENT_SEARCH_RADIUS);
             pos = clampToEnvironment(pos);
             pos = attractByDistance(pos, parent);
             pos = attractByAngle(pos, parent);

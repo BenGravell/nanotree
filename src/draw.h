@@ -66,14 +66,14 @@ void DrawObstacles(const Obstacles& obstacles) {
 
 void DrawTree(const Tree& tree, const Path& path) {
     float cost_to_come_goal = 0.0f;
-    for (auto node : path) {
+    for (const auto& node : path) {
         cost_to_come_goal = std::max(cost_to_come_goal, node->cost_to_come);
     }
     float cost_to_come_max = 0.0f;
-    for (auto node : tree.nodes) {
+    for (const auto& node : tree.nodes) {
         cost_to_come_max = std::max(cost_to_come_max, node->cost_to_come);
     }
-    for (const auto node : tree.nodes) {
+    for (const auto& node : tree.nodes) {
         if (!node->parent) {
             continue;
         }
@@ -83,7 +83,10 @@ void DrawTree(const Tree& tree, const Path& path) {
 }
 
 void DrawPath(const Path& path) {
-    for (const auto node : path) {
+    for (const auto& node : path) {
+        if (!node->parent) {
+            continue;
+        }
         DrawLineEx(node->parent->pos, node->pos, LINE_WIDTH_PATH, COLOR_PATH);
         DrawCircleV(node->pos, NODE_WIDTH_PATH / 2, COLOR_PATH);
     }
