@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include <random>
 #include <vector>
 
@@ -12,6 +13,50 @@
 #include "obstacle.h"
 #include "rng.h"
 #include "tree.h"
+
+
+// TODO these rectangles should not be globals...
+
+const Rectangle place_goal_button = {0 + 0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+const Rectangle add_obstacle_button = {0 + 1 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+const Rectangle del_obstacle_button = {0 + 2 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+const Rectangle dec_num_samples_button = {0 + 3 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
+const Rectangle inc_num_samples_button = {0 + 3.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
+
+const Rectangle ribbon_row_2_col_0 = {0 + 0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+const Rectangle ribbon_row_2_col_1 = {0 + 1 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+const Rectangle ribbon_row_2_col_2 = {0 + 2 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+const Rectangle ribbon_row_2_col_3 = {0 + 3 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+
+const std ::vector<Rectangle> ribbon_rectangles = {place_goal_button,
+                                                   add_obstacle_button,
+                                                   del_obstacle_button,
+                                                   inc_num_samples_button,
+                                                   dec_num_samples_button,
+                                                   ribbon_row_2_col_0,
+                                                   ribbon_row_2_col_1,
+                                                   ribbon_row_2_col_2,
+                                                   ribbon_row_2_col_3};
+
+
+std::optional<SelectorMode> getSelectorMode(const Vector2 mouse) {
+    const bool mouse_in_place_goal_button = CheckCollisionPointRec(mouse, place_goal_button);
+    const bool mouse_in_add_obstacle_button = CheckCollisionPointRec(mouse, add_obstacle_button);
+    const bool mouse_in_del_obstacle_button = CheckCollisionPointRec(mouse, del_obstacle_button);
+
+    // TODO refactor to switch statement
+    if (mouse_in_place_goal_button) {
+        return SelectorMode::PLACE_GOAL;
+    }
+    if (mouse_in_add_obstacle_button) {
+        return SelectorMode::ADD_OBSTACLE;
+    }
+    if (mouse_in_del_obstacle_button) {
+        return SelectorMode::DEL_OBSTACLE;
+    }
+    return std::nullopt;
+}
+
 
 int main() {
     SetTraceLogLevel(LOG_ERROR);
@@ -23,36 +68,11 @@ int main() {
     Path path;
 
     int num_samples = 2000;
-
     SelectorMode mode = SelectorMode::PLACE_GOAL;
-
-    const Rectangle place_goal_button = {0 + 0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
-    const Rectangle add_obstacle_button = {0 + 1 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
-    const Rectangle del_obstacle_button = {0 + 2 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
-    const Rectangle dec_num_samples_button = {0 + 3 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
-    const Rectangle inc_num_samples_button = {0 + 3.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
-
-    const Rectangle ribbon_row_2_col_0 = {0 + 0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
-    const Rectangle ribbon_row_2_col_1 = {0 + 1 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
-    const Rectangle ribbon_row_2_col_2 = {0 + 2 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
-    const Rectangle ribbon_row_2_col_3 = {0 + 3 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
-
-    const std ::vector<Rectangle> ribbon_rectangles = {place_goal_button,
-                                                       add_obstacle_button,
-                                                       del_obstacle_button,
-                                                       inc_num_samples_button,
-                                                       dec_num_samples_button,
-                                                       ribbon_row_2_col_0,
-                                                       ribbon_row_2_col_1,
-                                                       ribbon_row_2_col_2,
-                                                       ribbon_row_2_col_3};
 
     while (!WindowShouldClose()) {
         Vector2 mouse = GetMousePosition();
 
-        const bool mouse_in_place_goal_button = CheckCollisionPointRec(mouse, place_goal_button);
-        const bool mouse_in_add_obstacle_button = CheckCollisionPointRec(mouse, add_obstacle_button);
-        const bool mouse_in_del_obstacle_button = CheckCollisionPointRec(mouse, del_obstacle_button);
         const bool mouse_in_inc_num_samples_button = CheckCollisionPointRec(mouse, inc_num_samples_button);
         const bool mouse_in_dec_num_samples_button = CheckCollisionPointRec(mouse, dec_num_samples_button);
 
@@ -60,15 +80,11 @@ int main() {
         const bool is_down_rmb = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
         const bool is_down_mmb = IsMouseButtonDown(MOUSE_BUTTON_MIDDLE);
 
+        // TODO refactor for brevity
         if (is_down_lmb) {
-            if (mouse_in_place_goal_button) {
-                mode = SelectorMode::PLACE_GOAL;
-            }
-            if (mouse_in_add_obstacle_button) {
-                mode = SelectorMode::ADD_OBSTACLE;
-            }
-            if (mouse_in_del_obstacle_button) {
-                mode = SelectorMode::DEL_OBSTACLE;
+            std::optional<SelectorMode> mode_opt = getSelectorMode(mouse);
+            if (mode_opt) {
+                mode = mode_opt.value();
             }
         }
 
