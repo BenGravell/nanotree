@@ -8,6 +8,7 @@
 
 #include "config.h"
 #include "draw.h"
+#include "mode.h"
 #include "obstacle.h"
 #include "rng.h"
 #include "tree.h"
@@ -23,8 +24,7 @@ int main() {
 
     int num_samples = 2000;
 
-    // TODO enum class
-    int mode = 1;
+    SelectorMode mode = SelectorMode::PLACE_GOAL;
 
     const Rectangle place_goal_button = {0 + 0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
     const Rectangle add_obstacle_button = {0 + 1 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
@@ -36,6 +36,16 @@ int main() {
     const Rectangle ribbon_row_2_col_1 = {0 + 1 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
     const Rectangle ribbon_row_2_col_2 = {0 + 2 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
     const Rectangle ribbon_row_2_col_3 = {0 + 3 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+
+    const std ::vector<Rectangle> ribbon_rectangles = {place_goal_button,
+                                                       add_obstacle_button,
+                                                       del_obstacle_button,
+                                                       inc_num_samples_button,
+                                                       dec_num_samples_button,
+                                                       ribbon_row_2_col_0,
+                                                       ribbon_row_2_col_1,
+                                                       ribbon_row_2_col_2,
+                                                       ribbon_row_2_col_3};
 
     while (!WindowShouldClose()) {
         Vector2 mouse = GetMousePosition();
@@ -52,13 +62,13 @@ int main() {
 
         if (is_down_lmb) {
             if (mouse_in_place_goal_button) {
-                mode = 1;
+                mode = SelectorMode::PLACE_GOAL;
             }
             if (mouse_in_add_obstacle_button) {
-                mode = 2;
+                mode = SelectorMode::ADD_OBSTACLE;
             }
             if (mouse_in_del_obstacle_button) {
-                mode = 3;
+                mode = SelectorMode::DEL_OBSTACLE;
             }
         }
 
@@ -82,19 +92,19 @@ int main() {
         const bool mouse_in_environment = insideEnvironment(mouse);
         bool problem_changed = false;
         if (mouse_in_environment) {
-            if (is_down_lmb && mode == 1) {
+            if (is_down_lmb && mode == SelectorMode::PLACE_GOAL) {
                 goal = selector_pos;
                 problem_changed = true;
             }
 
-            if ((is_down_lmb && mode == 2) || is_down_rmb) {
+            if ((is_down_lmb && mode == SelectorMode::ADD_OBSTACLE) || is_down_rmb) {
                 if (std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, selector_pos) < OBSTACLE_SPACING_MIN; })) {
                     obstacles.push_back(selector_pos);
                 }
                 problem_changed = true;
             }
 
-            if ((is_down_lmb && mode == 3) || is_down_mmb) {
+            if ((is_down_lmb && mode == SelectorMode::DEL_OBSTACLE) || is_down_mmb) {
                 obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, selector_pos) < (OBSTACLE_RADIUS + OBSTACLE_DEL_RADIUS); }), obstacles.end());
                 problem_changed = true;
             }
@@ -120,15 +130,6 @@ int main() {
         DrawSelectorByMode(selector_pos, mode);
         DrawGoal(goal, goal_reached);
 
-        const std ::vector<Rectangle> ribbon_rectangles = {place_goal_button,
-                                                           add_obstacle_button,
-                                                           del_obstacle_button,
-                                                           inc_num_samples_button,
-                                                           dec_num_samples_button,
-                                                           ribbon_row_2_col_0,
-                                                           ribbon_row_2_col_1,
-                                                           ribbon_row_2_col_2,
-                                                           ribbon_row_2_col_3};
         DrawRibbon(tree,
                    num_samples,
                    goal_reached,

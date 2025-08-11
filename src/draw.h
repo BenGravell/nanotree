@@ -4,6 +4,7 @@
 #include <raymath.h>
 
 #include "config.h"
+#include "mode.h"
 #include "obstacle.h"
 #include "pride.h"
 #include "tree.h"
@@ -31,30 +32,39 @@ float normalizeCost(const float c, const float c_goal, const float c_max) {
     return std::clamp(x, 0.0f, 1.0f);
 }
 
-void DrawSelector(const Vector2 pos, const float radius, const float ring_width_frac, const int num_segments, const float selector_orbit_period_sec) {
-    const float delta_angle = 360.0f / (2.0f * num_segments);
-    const float ring_outer_radius = radius;
-    const float ring_width = ring_width_frac * radius;
+struct SelectorParams {
+    float radius;
+    float ring_width_frac;
+    int num_segments;
+    float period_sec;
+};
+
+void DrawSelector(const Vector2 pos, const SelectorParams params) {
+    const float delta_angle = 360.0f / (2.0f * params.num_segments);
+    const float ring_outer_radius = params.radius;
+    const float ring_width = params.ring_width_frac * params.radius;
     const float ring_inner_radius = ring_outer_radius - ring_width;
     const float current_time = GetTime();
-    const float offset_angle = fmodf(current_time / selector_orbit_period_sec, 1.0f) * 360.0f;
-    DrawCircleV(pos, radius, Fade(GRAY, 0.4f));
+    const float offset_angle = fmodf(current_time / params.period_sec, 1.0f) * 360.0f;
+    DrawCircleV(pos, params.radius, Fade(GRAY, 0.4f));
     DrawRing(pos, ring_outer_radius - ring_width, ring_outer_radius, 0, 360, 0, Fade(GRAY, 0.6f));
-    for (int i = 0; i < num_segments; ++i) {
+    for (int i = 0; i < params.num_segments; ++i) {
         const float start_angle = 2 * i * delta_angle + offset_angle;
         DrawRing(pos, ring_inner_radius, ring_outer_radius, start_angle, start_angle + delta_angle, 0, LIGHTGRAY);
     }
 }
 
-void DrawSelectorByMode(const Vector2 pos, const int mode) {
-    if (mode == 1) {
-        DrawSelector(pos, GOAL_REACHED_RADIUS, 0.4f, 8, 4.0f);
-    }
-    if (mode == 2) {
-        DrawSelector(pos, OBSTACLE_RADIUS, 0.2f, 12, 5.0f);
-    }
-    if (mode == 3) {
-        DrawSelector(pos, OBSTACLE_DEL_RADIUS, 0.6f, 6, 3.0f);
+void DrawSelectorByMode(const Vector2 pos, const SelectorMode mode) {
+    switch (mode) {
+        case SelectorMode::PLACE_GOAL:
+            DrawSelector(pos, {GOAL_REACHED_RADIUS, 0.4f, 8, 4.0f});
+            return;
+        case SelectorMode::ADD_OBSTACLE:
+            DrawSelector(pos, {OBSTACLE_RADIUS, 0.2f, 12, 5.0f});
+            return;
+        case SelectorMode::DEL_OBSTACLE:
+            DrawSelector(pos, {OBSTACLE_DEL_RADIUS, 0.6f, 6, 3.0f});
+            return;
     }
 }
 
@@ -100,19 +110,20 @@ void DrawPath(const Path& path) {
     }
 }
 
-void DrawRibbon(const Tree& tree, const int num_samples, const bool goal_reached, const int mode, const int fps, const std::vector<Rectangle>& button_rectangles) {
+void DrawRibbon(const Tree& tree, const int num_samples, const bool goal_reached, const SelectorMode mode, const int fps, const std::vector<Rectangle>& button_rectangles) {
     DrawRectangle(0, ENVIRONMENT_HEIGHT, ENVIRONMENT_WIDTH, RIBBON_HEIGHT, COLOR_RIBBON_BACKGROUND);
 
     for (const auto rect : button_rectangles) {
-            DrawRectangleLinesEx(rect, 3, COLOR_KEYMAP);
-
+        DrawRectangleLinesEx(rect, 3, COLOR_KEYMAP);
     }
 
     // TODO use the Rectangle objects directly
     // TODO make class for clickable button to handle color of button and text
-    for (int m = 1; m <= 3; ++m) {
-        if (m == mode) {
-            int x = (m - 1) * RIBBON_COL_WIDTH;
+
+    // highlight the selected mode cell
+    for (int m = 0; m <= 2; ++m) {
+        if (m == int(mode)) {
+            int x = m * RIBBON_COL_WIDTH;
             int y = ENVIRONMENT_HEIGHT;
             DrawRectangle(x, y, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT, COLOR_KEYMAP);
         }
@@ -125,20 +136,24 @@ void DrawRibbon(const Tree& tree, const int num_samples, const bool goal_reached
     static constexpr int RIBBON_ROW_2_Y = ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT + (RIBBON_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
 
     // TODO center all text
+
+    // row 2
     DrawText(std::string(goal_reached ? "Goal reached" : "Goal missed").c_str(), 0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, getGoalColor(goal_reached));
     DrawText(TextFormat("%2i FPS", fps), 1 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, fpsColor(fps));
     DrawText((std::to_string(tree.nodes.size()) + " nodes").c_str(), 2 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, COLOR_NODE_COUNT);
     DrawText((std::to_string(num_samples) + " samples").c_str(), 3 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, COLOR_NODE_COUNT);
 
-    DrawText("Place goal", 0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_CONTROL_MODE, (mode == 1) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
-    DrawText("Insert obstacle", 1 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_CONTROL_MODE, (mode == 2) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
-    DrawText("Delete obstacle", 2 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_CONTROL_MODE, (mode == 3) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+    // row 1a
+    DrawText("Place goal", 0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_CONTROL_MODE, (mode == SelectorMode::PLACE_GOAL) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+    DrawText("Insert obstacle", 1 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_CONTROL_MODE, (mode == SelectorMode::ADD_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+    DrawText("Delete obstacle", 2 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_CONTROL_MODE, (mode == SelectorMode::DEL_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
     DrawText("- samples", 3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_CONTROL_MODE, COLOR_KEYMAP);
     DrawText("+ samples", 3.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y, TEXT_HEIGHT_CONTROL_MODE, COLOR_KEYMAP);
 
-    DrawText("[LMB] to engage", 0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL_KEYMAP, (mode == 1) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
-    DrawText("[LMB] to engage / [RMB]", 1 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL_KEYMAP, (mode == 2) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
-    DrawText("[LMB] to engage / [MMB]", 2 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL_KEYMAP, (mode == 3) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+    // row 1b
+    DrawText("[LMB] to engage", 0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL_KEYMAP, (mode == SelectorMode::PLACE_GOAL) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+    DrawText("[LMB] to engage / [RMB]", 1 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL_KEYMAP, (mode == SelectorMode::ADD_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
+    DrawText("[LMB] to engage / [MMB]", 2 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL_KEYMAP, (mode == SelectorMode::DEL_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_KEYMAP);
     DrawText("[LMB] here / [Scroll]", 3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL_KEYMAP, COLOR_KEYMAP);
     DrawText("[LMB] here / [Scroll]", 3.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y, TEXT_HEIGHT_CONTROL_KEYMAP, COLOR_KEYMAP);
 }
