@@ -6,14 +6,14 @@
 
 // Physical elements
 static constexpr float OBSTACLE_RADIUS = 100.0f;
-static constexpr float DEVIATION_DISTANCE_MAX = 0.6f * OBSTACLE_RADIUS;
+static constexpr float DEVIATION_DISTANCE_MAX = 0.8f * OBSTACLE_RADIUS;
 static constexpr float GOAL_REACHED_RADIUS = 50.0f;
 static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 0.9f * GOAL_REACHED_RADIUS;
 static constexpr float RADIUS_OF_CURVATURE_MIN = 0.95f * std::min(OBSTACLE_RADIUS, 2.0f * GOAL_REACHED_RADIUS);
 static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
 
-static constexpr int OBSTACLE_SPACING_MIN = 10;
-static constexpr int OBSTACLE_DEL_RADIUS = 20;
+static constexpr float OBSTACLE_SPACING_MIN = 10.0f;
+static constexpr float OBSTACLE_DEL_RADIUS = 20.0f;
 
 static constexpr Vector2 DEFAULT_START = {100, 500};
 static constexpr Vector2 DEFAULT_GOAL = {1000, 500};
@@ -45,6 +45,8 @@ static constexpr int NODE_WIDTH_PATH = 40;
 static constexpr Color COLOR_BACKGROUND = {16, 16, 16, 255};
 static constexpr Color COLOR_RIBBON_BACKGROUND = {32, 32, 32, 255};
 static constexpr Color COLOR_OBSTACLE = {96, 96, 96, 255};
+static constexpr Color COLOR_PATH = RAYWHITE;
+static constexpr Color COLOR_KEYMAP = RAYWHITE;
 
 static constexpr Color COLOR_GOAL_REACHED = SKYBLUE;
 static constexpr Color COLOR_GOAL_NOT_REACHED = RED;
@@ -53,6 +55,3 @@ static constexpr Color COLOR_NODE_COUNT = PURPLE;
 static constexpr Color COLOR_FPS_HIGH = SKYBLUE;
 static constexpr Color COLOR_FPS_MID = YELLOW;
 static constexpr Color COLOR_FPS_LOW = RED;
-
-static constexpr Color COLOR_PATH = RAYWHITE;
-static constexpr Color COLOR_KEYMAP = RAYWHITE;

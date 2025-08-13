@@ -14,7 +14,6 @@
 #include "rng.h"
 #include "tree.h"
 
-
 // TODO these rectangles should not be globals...
 
 const Rectangle place_goal_button = {0 + 0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
@@ -38,25 +37,45 @@ const std ::vector<Rectangle> ribbon_rectangles = {place_goal_button,
                                                    ribbon_row_2_col_2,
                                                    ribbon_row_2_col_3};
 
+std::optional<SelectorMode> getSelectorMode() {
+    if (!IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        return std::nullopt;
+    }
 
-std::optional<SelectorMode> getSelectorMode(const Vector2 mouse) {
-    const bool mouse_in_place_goal_button = CheckCollisionPointRec(mouse, place_goal_button);
-    const bool mouse_in_add_obstacle_button = CheckCollisionPointRec(mouse, add_obstacle_button);
-    const bool mouse_in_del_obstacle_button = CheckCollisionPointRec(mouse, del_obstacle_button);
-
-    // TODO refactor to switch statement
-    if (mouse_in_place_goal_button) {
+    const Vector2 mouse = GetMousePosition();
+    if (CheckCollisionPointRec(mouse, place_goal_button)) {
         return SelectorMode::PLACE_GOAL;
     }
-    if (mouse_in_add_obstacle_button) {
+    if (CheckCollisionPointRec(mouse, add_obstacle_button)) {
         return SelectorMode::ADD_OBSTACLE;
     }
-    if (mouse_in_del_obstacle_button) {
+    if (CheckCollisionPointRec(mouse, del_obstacle_button)) {
         return SelectorMode::DEL_OBSTACLE;
     }
     return std::nullopt;
 }
 
+int getSamplesIdxDelta() {
+    const Vector2 mouse = GetMousePosition();
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (CheckCollisionPointRec(mouse, inc_num_samples_button)) {
+            return 1;
+        }
+        if (CheckCollisionPointRec(mouse, dec_num_samples_button)) {
+            return -1;
+        }
+    }
+
+    const int scroll = GetMouseWheelMove();
+    return (scroll > 0) - (scroll < 0);
+}
+
+int getSamples(const int num_samples) {
+    const int idx_delta = getSamplesIdxDelta();
+    const int idx_old = int(std::lower_bound(NUM_SAMPLES_OPTIONS.begin(), NUM_SAMPLES_OPTIONS.end(), num_samples) - NUM_SAMPLES_OPTIONS.begin());
+    const int idx_new = std::clamp(idx_old + idx_delta, 0, int(NUM_SAMPLES_OPTIONS.size() - 1));
+    return NUM_SAMPLES_OPTIONS[idx_new];
+}
 
 int main() {
     SetTraceLogLevel(LOG_ERROR);
@@ -73,36 +92,12 @@ int main() {
     while (!WindowShouldClose()) {
         Vector2 mouse = GetMousePosition();
 
-        const bool mouse_in_inc_num_samples_button = CheckCollisionPointRec(mouse, inc_num_samples_button);
-        const bool mouse_in_dec_num_samples_button = CheckCollisionPointRec(mouse, dec_num_samples_button);
-
         const bool is_down_lmb = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
         const bool is_down_rmb = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
         const bool is_down_mmb = IsMouseButtonDown(MOUSE_BUTTON_MIDDLE);
 
-        // TODO refactor for brevity
-        if (is_down_lmb) {
-            std::optional<SelectorMode> mode_opt = getSelectorMode(mouse);
-            if (mode_opt) {
-                mode = mode_opt.value();
-            }
-        }
-
-        int scroll = GetMouseWheelMove();
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            if (mouse_in_inc_num_samples_button) {
-                scroll = 1;
-            }
-            if (mouse_in_dec_num_samples_button) {
-                scroll = -1;
-            }
-        }
-        if (scroll != 0) {
-            const int scroll_sign = (scroll > 0) - (scroll < 0);
-            const int old_idx = int(std::lower_bound(NUM_SAMPLES_OPTIONS.begin(), NUM_SAMPLES_OPTIONS.end(), num_samples) - NUM_SAMPLES_OPTIONS.begin());
-            const int new_idx = std::clamp(old_idx + scroll_sign, 0, int(NUM_SAMPLES_OPTIONS.size() - 1));
-            num_samples = NUM_SAMPLES_OPTIONS[new_idx];
-        }
+        mode = getSelectorMode().value_or(mode);
+        num_samples = getSamples(num_samples);
 
         const Vector2 selector_pos = clampToEnvironment(mouse);
         const bool mouse_in_environment = insideEnvironment(mouse);
@@ -137,7 +132,6 @@ int main() {
 
         const int fps = GetFPS();
 
-        // DRAWING SECTION
         BeginDrawing();
         DrawRectangle(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_BACKGROUND);
         DrawObstacles(obstacles);
@@ -145,17 +139,9 @@ int main() {
         DrawPath(path);
         DrawSelectorByMode(selector_pos, mode);
         DrawGoal(goal, goal_reached);
-
-        DrawRibbon(tree,
-                   num_samples,
-                   goal_reached,
-                   mode,
-                   fps,
-                   ribbon_rectangles);
-
+        DrawRibbon(tree, num_samples, goal_reached, mode, fps, ribbon_rectangles);
         EndDrawing();
     }
-
     CloseWindow();
     return 0;
 }

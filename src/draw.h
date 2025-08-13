@@ -6,19 +6,19 @@
 #include "config.h"
 #include "mode.h"
 #include "obstacle.h"
-#include "pride.h"
+#include "mako.h"
 #include "tree.h"
 
-Color fpsColor(const int fps) {
+Color computeFpsColor(const int fps) {
     if (fps < 15) return COLOR_FPS_LOW;
     if (fps < 30) return COLOR_FPS_MID;
     return COLOR_FPS_HIGH;
 }
 
-Color mapToColor(float x) {
-    x = Remap(x, 0.0f, 1.0f, 0.2f, 0.8f);
+Color computeCostColor(float x) {
+    x = Remap(x, 0.0f, 1.0f, 0.3f, 0.9f);
     const int idx = std::clamp(static_cast<int>(x * 255.0f + 0.5f), 0, 255);
-    const auto& rgb = pride_colormap[idx];
+    const auto& rgb = mako_colormap[idx];
     return Color{rgb[0], rgb[1], rgb[2], 255};
 }
 
@@ -68,12 +68,12 @@ void DrawSelectorByMode(const Vector2 pos, const SelectorMode mode) {
     }
 }
 
-Color getGoalColor(const bool goal_reached) {
+Color computeGoalColor(const bool goal_reached) {
     return goal_reached ? COLOR_GOAL_REACHED : COLOR_GOAL_NOT_REACHED;
 }
 
 void DrawGoal(const Vector2 goal, const bool goal_reached) {
-    DrawCircleV(goal, GOAL_REACHED_RADIUS, Fade(getGoalColor(goal_reached), 0.8f));
+    DrawCircleV(goal, GOAL_REACHED_RADIUS, Fade(computeGoalColor(goal_reached), 0.8f));
 }
 
 void DrawObstacles(const Obstacles& obstacles) {
@@ -95,7 +95,7 @@ void DrawTree(const Tree& tree, const Path& path) {
         if (!node->parent) {
             continue;
         }
-        const Color color = mapToColor(normalizeCost(node->cost_to_come, cost_to_come_goal, cost_to_come_max));
+        const Color color = computeCostColor(normalizeCost(node->cost_to_come, cost_to_come_goal, cost_to_come_max));
         DrawLineEx(node->parent->pos, node->pos, LINE_WIDTH_TREE, color);
     }
 }
@@ -138,8 +138,8 @@ void DrawRibbon(const Tree& tree, const int num_samples, const bool goal_reached
     // TODO center all text
 
     // row 2
-    DrawText(std::string(goal_reached ? "Goal reached" : "Goal missed").c_str(), 0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, getGoalColor(goal_reached));
-    DrawText(TextFormat("%2i FPS", fps), 1 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, fpsColor(fps));
+    DrawText(std::string(goal_reached ? "Goal reached" : "Goal missed").c_str(), 0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, computeGoalColor(goal_reached));
+    DrawText(TextFormat("%2i FPS", fps), 1 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, computeFpsColor(fps));
     DrawText((std::to_string(tree.nodes.size()) + " nodes").c_str(), 2 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, COLOR_NODE_COUNT);
     DrawText((std::to_string(num_samples) + " samples").c_str(), 3 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y, TEXT_HEIGHT_STAT, COLOR_NODE_COUNT);
 
