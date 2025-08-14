@@ -6,7 +6,7 @@
 #include "config.h"
 #include "mode.h"
 #include "obstacle.h"
-#include "mako.h"
+#include "colors.h"
 #include "tree.h"
 
 Color computeFpsColor(const int fps) {
@@ -16,10 +16,9 @@ Color computeFpsColor(const int fps) {
 }
 
 Color computeCostColor(float x) {
-    x = Remap(x, 0.0f, 1.0f, 0.3f, 0.9f);
-    const int idx = std::clamp(static_cast<int>(x * 255.0f + 0.5f), 0, 255);
-    const auto& rgb = mako_colormap[idx];
-    return Color{rgb[0], rgb[1], rgb[2], 255};
+    Color color = makoColor(Remap(x, 0.0f, 1.0f, 0.3f, 0.9f));
+    color.a = 200;
+    return color;
 }
 
 float normalizeCost(const float c, const float c_goal, const float c_max) {
