@@ -50,10 +50,10 @@ static constexpr Color COLOR_OBSTACLE = {96, 96, 96, 255};
 static constexpr Color COLOR_PATH = RAYWHITE;
 static constexpr Color COLOR_KEYMAP = RAYWHITE;
 
-static constexpr Color COLOR_GOAL_REACHED = YELLOW;
+static constexpr Color COLOR_GOAL_REACHED = SKYBLUE;
 static constexpr Color COLOR_GOAL_NOT_REACHED = RED;
-const Color COLOR_NODE_COUNT = makoColor(1.0f);
+const Color COLOR_NODE_COUNT = guppyColor(0.0f);
 
-static constexpr Color COLOR_FPS_HIGH = YELLOW;
-static constexpr Color COLOR_FPS_MID = ORANGE;
+static constexpr Color COLOR_FPS_HIGH = SKYBLUE;
+static constexpr Color COLOR_FPS_MID = GOLD;
 static constexpr Color COLOR_FPS_LOW = RED;

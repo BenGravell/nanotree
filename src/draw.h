@@ -16,9 +16,7 @@ Color computeFpsColor(const int fps) {
 }
 
 Color computeCostColor(float x) {
-    Color color = makoColor(Remap(x, 0.0f, 1.0f, 0.3f, 0.9f));
-    color.a = 200;
-    return color;
+    return guppyColor(x);
 }
 
 float normalizeCost(const float c, const float c_goal, const float c_max) {
