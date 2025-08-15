@@ -4,8 +4,6 @@
 
 #include <array>
 
-#include "colors.h"
-
 // Physical elements
 static constexpr float OBSTACLE_RADIUS = 100.0f;
 static constexpr float DEVIATION_DISTANCE_MAX = 0.8f * OBSTACLE_RADIUS;
@@ -42,18 +40,3 @@ static constexpr int TEXT_HEIGHT_STAT = 0.6 * RIBBON_ROW_HEIGHT;
 static constexpr int LINE_WIDTH_TREE = 8;
 static constexpr int LINE_WIDTH_PATH = 20;
 static constexpr int NODE_WIDTH_PATH = 40;
-
-// Colors
-static constexpr Color COLOR_BACKGROUND = {16, 16, 16, 255};
-static constexpr Color COLOR_RIBBON_BACKGROUND = {32, 32, 32, 255};
-static constexpr Color COLOR_OBSTACLE = {96, 96, 96, 255};
-static constexpr Color COLOR_PATH = RAYWHITE;
-static constexpr Color COLOR_KEYMAP = RAYWHITE;
-
-static constexpr Color COLOR_GOAL_REACHED = SKYBLUE;
-static constexpr Color COLOR_GOAL_NOT_REACHED = RED;
-const Color COLOR_NODE_COUNT = guppyColor(0.0f);
-
-static constexpr Color COLOR_FPS_HIGH = SKYBLUE;
-static constexpr Color COLOR_FPS_MID = GOLD;
-static constexpr Color COLOR_FPS_LOW = RED;

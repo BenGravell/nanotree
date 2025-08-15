@@ -3,21 +3,11 @@
 #include <raylib.h>
 #include <raymath.h>
 
+#include "colors.h"
 #include "config.h"
 #include "mode.h"
 #include "obstacle.h"
-#include "colors.h"
 #include "tree.h"
-
-Color computeFpsColor(const int fps) {
-    if (fps < 15) return COLOR_FPS_LOW;
-    if (fps < 30) return COLOR_FPS_MID;
-    return COLOR_FPS_HIGH;
-}
-
-Color computeCostColor(float x) {
-    return guppyColor(x);
-}
 
 float normalizeCost(const float c, const float c_goal, const float c_max) {
     float x = 0.0f;
