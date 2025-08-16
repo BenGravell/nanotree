@@ -121,19 +121,17 @@ int main() {
 
         const Vector2 selector_pos = clampToEnvironment(mouse);
         const bool mouse_in_environment = insideEnvironment(mouse);
-        bool problem_changed = false;
         bool tree_should_reset = false;
         bool tree_should_grow = false;
         if (mouse_in_environment) {
             if (is_down_lmb && mode == SelectorMode::PLACE_GOAL) {
                 goal = selector_pos;
-                problem_changed = true;
+                tree_should_grow = true;
             }
 
             if ((is_down_lmb && mode == SelectorMode::ADD_OBSTACLE) || is_down_rmb) {
                 if (std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, selector_pos) < OBSTACLE_SPACING_MIN; })) {
                     obstacles.push_back(selector_pos);
-                    problem_changed = true;
                     tree_should_reset = true;
                 }
             }
@@ -142,13 +140,14 @@ int main() {
                 const int num_obstacles_before = obstacles.size();
                 obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, selector_pos) < (OBSTACLE_RADIUS + OBSTACLE_DEL_RADIUS); }), obstacles.end());
                 const int num_obstacles_after = obstacles.size();
-                if (num_obstacles_after != num_obstacles_before) {
-                    problem_changed = true;
-                }
+                // TODO
+                // if (num_obstacles_after != num_obstacles_before) {
+                //     tree_should_grow = true;
+                // }
             }
         }
 
-        tree_should_grow = problem_changed || first_iter;
+        tree_should_grow = tree_should_grow || first_iter;
         first_iter = false;
 
         if (IsKeyPressed(KEY_G)) {
