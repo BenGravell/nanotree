@@ -123,7 +123,7 @@ struct Tree {
     Nodes nodes;
 
     void reset() {
-        nodes = {std::make_shared<Node>(nullptr, DEFAULT_START, 0.0f)};
+        nodes = {std::make_shared<Node>(Node{nullptr, DEFAULT_START, 0.0f})};
     }
 
     void retain(const Path path, const int target_max_size) {
