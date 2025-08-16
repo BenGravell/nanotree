@@ -14,16 +14,19 @@ Color guppyColor(float x) {
 static constexpr Color COLOR_BACKGROUND = {16, 16, 16, 255};
 static constexpr Color COLOR_RIBBON_BACKGROUND = {32, 32, 32, 255};
 static constexpr Color COLOR_OBSTACLE = {96, 96, 96, 255};
-static constexpr Color COLOR_PATH = RAYWHITE;
-static constexpr Color COLOR_KEYMAP = RAYWHITE;
+static constexpr Color COLOR_PATH = {255, 255, 255, 255};
 
-const Color COLOR_GOAL_REACHED = guppyColor(0.1f);
-const Color COLOR_GOAL_NOT_REACHED = guppyColor(0.9f);
-const Color COLOR_NODE_COUNT = guppyColor(0.1f);
+static constexpr Color COLOR_TEXT_CONTROLS = {200, 200, 200, 255};
+static constexpr Color COLOR_TEXT_CONTROL_SELECT_BKGD = {240, 240, 240, 255};
 
-const Color COLOR_FPS_HIGH = guppyColor(0.1f);
-const Color COLOR_FPS_MID = guppyColor(0.5f);
-const Color COLOR_FPS_LOW = guppyColor(0.9f);
+const Color COLOR_GOAL_REACHED = guppyColor(0.0f);
+const Color COLOR_GOAL_NOT_REACHED = guppyColor(0.8f);
+
+const Color COLOR_NODE_COUNT = {240, 240, 240, 255};
+
+const Color COLOR_FPS_HIGH = guppyColor(0.0f);
+const Color COLOR_FPS_MID = GOLD;
+const Color COLOR_FPS_LOW = guppyColor(0.8f);
 
 Color computeFpsColor(const int fps) {
     if (fps < 15) return COLOR_FPS_LOW;
