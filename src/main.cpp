@@ -104,10 +104,13 @@ int main() {
     Font font = LoadFontEx("assets/Oxanium-Regular.ttf", 40, 0, 0);
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
+    Vector2 start = DEFAULT_START;
     Vector2 goal = DEFAULT_GOAL;
     Obstacles obstacles = DEFAULT_OBSTACLES;
+
     Tree tree;
-    tree.reset();
+    tree.reset(start);
+
     Path path;
 
     int num_samples = 200;
@@ -177,7 +180,7 @@ int main() {
         // ---- PLANNER LOGIC
 
         if (tree_should_reset) {
-            tree.reset();
+            tree.reset(start);
         }
 
         float t1_carryover = GetTime();
@@ -201,7 +204,7 @@ int main() {
         const float t2_extract_path = GetTime();
         const float dt_extract_path = t2_extract_path - t1_extract_path;
 
-        const bool goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_REACHED_RADIUS;
+        const bool goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
 
         const int fps = GetFPS();
 
@@ -214,6 +217,7 @@ int main() {
         DrawTree(tree, path);
         DrawPath(path);
         DrawSelectorByMode(selector_pos, mode);
+        DrawStart(start);
         DrawGoal(goal, goal_reached);
         DrawRibbon(tree, num_samples, num_carryover, goal_reached, mode, fps, ribbon_rectangles, font);
 

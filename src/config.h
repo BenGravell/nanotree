@@ -7,9 +7,10 @@
 // Physical elements
 static constexpr float OBSTACLE_RADIUS = 80.0f;
 static constexpr float DEVIATION_DISTANCE_MAX = 0.8f * OBSTACLE_RADIUS;
-static constexpr float GOAL_REACHED_RADIUS = 30.0f;
-static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 1.5f * GOAL_REACHED_RADIUS;
-static constexpr float RADIUS_OF_CURVATURE_MIN = 0.95f * std::min(OBSTACLE_RADIUS, 2.0f * GOAL_REACHED_RADIUS);
+static constexpr float START_RADIUS = 20.0f;
+static constexpr float GOAL_RADIUS = 30.0f;
+static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 1.5f * GOAL_RADIUS;
+static constexpr float RADIUS_OF_CURVATURE_MIN = 0.95f * std::min(OBSTACLE_RADIUS, 2.0f * GOAL_RADIUS);
 static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
 
 static constexpr float OBSTACLE_SPACING_MIN = 10.0f;

@@ -75,7 +75,7 @@ NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const float max_di
 
 Path extractPath(const Vector2 target, const Nodes& nodes) {
     Path path;
-    NodePtr node = getCheapest(target, nodes, GOAL_REACHED_RADIUS);
+    NodePtr node = getCheapest(target, nodes, GOAL_RADIUS);
     while (node->parent) {
         path.push_back(node);
         node = node->parent;
@@ -89,8 +89,8 @@ Vector2 sample(const Vector2 goal) {
     static std::uniform_real_distribution<float> dist_select(0.0f, 1.0f);
     static std::uniform_real_distribution<float> dist_x(0.0f, ENVIRONMENT_WIDTH);
     static std::uniform_real_distribution<float> dist_y(0.0f, ENVIRONMENT_HEIGHT);
-    static std::uniform_real_distribution<float> dist_goal_x(-GOAL_REACHED_RADIUS, GOAL_REACHED_RADIUS);
-    static std::uniform_real_distribution<float> dist_goal_y(-GOAL_REACHED_RADIUS, GOAL_REACHED_RADIUS);
+    static std::uniform_real_distribution<float> dist_goal_x(-GOAL_RADIUS, GOAL_RADIUS);
+    static std::uniform_real_distribution<float> dist_goal_y(-GOAL_RADIUS, GOAL_RADIUS);
 
     if (dist_select(rng) < GOAL_SAMPLE_PROBABILITY) {
         return clampToEnvironment(goal + Vector2{dist_goal_x(rng), dist_goal_y(rng)});
@@ -122,8 +122,8 @@ Vector2 attractByAngle(const Vector2 pos, const NodePtr parent) {
 struct Tree {
     Nodes nodes;
 
-    void reset() {
-        nodes = {std::make_shared<Node>(Node{nullptr, DEFAULT_START, 0.0f})};
+    void reset(const Vector2 start) {
+        nodes = {std::make_shared<Node>(Node{nullptr, start, 0.0f})};
     }
 
     void carryover(const Path path, const int num_carryover) {

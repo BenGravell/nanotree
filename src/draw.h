@@ -44,7 +44,7 @@ void DrawSelector(const Vector2 pos, const SelectorParams params) {
 void DrawSelectorByMode(const Vector2 pos, const SelectorMode mode) {
     switch (mode) {
         case SelectorMode::PLACE_GOAL:
-            DrawSelector(pos, {GOAL_REACHED_RADIUS, 0.4f, 8, 4.0f});
+            DrawSelector(pos, {GOAL_RADIUS, 0.4f, 8, 4.0f});
             return;
         case SelectorMode::ADD_OBSTACLE:
             DrawSelector(pos, {OBSTACLE_RADIUS, 0.2f, 12, 5.0f});
@@ -55,12 +55,20 @@ void DrawSelectorByMode(const Vector2 pos, const SelectorMode mode) {
     }
 }
 
+void DrawSquare(const Vector2 center, const float radius, const Color color) {
+    DrawRectangle(center.x - radius, center.y - radius, 2 * radius, 2 * radius, color);
+}
+
 Color computeGoalColor(const bool goal_reached) {
     return goal_reached ? COLOR_GOAL_REACHED : COLOR_GOAL_NOT_REACHED;
 }
 
+void DrawStart(const Vector2 start) {
+    DrawCircleV(start, START_RADIUS, Fade(COLOR_START, 0.8f));
+}
+
 void DrawGoal(const Vector2 goal, const bool goal_reached) {
-    DrawCircleV(goal, GOAL_REACHED_RADIUS, Fade(computeGoalColor(goal_reached), 0.8f));
+    DrawCircleV(goal, GOAL_RADIUS, Fade(computeGoalColor(goal_reached), 0.8f));
 }
 
 void DrawObstacles(const Obstacles& obstacles) {
