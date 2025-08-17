@@ -81,7 +81,7 @@ int getSamplesIdxDelta() {
     return getIdxDelta(dec_num_samples_button, inc_num_samples_button).value_or(getScrollSign());
 }
 
-int getTreeTargetMaxSizeIdxDelta() {
+int getCarryoverIdxDelta() {
     return getIdxDelta(dec_tree_size_button, inc_tree_size_button).value_or(0);
 }
 
@@ -89,6 +89,12 @@ int updateSamplesOption(const int num_samples, const int idx_delta) {
     const int idx_old = int(std::lower_bound(NUM_SAMPLES_OPTIONS.begin(), NUM_SAMPLES_OPTIONS.end(), num_samples) - NUM_SAMPLES_OPTIONS.begin());
     const int idx_new = std::clamp(idx_old + idx_delta, 0, int(NUM_SAMPLES_OPTIONS.size() - 1));
     return NUM_SAMPLES_OPTIONS[idx_new];
+}
+
+int updateCarryoverOption(const int num_samples, const int idx_delta) {
+    const int idx_old = int(std::lower_bound(NUM_CARRYOVER_OPTIONS.begin(), NUM_CARRYOVER_OPTIONS.end(), num_samples) - NUM_CARRYOVER_OPTIONS.begin());
+    const int idx_new = std::clamp(idx_old + idx_delta, 0, int(NUM_CARRYOVER_OPTIONS.size() - 1));
+    return NUM_CARRYOVER_OPTIONS[idx_new];
 }
 
 int main() {
@@ -104,15 +110,15 @@ int main() {
     tree.reset();
     Path path;
 
-    int num_samples = 500;
-    int tree_target_max_size = 5000;
+    int num_samples = 200;
+    int num_carryover = 2000;
     SelectorMode mode = SelectorMode::PLACE_GOAL;
     bool show_debug = false;
     float dt_draw = 0;
     bool first_iter = true;
 
     // pre-growth
-    for (int i = 0; i < tree_target_max_size / num_samples; ++i) {
+    for (int i = 0; i < num_carryover / num_samples; ++i) {
         tree.grow(num_samples, goal, obstacles);
     }
 
@@ -126,7 +132,7 @@ int main() {
 
         mode = getSelectorMode().value_or(mode);
         num_samples = updateSamplesOption(num_samples, getSamplesIdxDelta());
-        tree_target_max_size = updateSamplesOption(tree_target_max_size, getTreeTargetMaxSizeIdxDelta());
+        num_carryover = updateCarryoverOption(num_carryover, getCarryoverIdxDelta());
 
         const Vector2 selector_pos = clampToEnvironment(mouse);
         const bool mouse_in_environment = insideEnvironment(mouse);
@@ -174,20 +180,20 @@ int main() {
             tree.reset();
         }
 
-        float t1_retain_tree = GetTime();
-        float t2_retain_tree = GetTime();
+        float t1_carryover = GetTime();
+        float t2_carryover = GetTime();
         float t1_grow_tree = GetTime();
         float t2_grow_tree = GetTime();
         if (tree_should_grow) {
-            t1_retain_tree = GetTime();
-            tree.retain(path, tree_target_max_size);
-            t2_retain_tree = GetTime();
+            t1_carryover = GetTime();
+            tree.carryover(path, num_carryover);
+            t2_carryover = GetTime();
 
             t1_grow_tree = GetTime();
             tree.grow(num_samples, goal, obstacles);
             t2_grow_tree = GetTime();
         }
-        const float dt_retain_tree = t2_retain_tree - t1_retain_tree;
+        const float dt_carryover = t2_carryover - t1_carryover;
         const float dt_grow_tree = t2_grow_tree - t1_grow_tree;
 
         const float t1_extract_path = GetTime();
@@ -209,12 +215,12 @@ int main() {
         DrawPath(path);
         DrawSelectorByMode(selector_pos, mode);
         DrawGoal(goal, goal_reached);
-        DrawRibbon(tree, num_samples, tree_target_max_size, goal_reached, mode, fps, ribbon_rectangles, font);
+        DrawRibbon(tree, num_samples, num_carryover, goal_reached, mode, fps, ribbon_rectangles, font);
 
         if (show_debug) {
             DrawRectangle(0, 0, 500, 220, COLOR_RIBBON_BACKGROUND);
             DrawRectangleLines(0, 0, 500, 220, COLOR_TEXT_CONTROL_SELECT_BKGD);
-            DrawTextEx(font, TextFormat("%4d ms [retain tree]", int(1000.0f * dt_retain_tree)), {10, 10 + 0 * 50}, TEXT_HEIGHT_STAT, 1, GOLD);
+            DrawTextEx(font, TextFormat("%4d ms [carryover]", int(1000.0f * dt_carryover)), {10, 10 + 0 * 50}, TEXT_HEIGHT_STAT, 1, GOLD);
             DrawTextEx(font, TextFormat("%4d ms [grow tree]", int(1000.0f * dt_grow_tree)), {10, 10 + 1 * 50}, TEXT_HEIGHT_STAT, 1, GOLD);
             DrawTextEx(font, TextFormat("%4d ms [extract path]", int(1000.0f * dt_extract_path)), {10, 10 + 2 * 50}, TEXT_HEIGHT_STAT, 1, GOLD);
             DrawTextEx(font, TextFormat("%4d ms [draw]", int(1000.0f * dt_draw)), {10, 10 + 3 * 50}, TEXT_HEIGHT_STAT, 1, GREEN);

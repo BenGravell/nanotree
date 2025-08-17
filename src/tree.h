@@ -126,7 +126,7 @@ struct Tree {
         nodes = {std::make_shared<Node>(Node{nullptr, DEFAULT_START, 0.0f})};
     }
 
-    void retain(const Path path, const int target_max_size) {
+    void carryover(const Path path, const int num_carryover) {
         // TODO do not retain nodes or their children if in collision!
 
         std::vector<NodePtr> retained_nodes;
@@ -144,7 +144,7 @@ struct Tree {
         Nodes shuffled = nodes;
         std::shuffle(shuffled.begin(), shuffled.end(), rng);
         for (const NodePtr& node : shuffled) {
-            if (retained_nodes.size() > target_max_size) {
+            if (retained_nodes.size() > num_carryover) {
                 break;
             }
 
