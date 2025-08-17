@@ -95,7 +95,7 @@ int main() {
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "nanotree");
 
-    Font font = LoadFontEx("src/Oxanium-Regular.ttf", 40, 0, 0);
+    Font font = LoadFontEx("assets/Oxanium-Regular.ttf", 40, 0, 0);
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
     Vector2 goal = DEFAULT_GOAL;

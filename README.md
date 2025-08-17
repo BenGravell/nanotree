@@ -104,14 +104,13 @@ source emsdk_env.sh
 cd ~/nanotree
 
 em++ -o index.html src/main.cpp -O3 -Wall -I ~/emsdk/upstream/emscripten/cache/sysroot/include \
--L ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a -s USE_GLFW=3 -s ASYNCIFY \
+-L ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a -s USE_GLFW=3 -s ASYNCIFY --preload-file assets \
 --shell-file shell.html -DPLATFORM_WEB ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a
 ```
 
 #### Run
 
 ```bash
-# Get EMSDK on the PATH
 cd ~/emsdk
 source emsdk_env.sh
 cd ~/nanotree
