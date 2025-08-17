@@ -16,7 +16,7 @@ static constexpr Color COLOR_RIBBON_BACKGROUND = {32, 32, 32, 255};
 static constexpr Color COLOR_OBSTACLE = {96, 96, 96, 255};
 static constexpr Color COLOR_PATH = {255, 255, 255, 255};
 
-static constexpr Color COLOR_TEXT_CONTROLS = {200, 200, 200, 255};
+static constexpr Color COLOR_TEXT_CONTROLS = {240, 240, 240, 255};
 static constexpr Color COLOR_TEXT_CONTROL_SELECT_BKGD = {240, 240, 240, 255};
 
 const Color COLOR_GOAL_REACHED = guppyColor(0.0f);
