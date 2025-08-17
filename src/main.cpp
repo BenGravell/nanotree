@@ -120,7 +120,7 @@ int main() {
     float dt_draw = 0;
     bool first_iter = true;
 
-    // pre-growth
+    // Pre-grow tree to fill it up to carryover limit.
     for (int i = 0; i < num_carryover / num_samples; ++i) {
         tree.grow(num_samples, goal, obstacles);
     }
@@ -208,13 +208,13 @@ int main() {
 
         const int fps = GetFPS();
 
-        // ---- DRAWING
+        // ---- DRAWING LOGIC
         const float t1_draw = GetTime();
         BeginDrawing();
         DrawRectangle(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_BACKGROUND);
         DrawRectangleLines(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_TEXT_CONTROL_SELECT_BKGD);
         DrawObstacles(obstacles);
-        DrawTree(tree, path);
+        DrawTree(tree, path, goal);
         DrawPath(path);
         DrawSelectorByMode(selector_pos, mode);
         DrawStart(start);

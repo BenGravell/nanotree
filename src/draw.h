@@ -9,16 +9,6 @@
 #include "obstacle.h"
 #include "tree.h"
 
-float normalizeCost(const float c, const float c_goal, const float c_max) {
-    float x = 0.0f;
-    if (c < c_goal) {
-        x = Remap(c / c_goal, 0.0f, 1.0f, 0.0f, 0.5f);
-    } else {
-        x = Remap((c - c_goal) / (c_max - c_goal), 0.0f, 1.0f, 0.5f, 1.0f);
-    }
-    return std::clamp(x, 0.0f, 1.0f);
-}
-
 struct SelectorParams {
     float radius;
     float ring_width_frac;
@@ -77,26 +67,40 @@ void DrawObstacles(const Obstacles& obstacles) {
     }
 }
 
-void DrawTree(const Tree& tree, const Path& path) {
-    float cost_to_come_goal = 0.0f;
-    for (const auto& node : path) {
-        cost_to_come_goal = std::max(cost_to_come_goal, node->cost_to_come);
+float normalizeCost(const float c, const float c_root, const float c_path, const float c_tree) {
+    float x = 0.0f;
+    if (c < c_path) {
+        x = Remap((c - c_root) / (c_path - c_root), 0.0f, 1.0f, 0.0f, 0.5f);
+    } else {
+        x = Remap((c - c_path) / (c_tree - c_path), 0.0f, 1.0f, 0.5f, 1.0f);
     }
-    float cost_to_come_max = 0.0f;
-    for (const auto& node : tree.nodes) {
-        cost_to_come_max = std::max(cost_to_come_max, node->cost_to_come);
+    return std::clamp(x, 0.0f, 1.0f);
+}
+
+void DrawTree(const Tree& tree, const Path& path, const Vector2 goal) {
+    float cost_root = computeHeuristicCost(tree.nodes.front(), goal);
+
+    float cost_path = 0.0f;
+    for (const NodePtr& node : path) {
+        cost_path = std::max(cost_path, computeHeuristicCost(node, goal));
     }
-    for (const auto& node : tree.nodes) {
+
+    float cost_tree = 0.0f;
+    for (const NodePtr& node : tree.nodes) {
+        cost_tree = std::max(cost_tree, computeHeuristicCost(node, goal));
+    }
+
+    for (const NodePtr& node : tree.nodes) {
         if (!node->parent) {
             continue;
         }
-        const Color color = computeCostColor(normalizeCost(node->cost_to_come, cost_to_come_goal, cost_to_come_max));
+        const Color color = computeCostColor(normalizeCost(computeHeuristicCost(node, goal), cost_root, cost_path, cost_tree));
         DrawLineEx(node->parent->pos, node->pos, LINE_WIDTH_TREE, color);
     }
 }
 
 void DrawPath(const Path& path) {
-    for (const auto& node : path) {
+    for (const NodePtr& node : path) {
         if (!node->parent) {
             continue;
         }
@@ -108,7 +112,7 @@ void DrawPath(const Path& path) {
 void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover, const bool goal_reached, const SelectorMode mode, const int fps, const std::vector<Rectangle>& button_rectangles, const Font font) {
     DrawRectangle(0, ENVIRONMENT_HEIGHT, ENVIRONMENT_WIDTH, RIBBON_HEIGHT, COLOR_RIBBON_BACKGROUND);
 
-    for (const auto rect : button_rectangles) {
+    for (const Rectangle rect : button_rectangles) {
         DrawRectangleLinesEx(rect, 3, COLOR_TEXT_CONTROL_SELECT_BKGD);
     }
 

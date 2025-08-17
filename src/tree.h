@@ -37,11 +37,19 @@ struct NodePtrEq {
     }
 };
 
+float computeCost(const Vector2 a, const Vector2 b) {
+    return Vector2Distance(a, b);
+}
+
+float computeHeuristicCost(const NodePtr& node, const Vector2 goal) {
+    return node->cost_to_come + computeCost(node->pos, goal);
+}
+
 struct TargetDistanceComparator {
     Vector2 target;
 
     bool operator()(const NodePtr& a, const NodePtr& b) const {
-        return Vector2Distance(a->pos, target) < Vector2Distance(b->pos, target);
+        return computeCost(a->pos, target) < computeCost(b->pos, target);
     }
 };
 
@@ -49,7 +57,7 @@ struct TargetCostComparator {
     Vector2 target;
 
     bool operator()(const NodePtr& a, const NodePtr& b) const {
-        return (a->cost_to_come + Vector2Distance(a->pos, target)) < (b->cost_to_come + Vector2Distance(b->pos, target));
+        return computeHeuristicCost(a, target) < computeHeuristicCost(b, target);
     }
 };
 
@@ -179,8 +187,7 @@ struct Tree {
                 continue;
             }
 
-            const float cost = Vector2Distance(parent->pos, pos);
-            nodes.push_back(std::make_shared<Node>(Node{parent, pos, parent->cost_to_come + cost}));
+            nodes.push_back(std::make_shared<Node>(Node{parent, pos, computeHeuristicCost(parent, pos)}));
         }
     }
 };

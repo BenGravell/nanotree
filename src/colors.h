@@ -5,7 +5,7 @@
 
 #include "guppy_r_lite.h"
 
-Color guppyColor(float x) {
+Color guppyColor(const float x) {
     const int idx = std::clamp(static_cast<int>(x * 255.0f + 0.5f), 0, 255);
     const auto& rgb = guppy_r_lite_colormap[idx];
     return Color{rgb[0], rgb[1], rgb[2], 255};
