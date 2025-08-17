@@ -99,12 +99,10 @@ wget https://raw.githubusercontent.com/raysan5/raylib/refs/heads/master/src/shel
 #### Build to Web Assembly
 
 ```bash
-# Get EMSDK on the PATH
 cd ~/emsdk
 source emsdk_env.sh
 cd ~/nanotree
 
-# build using em++
 em++ -o index.html src/main.cpp -O3 -Wall -I ~/emsdk/upstream/emscripten/cache/sysroot/include \
 -L ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a -s USE_GLFW=3 -s ASYNCIFY \
 --shell-file shell.html -DPLATFORM_WEB ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a
