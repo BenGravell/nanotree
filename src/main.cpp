@@ -146,9 +146,7 @@ int main() {
             }
 
             if ((is_down_lmb && mode == SelectorMode::DEL_OBSTACLE) || is_down_mmb) {
-                const int num_obstacles_before = obstacles.size();
                 obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, selector_pos) < (OBSTACLE_RADIUS + OBSTACLE_DEL_RADIUS); }), obstacles.end());
-                const int num_obstacles_after = obstacles.size();
             }
         }
 
