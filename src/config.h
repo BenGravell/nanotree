@@ -32,11 +32,14 @@ static constexpr int RIBBON_WIDTH = ENVIRONMENT_WIDTH;
 static constexpr int RIBBON_HEIGHT = 200;
 static constexpr int RIBBON_COL_WIDTH = RIBBON_WIDTH / RIBBON_NUM_COLS;
 static constexpr int RIBBON_ROW_HEIGHT = RIBBON_HEIGHT / RIBBON_NUM_ROWS;
+
 static constexpr int SCREEN_WIDTH = ENVIRONMENT_WIDTH;
 static constexpr int SCREEN_HEIGHT = ENVIRONMENT_HEIGHT + RIBBON_HEIGHT;
+
 static constexpr int TEXT_HEIGHT_CONTROL_MODE = 0.4 * RIBBON_ROW_HEIGHT;
 static constexpr int TEXT_HEIGHT_CONTROL_KEYMAP = 0.2 * RIBBON_ROW_HEIGHT;
 static constexpr int TEXT_HEIGHT_STAT = 0.3 * RIBBON_ROW_HEIGHT;
+
 static constexpr int LINE_WIDTH_TREE = 8;
 static constexpr int LINE_WIDTH_PATH = 20;
 static constexpr int NODE_WIDTH_PATH = 40;

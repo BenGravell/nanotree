@@ -17,8 +17,8 @@
 // TODO these rectangles should not be globals...
 
 const Rectangle place_goal_button = {0 + 0.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
-const Rectangle add_obstacle_button = {0 + 1.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
-const Rectangle del_obstacle_button = {0 + 1.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
+const Rectangle del_obstacle_button = {0 + 1.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
+const Rectangle add_obstacle_button = {0 + 1.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
 const Rectangle dec_tree_size_button = {0 + 2.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
 const Rectangle inc_tree_size_button = {0 + 2.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
 const Rectangle dec_num_samples_button = {0 + 3.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
@@ -30,8 +30,8 @@ const Rectangle ribbon_row_2_col_2 = {0 + 2 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIG
 const Rectangle ribbon_row_2_col_3 = {0 + 3 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
 
 const std ::vector<Rectangle> ribbon_rectangles = {place_goal_button,
-                                                   add_obstacle_button,
                                                    del_obstacle_button,
+                                                   add_obstacle_button,
                                                    dec_tree_size_button,
                                                    inc_tree_size_button,
                                                    dec_num_samples_button,
@@ -95,6 +95,9 @@ int main() {
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "nanotree");
 
+    Font font = LoadFontEx("src/Oxanium-Regular.ttf", 40, 0, 0);
+    SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
+
     Vector2 goal = DEFAULT_GOAL;
     Obstacles obstacles = DEFAULT_OBSTACLES;
     Tree tree;
@@ -104,11 +107,17 @@ int main() {
     int num_samples = 500;
     int tree_target_max_size = 5000;
     SelectorMode mode = SelectorMode::PLACE_GOAL;
-
+    bool show_debug = false;
     float dt_draw = 0;
     bool first_iter = true;
 
+    // pre-growth
+    for (int i = 0; i < tree_target_max_size / num_samples; ++i) {
+        tree.grow(num_samples, goal, obstacles);
+    }
+
     while (!WindowShouldClose()) {
+        // ---- UI LOGIC
         Vector2 mouse = GetMousePosition();
 
         const bool is_down_lmb = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
@@ -140,10 +149,6 @@ int main() {
                 const int num_obstacles_before = obstacles.size();
                 obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, selector_pos) < (OBSTACLE_RADIUS + OBSTACLE_DEL_RADIUS); }), obstacles.end());
                 const int num_obstacles_after = obstacles.size();
-                // TODO
-                // if (num_obstacles_after != num_obstacles_before) {
-                //     tree_should_grow = true;
-                // }
             }
         }
 
@@ -160,6 +165,12 @@ int main() {
         if (IsKeyPressed(KEY_R)) {
             tree_should_reset = true;
         }
+
+        if (IsKeyPressed(KEY_D)) {
+            show_debug = !show_debug;
+        }
+
+        // ---- PLANNER LOGIC
 
         if (tree_should_reset) {
             tree.reset();
@@ -190,6 +201,7 @@ int main() {
 
         const int fps = GetFPS();
 
+        // ---- DRAWING
         const float t1_draw = GetTime();
         BeginDrawing();
         DrawRectangle(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_BACKGROUND);
@@ -198,18 +210,22 @@ int main() {
         DrawPath(path);
         DrawSelectorByMode(selector_pos, mode);
         DrawGoal(goal, goal_reached);
-        DrawRibbon(tree, num_samples, tree_target_max_size, goal_reached, mode, fps, ribbon_rectangles);
+        DrawRibbon(tree, num_samples, tree_target_max_size, goal_reached, mode, fps, ribbon_rectangles, font);
 
-        // DEBUG
-        // DrawText(TextFormat("%4d ms [retain tree]", int(1000.0f * dt_retain_tree)), 10, 10 + 0 * 50, TEXT_HEIGHT_STAT, GOLD);
-        // DrawText(TextFormat("%4d ms [grow tree]", int(1000.0f * dt_grow_tree)), 10, 10 + 1 * 50, TEXT_HEIGHT_STAT, GOLD);
-        // DrawText(TextFormat("%4d ms [extract path]", int(1000.0f * dt_extract_path)), 10, 10 + 2 * 50, TEXT_HEIGHT_STAT, GOLD);
-        // DrawText(TextFormat("%4d ms [draw]", int(1000.0f * dt_draw)), 10, 10 + 3 * 50, TEXT_HEIGHT_STAT, GREEN);
+        if (show_debug) {
+            DrawRectangle(0, 0, 500, 220, COLOR_RIBBON_BACKGROUND);
+            DrawRectangleLines(0, 0, 500, 220, COLOR_TEXT_CONTROL_SELECT_BKGD);
+            DrawTextEx(font, TextFormat("%4d ms [retain tree]", int(1000.0f * dt_retain_tree)), {10, 10 + 0 * 50}, TEXT_HEIGHT_STAT, 1, GOLD);
+            DrawTextEx(font, TextFormat("%4d ms [grow tree]", int(1000.0f * dt_grow_tree)), {10, 10 + 1 * 50}, TEXT_HEIGHT_STAT, 1, GOLD);
+            DrawTextEx(font, TextFormat("%4d ms [extract path]", int(1000.0f * dt_extract_path)), {10, 10 + 2 * 50}, TEXT_HEIGHT_STAT, 1, GOLD);
+            DrawTextEx(font, TextFormat("%4d ms [draw]", int(1000.0f * dt_draw)), {10, 10 + 3 * 50}, TEXT_HEIGHT_STAT, 1, GREEN);
+        }
 
         EndDrawing();
         const float t2_draw = GetTime();
         dt_draw = t2_draw - t1_draw;
     }
+    UnloadFont(font);
     CloseWindow();
     return 0;
 }
