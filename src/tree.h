@@ -61,6 +61,14 @@ struct TargetCostComparator {
     }
 };
 
+struct TargetCostComparatorInv {
+    Vector2 target;
+
+    bool operator()(const NodePtr& a, const NodePtr& b) const {
+        return computeHeuristicCost(a, target) > computeHeuristicCost(b, target);
+    }
+};
+
 NodePtr getNearest(const Vector2 target, const Nodes& nodes) {
     return *std::min_element(nodes.begin(), nodes.end(), TargetDistanceComparator{target});
 }
