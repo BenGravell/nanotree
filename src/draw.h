@@ -148,22 +148,22 @@ void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover
 
     DrawTextEx(font, TextFormat("%2i FPS", fps), {1.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, computeFpsColor(fps));
 
-    DrawTextEx(font, (std::to_string(tree.nodes.size()) + " nodes").c_str(), {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
+    DrawTextEx(font, (std::to_string(tree.nodes.size()) + " nodes").c_str(), {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, 0.6*TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
 
-    DrawTextEx(font, (std::to_string(num_carryover) + " carryover").c_str(), {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
+    DrawTextEx(font, ("Carryover = " + std::to_string(num_carryover)).c_str(), {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
 
-    DrawTextEx(font, (std::to_string(num_samples) + " samples").c_str(), {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
+    DrawTextEx(font, ("Samples = " + std::to_string(num_samples)).c_str(), {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
 
     // row 1a
     DrawTextEx(font, "Place goal", {0.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::PLACE_GOAL) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "- obstacle", {1.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::DEL_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "+ obstacle", {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::ADD_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "- Obstacle", {1.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::DEL_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "+ Obstacle", {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::ADD_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
 
-    DrawTextEx(font, "- carryover", {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "+ carryover", {2.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "- Carryover", {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "+ Carryover", {2.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
 
-    DrawTextEx(font, "- samples", {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "+ samples", {3.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "- Samples", {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "+ Samples", {3.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
 
     // row 1b
     DrawTextEx(font, "[LMB] to engage", {0.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y}, TEXT_HEIGHT_CONTROL_KEYMAP, 1, (mode == SelectorMode::PLACE_GOAL) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);

@@ -66,16 +66,16 @@ NodePtr getNearest(const Vector2 target, const Nodes& nodes) {
 }
 
 NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const float max_dist) {
-    std::vector<NodePtr> within_range;
-    within_range.reserve(nodes.size());
+    std::vector<NodePtr> neighbors;
+    neighbors.reserve(nodes.size());
     for (const NodePtr& node : nodes) {
         if (Vector2Distance(node->pos, target) <= max_dist) {
-            within_range.push_back(node);
+            neighbors.push_back(node);
         }
     }
 
-    if (!within_range.empty()) {
-        return *std::min_element(within_range.begin(), within_range.end(), TargetCostComparator{target});
+    if (!neighbors.empty()) {
+        return *std::min_element(neighbors.begin(), neighbors.end(), TargetCostComparator{target});
     }
 
     return getNearest(target, nodes);

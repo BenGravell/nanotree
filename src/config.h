@@ -134,7 +134,7 @@ static constexpr int SCREEN_HEIGHT = ENVIRONMENT_HEIGHT + RIBBON_HEIGHT;
 
 static constexpr int TEXT_HEIGHT_CONTROL_MODE = 0.4 * RIBBON_ROW_HEIGHT;
 static constexpr int TEXT_HEIGHT_CONTROL_KEYMAP = 0.2 * RIBBON_ROW_HEIGHT;
-static constexpr int TEXT_HEIGHT_STAT = 0.3 * RIBBON_ROW_HEIGHT;
+static constexpr int TEXT_HEIGHT_STAT = 0.5 * RIBBON_ROW_HEIGHT;
 
 static constexpr int LINE_WIDTH_TREE = 5;
 static constexpr int LINE_WIDTH_PATH = 15;
