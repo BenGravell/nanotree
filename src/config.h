@@ -17,9 +17,6 @@ static constexpr float OBSTACLE_SPACING_MIN = 10.0f;
 static constexpr float OBSTACLE_DEL_RADIUS = 20.0f;
 static constexpr float START_CHANGED_DIST_MIN = 1.0f;
 
-static constexpr int GRID_THICKNESS = 3;
-static constexpr int GRID_SPACING = 100;
-
 static constexpr Vector2 DEFAULT_START = {100, 500};
 static constexpr Vector2 DEFAULT_GOAL = {600, 500};
 
@@ -132,6 +129,11 @@ static constexpr int RIBBON_ROW_HEIGHT = RIBBON_HEIGHT / RIBBON_NUM_ROWS;
 
 static constexpr int SCREEN_WIDTH = ENVIRONMENT_WIDTH;
 static constexpr int SCREEN_HEIGHT = ENVIRONMENT_HEIGHT + RIBBON_HEIGHT;
+
+static constexpr int GRID_THICKNESS_MINOR = 1;
+static constexpr int GRID_THICKNESS_MAJOR = 3;
+static constexpr int GRID_SPACING_MINOR = 50;
+static constexpr int GRID_SPACING_MAJOR = 200;
 
 static constexpr int TEXT_HEIGHT_CONTROL_MODE = 0.4 * RIBBON_ROW_HEIGHT;
 static constexpr int TEXT_HEIGHT_CONTROL_KEYMAP = 0.2 * RIBBON_ROW_HEIGHT;

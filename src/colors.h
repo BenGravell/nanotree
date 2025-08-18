@@ -19,7 +19,8 @@ static constexpr Color COLOR_PATH = {255, 255, 255, 255};
 static constexpr Color COLOR_TEXT_CONTROLS = {240, 240, 240, 255};
 static constexpr Color COLOR_TEXT_CONTROL_SELECT_BKGD = {240, 240, 240, 255};
 
-static constexpr Color COLOR_GRID = {32, 32, 32, 255};
+static constexpr Color COLOR_GRID_MINOR = {32, 32, 32, 255};
+static constexpr Color COLOR_GRID_MAJOR = {48, 48, 48, 255};
 
 static constexpr Color COLOR_START = {240, 240, 240, 255};
 const Color COLOR_GOAL_REACHED = guppyColor(0.0f);

@@ -235,8 +235,8 @@ int main() {
         const float t1_draw = GetTime();
         BeginDrawing();
         DrawRectangle(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_BACKGROUND);
-        DrawFlatGrid(0, ENVIRONMENT_WIDTH, 0, ENVIRONMENT_HEIGHT, GRID_SPACING);
-        DrawRectangleLines(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_TEXT_CONTROL_SELECT_BKGD);
+        DrawFlatGrid(0, ENVIRONMENT_WIDTH, 0, ENVIRONMENT_HEIGHT, {GRID_SPACING_MINOR, GRID_THICKNESS_MINOR, COLOR_GRID_MINOR});
+        DrawFlatGrid(0, ENVIRONMENT_WIDTH, 0, ENVIRONMENT_HEIGHT, {GRID_SPACING_MAJOR, GRID_THICKNESS_MAJOR, COLOR_GRID_MAJOR});
         DrawObstacles(obstacles);
         DrawTree(tree, path, goal);
         DrawPath(path);
@@ -253,6 +253,8 @@ int main() {
             DrawTextEx(font, TextFormat("%4d ms [extract path]", int(1000.0f * dt_extract_path)), {10, 10 + 2 * 50}, TEXT_HEIGHT_STAT, 1, GOLD);
             DrawTextEx(font, TextFormat("%4d ms [draw]", int(1000.0f * dt_draw)), {10, 10 + 3 * 50}, TEXT_HEIGHT_STAT, 1, GREEN);
         }
+
+        DrawRectangleLinesEx({0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT}, 3, COLOR_TEXT_CONTROL_SELECT_BKGD);
 
         EndDrawing();
         const float t2_draw = GetTime();
