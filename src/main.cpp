@@ -212,6 +212,7 @@ int main() {
         const float t1_draw = GetTime();
         BeginDrawing();
         DrawRectangle(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_BACKGROUND);
+        DrawFlatGrid(0, ENVIRONMENT_WIDTH, 0, ENVIRONMENT_HEIGHT, GRID_SPACING);
         DrawRectangleLines(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_TEXT_CONTROL_SELECT_BKGD);
         DrawObstacles(obstacles);
         DrawTree(tree, path, goal);

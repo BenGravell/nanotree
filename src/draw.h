@@ -45,6 +45,15 @@ void DrawSelectorByMode(const Vector2 pos, const SelectorMode mode) {
     }
 }
 
+void DrawFlatGrid(const int x_min, const int x_max, const int y_min, const int y_max, const int spacing) {
+    for (int x = x_min; x <= x_max; x += spacing) {
+        DrawLineEx({float(x), float(y_min)}, {float(x), float(y_max)}, GRID_THICKNESS, COLOR_GRID);
+    }
+    for (int y = y_min; y <= y_max; y += spacing) {
+        DrawLineEx({float(x_min), float(y)}, {float(x_max), float(y)}, GRID_THICKNESS, COLOR_GRID);
+    }
+}
+
 void DrawSquare(const Vector2 center, const float radius, const Color color) {
     DrawRectangle(center.x - radius, center.y - radius, 2 * radius, 2 * radius, color);
 }
