@@ -104,10 +104,7 @@ void DrawTree(const Tree& tree, const Path& path, const Vector2 goal) {
 
     // Sort by heuristic cost
     std::vector<NodePtr> sorted_nodes = tree.nodes;
-    std::sort(sorted_nodes.begin(), sorted_nodes.end(),
-              [&](const NodePtr& a, const NodePtr& b) {
-                  return computeHeuristicCost(a, goal) > computeHeuristicCost(b, goal);
-              });
+    std::sort(sorted_nodes.begin(), sorted_nodes.end(), TargetCostComparator{goal});
 
     // Draw in sorted order
     for (const NodePtr& node : sorted_nodes) {
