@@ -142,19 +142,23 @@ struct Tree {
         nodes = {std::make_shared<Node>(Node{nullptr, start, 0.0f})};
     }
 
-    void carryover(const Path path, const int num_carryover) {
+    void carryover(const Path path, const int num_carryover, const bool carryover_path) {
         // TODO do not retain nodes or their children if in collision!
 
         std::vector<NodePtr> retained_nodes;
         std::unordered_set<NodePtr, NodePtrHash, NodePtrEq> retained_set;
 
-        if (!path.empty()) {
-            for (const NodePtr& node : nodes) {
-                if (std::find(path.begin(), path.end(), node) != path.end()) {
-                    retained_nodes.push_back(node);
-                    retained_set.insert(node);
-                }
+        if (!path.empty() && carryover_path) {
+            for (const NodePtr& node : path) {
+                retained_nodes.push_back(node);
+                retained_set.insert(node);
             }
+        }
+
+        NodePtr root = nodes.front();
+        if (retained_set.find(root) == retained_set.end()) {
+            retained_nodes.push_back(root);
+            retained_set.insert(root);
         }
 
         Nodes shuffled = nodes;

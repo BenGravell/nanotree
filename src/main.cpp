@@ -122,6 +122,7 @@ int main() {
     int num_carryover = 2000;
     SelectorMode mode = SelectorMode::PLACE_GOAL;
     bool show_debug = false;
+    bool carryover_path = true;
     float dt_draw = 0;
     bool first_iter = true;
 
@@ -177,23 +178,29 @@ int main() {
         first_iter = false;
 
         // KEYMAP
-        // MMB: delete obstacle
-        // RMB: add obstacle
-        // Scroll: adjust num samples
+        // MMB: Delete obstacle
+        // RMB: Add obstacle
+        // Scroll: Adjust num samples
         // G: Grow tree (once)
         // T: Grow tree (continuously)
+        // P: Toggle carryover of path
         // R: Reset tree
         // D: Show debug info
 
         if (IsKeyPressed(KEY_G)) {
             tree_should_grow = true;
         }
+
         if (IsKeyDown(KEY_T)) {
             tree_should_grow = true;
         }
 
         if (IsKeyPressed(KEY_R)) {
             tree_should_reset = true;
+        }
+
+        if (IsKeyPressed(KEY_P)) {
+            carryover_path = !carryover_path;
         }
 
         if (IsKeyPressed(KEY_D)) {
@@ -212,7 +219,7 @@ int main() {
         float t2_grow_tree = GetTime();
         if (tree_should_grow) {
             t1_carryover = GetTime();
-            tree.carryover(path, num_carryover);
+            tree.carryover(path, num_carryover, carryover_path);
             t2_carryover = GetTime();
 
             t1_grow_tree = GetTime();
