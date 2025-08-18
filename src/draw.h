@@ -102,7 +102,15 @@ void DrawTree(const Tree& tree, const Path& path, const Vector2 goal) {
         cost_tree = std::max(cost_tree, computeHeuristicCost(node, goal));
     }
 
-    for (const NodePtr& node : tree.nodes) {
+    // Sort by heuristic cost
+    std::vector<NodePtr> sorted_nodes = tree.nodes;
+    std::sort(sorted_nodes.begin(), sorted_nodes.end(),
+              [&](const NodePtr& a, const NodePtr& b) {
+                  return computeHeuristicCost(a, goal) > computeHeuristicCost(b, goal);
+              });
+
+    // Draw in sorted order
+    for (const NodePtr& node : sorted_nodes) {
         if (!node->parent) {
             continue;
         }
@@ -151,7 +159,7 @@ void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover
 
     DrawTextEx(font, TextFormat("%2i FPS", fps), {1.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, computeFpsColor(fps));
 
-    DrawTextEx(font, (std::to_string(tree.nodes.size()) + " nodes").c_str(), {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, 0.6*TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
+    DrawTextEx(font, (std::to_string(tree.nodes.size()) + " nodes").c_str(), {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, 0.6 * TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
 
     DrawTextEx(font, ("Carryover = " + std::to_string(num_carryover)).c_str(), {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
 
