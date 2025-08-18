@@ -33,6 +33,9 @@ void DrawSelector(const Vector2 pos, const SelectorParams params) {
 
 void DrawSelectorByMode(const Vector2 pos, const SelectorMode mode) {
     switch (mode) {
+        case SelectorMode::PLACE_START:
+            DrawSelector(pos, {START_RADIUS, 0.6f, 6, 3.0f});
+            return;
         case SelectorMode::PLACE_GOAL:
             DrawSelector(pos, {GOAL_RADIUS, 0.4f, 8, 4.0f});
             return;
@@ -128,8 +131,9 @@ void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover
     // TODO use the Rectangle objects directly
     // TODO make class for clickable button to handle color of button and text
 
+    // TODO access rectangle by enum mode explicitly instead of relying on integer cast and index alignment
     // highlight the selected mode cell
-    for (int m = 0; m <= 2; ++m) {
+    for (int m = 0; m <= 3; ++m) {
         if (m == int(mode)) {
             DrawRectangleRec(button_rectangles[m], COLOR_TEXT_CONTROL_SELECT_BKGD);
         }
@@ -137,8 +141,7 @@ void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover
 
     static constexpr int TEXT_MARGIN_WIDTH = 20;
 
-    static constexpr int RIBBON_ROW_1A_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 15;
-    static constexpr int RIBBON_ROW_1B_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 60;
+    static constexpr int RIBBON_ROW_1_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + (RIBBON_ROW_HEIGHT - TEXT_HEIGHT_CONTROL_MODE) / 2;
     static constexpr int RIBBON_ROW_2_Y = ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT + (RIBBON_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
 
     // TODO center all text
@@ -155,25 +158,14 @@ void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover
     DrawTextEx(font, ("Samples = " + std::to_string(num_samples)).c_str(), {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
 
     // row 1a
-    DrawTextEx(font, "Place goal", {0.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::PLACE_GOAL) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "- Obstacle", {1.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::DEL_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "+ Obstacle", {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::ADD_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "Place start", {0.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::PLACE_START) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "Place goal", {0.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::PLACE_GOAL) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "- Obstacle", {1.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::DEL_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "+ Obstacle", {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::ADD_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
 
-    DrawTextEx(font, "- Carryover", {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "+ Carryover", {2.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "- Carryover", {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "+ Carryover", {2.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
 
-    DrawTextEx(font, "- Samples", {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "+ Samples", {3.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1A_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
-
-    // row 1b
-    DrawTextEx(font, "[LMB] to engage", {0.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y}, TEXT_HEIGHT_CONTROL_KEYMAP, 1, (mode == SelectorMode::PLACE_GOAL) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
-
-    DrawTextEx(font, "[LMB] here / [MMB]", {1.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y}, TEXT_HEIGHT_CONTROL_KEYMAP, 1, (mode == SelectorMode::DEL_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "[LMB] here / [RMB]", {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y}, TEXT_HEIGHT_CONTROL_KEYMAP, 1, (mode == SelectorMode::ADD_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
-
-    DrawTextEx(font, "[LMB] here", {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y}, TEXT_HEIGHT_CONTROL_KEYMAP, 1, COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "[LMB] here", {2.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y}, TEXT_HEIGHT_CONTROL_KEYMAP, 1, COLOR_TEXT_CONTROLS);
-
-    DrawTextEx(font, "[LMB] here / [Scroll]", {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y}, TEXT_HEIGHT_CONTROL_KEYMAP, 1, COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "[LMB] here / [Scroll]", {3.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1B_Y}, TEXT_HEIGHT_CONTROL_KEYMAP, 1, COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "- Samples", {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "+ Samples", {3.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
 }

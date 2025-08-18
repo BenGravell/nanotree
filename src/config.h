@@ -15,6 +15,7 @@ static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
 
 static constexpr float OBSTACLE_SPACING_MIN = 10.0f;
 static constexpr float OBSTACLE_DEL_RADIUS = 20.0f;
+static constexpr float START_CHANGED_DIST_MIN = 1.0f;
 
 static constexpr int GRID_THICKNESS = 3;
 static constexpr int GRID_SPACING = 100;

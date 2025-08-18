@@ -16,7 +16,8 @@
 
 // TODO these rectangles should not be globals...
 
-const Rectangle place_goal_button = {0 + 0.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+const Rectangle place_start_button = {0 + 0.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
+const Rectangle place_goal_button = {0 + 0.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
 const Rectangle del_obstacle_button = {0 + 1.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
 const Rectangle add_obstacle_button = {0 + 1.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
 const Rectangle dec_tree_size_button = {0 + 2.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
@@ -29,7 +30,8 @@ const Rectangle ribbon_row_2_col_1 = {0 + 1 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIG
 const Rectangle ribbon_row_2_col_2 = {0 + 2 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
 const Rectangle ribbon_row_2_col_3 = {0 + 3 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
 
-const std ::vector<Rectangle> ribbon_rectangles = {place_goal_button,
+const std ::vector<Rectangle> ribbon_rectangles = {place_start_button,
+                                                   place_goal_button,
                                                    del_obstacle_button,
                                                    add_obstacle_button,
                                                    dec_tree_size_button,
@@ -47,6 +49,9 @@ std::optional<SelectorMode> getSelectorMode() {
     }
 
     const Vector2 mouse = GetMousePosition();
+    if (CheckCollisionPointRec(mouse, place_start_button)) {
+        return SelectorMode::PLACE_START;
+    }
     if (CheckCollisionPointRec(mouse, place_goal_button)) {
         return SelectorMode::PLACE_GOAL;
     }
@@ -142,6 +147,15 @@ int main() {
         bool tree_should_reset = false;
         bool tree_should_grow = false;
         if (mouse_in_environment) {
+            if (is_down_lmb && mode == SelectorMode::PLACE_START) {
+                const bool start_changed = Vector2Distance(start, selector_pos) > START_CHANGED_DIST_MIN;
+                if (start_changed) {
+                    start = selector_pos;
+                    tree_should_reset = true;
+                } else {
+                    tree_should_grow = true;
+                }
+            }
             if (is_down_lmb && mode == SelectorMode::PLACE_GOAL) {
                 goal = selector_pos;
                 tree_should_grow = true;
@@ -161,6 +175,15 @@ int main() {
 
         tree_should_grow = tree_should_grow || first_iter;
         first_iter = false;
+
+        // KEYMAP
+        // MMB: delete obstacle
+        // RMB: add obstacle
+        // Scroll: adjust num samples
+        // G: Grow tree (once)
+        // T: Grow tree (continuously)
+        // R: Reset tree
+        // D: Show debug info
 
         if (IsKeyPressed(KEY_G)) {
             tree_should_grow = true;
