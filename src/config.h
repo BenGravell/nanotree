@@ -118,17 +118,18 @@ static constexpr std::array<int, 14> NUM_SAMPLES_OPTIONS = {0, 1, 2, 5, 10, 20, 
 static constexpr std::array<int, 16> NUM_CARRYOVER_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000};
 
 // UI sizes
-static constexpr int ENVIRONMENT_WIDTH = 2000;
-static constexpr int ENVIRONMENT_HEIGHT = 1000;
+static constexpr int SCREEN_WIDTH = 2000;
+static constexpr int SCREEN_HEIGHT = 1200;
+
 static constexpr int RIBBON_NUM_COLS = 4;
 static constexpr int RIBBON_NUM_ROWS = 2;
-static constexpr int RIBBON_WIDTH = ENVIRONMENT_WIDTH;
+static constexpr int RIBBON_WIDTH = SCREEN_WIDTH;
 static constexpr int RIBBON_HEIGHT = 200;
 static constexpr int RIBBON_COL_WIDTH = RIBBON_WIDTH / RIBBON_NUM_COLS;
 static constexpr int RIBBON_ROW_HEIGHT = RIBBON_HEIGHT / RIBBON_NUM_ROWS;
 
-static constexpr int SCREEN_WIDTH = ENVIRONMENT_WIDTH;
-static constexpr int SCREEN_HEIGHT = ENVIRONMENT_HEIGHT + RIBBON_HEIGHT;
+static constexpr int ENVIRONMENT_WIDTH = SCREEN_WIDTH;
+static constexpr int ENVIRONMENT_HEIGHT = SCREEN_HEIGHT - RIBBON_HEIGHT;
 
 static constexpr int GRID_THICKNESS_MINOR = 1;
 static constexpr int GRID_THICKNESS_MAJOR = 3;
