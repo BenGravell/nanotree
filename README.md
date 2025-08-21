@@ -58,7 +58,6 @@ cd ~/emsdk
 source ./emsdk_env.sh
 ```
 
-
 #### build raylib for web
 
 ```bash
@@ -103,9 +102,15 @@ cd ~/emsdk
 source emsdk_env.sh
 cd ~/nanotree
 
-em++ -o index.html src/main.cpp -O3 -Wall -I ~/emsdk/upstream/emscripten/cache/sysroot/include \
--L ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a -s USE_GLFW=3 -s ASYNCIFY --preload-file assets \
---shell-file shell.html -DPLATFORM_WEB ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a
+em++ -o index.html src/main.cpp -O3 -Wall \
+-I src \
+-I ~/emsdk/upstream/emscripten/cache/sysroot/include \
+-L ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a \
+-s USE_GLFW=3 -s ASYNCIFY \
+--preload-file assets \
+--shell-file shell.html \
+-DPLATFORM_WEB \
+~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a
 ```
 
 #### Run
