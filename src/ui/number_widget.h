@@ -31,18 +31,15 @@ enum class DeltaSize {
     INC_LARGE = 3
 };
 
-static constexpr float BUTTON_WIDTH = 80.0f;
-static constexpr float BUTTON_HEIGHT = 80.0f;
-static constexpr float SPACING = 10.0f;
 
 struct DeltaButtonGroup {
     std::map<DeltaSize, Rectangle> rectangles;
 
     DeltaButtonGroup(const Vector2 pos) {
-        rectangles[DeltaSize::DEC_LARGE] = {pos.x + 0 * (BUTTON_WIDTH + SPACING), pos.y, BUTTON_WIDTH, BUTTON_HEIGHT};
-        rectangles[DeltaSize::DEC_SMALL] = {pos.x + 1 * (BUTTON_WIDTH + SPACING), pos.y, BUTTON_WIDTH, BUTTON_HEIGHT};
-        rectangles[DeltaSize::INC_SMALL] = {pos.x + 2 * (BUTTON_WIDTH + SPACING), pos.y, BUTTON_WIDTH, BUTTON_HEIGHT};
-        rectangles[DeltaSize::INC_LARGE] = {pos.x + 3 * (BUTTON_WIDTH + SPACING), pos.y, BUTTON_WIDTH, BUTTON_HEIGHT};
+        rectangles[DeltaSize::DEC_LARGE] = {pos.x + 0 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT};
+        rectangles[DeltaSize::DEC_SMALL] = {pos.x + 1 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT};
+        rectangles[DeltaSize::INC_SMALL] = {pos.x + 2 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT};
+        rectangles[DeltaSize::INC_LARGE] = {pos.x + 3 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT};
     }
 
     int get() {
@@ -69,7 +66,7 @@ struct NumberWidget {
     ToggleButton scroll_toggle_button;
 
     NumberWidget(const int current, const std::vector<int>& options, const bool scrollable, const Vector2 pos)
-        : current(current), options(options), scrollable(scrollable), pos(pos), delta_button_group(pos), scroll_toggle_button({false, {pos.x + 4 * (BUTTON_WIDTH + SPACING) + SPACING, pos.y, BUTTON_WIDTH, BUTTON_HEIGHT}}) {
+        : current(current), options(options), scrollable(scrollable), pos(pos), delta_button_group(pos), scroll_toggle_button({false, {pos.x + 4 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN) + BUTTON_MARGIN, pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT}}) {
     }
 
     void update() {

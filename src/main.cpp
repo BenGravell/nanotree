@@ -17,10 +17,12 @@
 
 // TODO these rectangles should not be globals... they should be collected in a Selector struct along with getSelectorMode()
 
-const Rectangle place_start_button = {0 + 0.0 * RIBBON_COL_WIDTH + 10, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 10, RIBBON_COL_WIDTH / 2 - 20, RIBBON_ROW_HEIGHT - 20};
-const Rectangle place_goal_button = {0 + 0.5 * RIBBON_COL_WIDTH + 10, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 10, RIBBON_COL_WIDTH / 2 - 20, RIBBON_ROW_HEIGHT - 20};
-const Rectangle del_obstacle_button = {0 + 1.0 * RIBBON_COL_WIDTH + 10, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 10, RIBBON_COL_WIDTH / 2 - 20, RIBBON_ROW_HEIGHT - 20};
-const Rectangle add_obstacle_button = {0 + 1.5 * RIBBON_COL_WIDTH + 10, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 10, RIBBON_COL_WIDTH / 2 - 20, RIBBON_ROW_HEIGHT - 20};
+static constexpr int BUTTON_Y = ENVIRONMENT_HEIGHT + BUTTON_MARGIN;
+
+const Rectangle place_start_button = {0 + 0.0 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT};
+const Rectangle place_goal_button = {0 + 0.5 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT};
+const Rectangle del_obstacle_button = {0 + 1.0 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT};
+const Rectangle add_obstacle_button = {0 + 1.5 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT};
 
 const std ::vector<Rectangle> ribbon_rectangles = {place_start_button,
                                                    place_goal_button,
@@ -75,9 +77,24 @@ int main() {
     float dt_draw = 0;
     bool first_iter = true;
 
-    // Pre-grow tree to fill it up to carryover limit.
-    for (int i = 0; i < num_carryover / num_samples; ++i) {
-        tree.grow(num_samples, goal, obstacles);
+    // Run the planner until:
+    // 1: tree filled up to carryover limit
+    // 2: goal reached
+    // 3: ran out of attempts
+    int num_init_attempts = 0;
+    const int num_init_attempts_max = 5 * (num_carryover / num_samples);
+    {
+        bool goal_reached = false;
+        while ((tree.nodes.size() < num_carryover) || !goal_reached) {
+            tree.grow(num_samples, goal, obstacles);
+            tree.carryover(path, num_carryover, carryover_path);
+            path = extractPath(goal, tree.nodes);
+            goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
+            num_init_attempts++;
+            if (num_init_attempts >= num_init_attempts_max) {
+                break;
+            }
+        }
     }
 
     while (!WindowShouldClose()) {
@@ -193,6 +210,7 @@ int main() {
         // ---- DRAWING LOGIC
         const float t1_draw = GetTime();
         BeginDrawing();
+        // Environment
         DrawRectangle(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_BACKGROUND);
         DrawFlatGrid(0, ENVIRONMENT_WIDTH, 0, ENVIRONMENT_HEIGHT, {GRID_SPACING_MINOR, GRID_THICKNESS_MINOR, COLOR_GRID_MINOR});
         DrawFlatGrid(0, ENVIRONMENT_WIDTH, 0, ENVIRONMENT_HEIGHT, {GRID_SPACING_MAJOR, GRID_THICKNESS_MAJOR, COLOR_GRID_MAJOR});
@@ -202,20 +220,24 @@ int main() {
         DrawSelectorByMode(selector_pos, mode);
         DrawStart(start);
         DrawGoal(goal, goal_reached);
+        // Statbar
+        DrawStatBar(tree, goal_reached, fps, font);
+        // Ribbon
         DrawRibbon(tree, num_samples, num_carryover, goal_reached, mode, fps, ribbon_rectangles, font);
         DrawNumberWidget(num_samples_widget);
         DrawNumberWidget(num_carryover_widget);
-
+        // Debug
         if (show_debug) {
             DrawRectangle(0, 0, 500, 220, COLOR_RIBBON_BACKGROUND);
-            DrawRectangleLines(0, 0, 500, 220, COLOR_TEXT_CONTROL_SELECT_BKGD);
+            DrawRectangleLines(0, 0, 500, 220, COLOR_RIBBON_BORDER);
             DrawTextEx(font, TextFormat("%4d ms [carryover]", int(1000.0f * dt_carryover)), {10, 10 + 0 * 50}, TEXT_HEIGHT_STAT, 1, GOLD);
             DrawTextEx(font, TextFormat("%4d ms [grow tree]", int(1000.0f * dt_grow_tree)), {10, 10 + 1 * 50}, TEXT_HEIGHT_STAT, 1, GOLD);
             DrawTextEx(font, TextFormat("%4d ms [extract path]", int(1000.0f * dt_extract_path)), {10, 10 + 2 * 50}, TEXT_HEIGHT_STAT, 1, GOLD);
             DrawTextEx(font, TextFormat("%4d ms [draw]", int(1000.0f * dt_draw)), {10, 10 + 3 * 50}, TEXT_HEIGHT_STAT, 1, GREEN);
         }
 
-        DrawRectangleLinesEx({0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT}, 3, COLOR_TEXT_CONTROL_SELECT_BKGD);
+        // Border around whole screen
+        DrawRectangleLinesEx({0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}, 3, COLOR_SCREEN_BORDER);
 
         EndDrawing();
         const float t2_draw = GetTime();

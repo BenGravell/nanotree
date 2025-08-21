@@ -3,6 +3,9 @@
 #include <raylib.h>
 #include <raymath.h>
 
+#include <sstream>
+#include <string>
+
 #include "core/config.h"
 #include "core/obstacle.h"
 #include "planner/tree.h"
@@ -241,13 +244,55 @@ void DrawPath(const Path& path) {
     }
 }
 
+std::string Vector2ToString(const Vector2& v) {
+    std::ostringstream ss;
+    ss << "(" << v.x << ", " << v.y << ")";
+    return ss.str();
+}
+
+void DrawStatBar(const Tree& tree, const bool goal_reached, const int fps, const Font font) {
+    const Rectangle rec{ENVIRONMENT_WIDTH, 0, STATBAR_WIDTH, STATBAR_HEIGHT};
+
+    // Background
+    DrawRectangleRec(rec, COLOR_STATBAR_BACKGROUND);
+
+    static constexpr int TEXT_MARGIN_WIDTH = 20;
+
+    static constexpr int X = ENVIRONMENT_WIDTH + TEXT_MARGIN_WIDTH;
+
+    static constexpr int ROW_0_Y = 0 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+    static constexpr int ROW_1_Y = 1 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+    static constexpr int ROW_2_Y = 2 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+    static constexpr int ROW_3_Y = 3 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+    static constexpr int ROW_4_Y = 4 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+    static constexpr int ROW_5_Y = 5 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+    static constexpr int ROW_6_Y = 6 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+    static constexpr int ROW_7_Y = 7 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+    static constexpr int ROW_8_Y = 8 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+    static constexpr int ROW_9_Y = 9 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+
+    // TODO center all text
+
+    DrawTextEx(font, std::string(goal_reached ? "Goal reached" : "Goal missed").c_str(), {X, ROW_0_Y}, TEXT_HEIGHT_STAT, 1, computeGoalColor(goal_reached));
+
+    DrawTextEx(font, (std::to_string(tree.nodes.size()) + " nodes").c_str(), {X, ROW_1_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
+
+    const Vector2 mouse = GetMousePosition();
+    DrawTextEx(font, ("Mouse: " + Vector2ToString(mouse)).c_str(), {X, ROW_8_Y}, TEXT_HEIGHT_STAT, 1, COLOR_STAT);
+
+    DrawTextEx(font, TextFormat("%2i FPS", fps), {X, ROW_9_Y}, TEXT_HEIGHT_STAT, 1, computeFpsColor(fps));
+
+    // Border
+    DrawRectangleLinesEx(rec, 3, COLOR_STATBAR_BORDER);
+}
+
 void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover, const bool goal_reached, const SelectorMode mode, const int fps, const std::vector<Rectangle>& button_rectangles, const Font font) {
-    DrawRectangle(0, ENVIRONMENT_HEIGHT, ENVIRONMENT_WIDTH, RIBBON_HEIGHT, COLOR_RIBBON_BACKGROUND);
+    const Rectangle rec{0, ENVIRONMENT_HEIGHT, RIBBON_WIDTH, RIBBON_HEIGHT};
 
-    for (const Rectangle rect : button_rectangles) {
-        DrawRectangleLinesEx(rect, 3, COLOR_TEXT_CONTROL_SELECT_BKGD);
-    }
+    // Background
+    DrawRectangleRec(rec, COLOR_RIBBON_BACKGROUND);
 
+    // Separators between columns
     for (int i = 1; i < 4; ++i) {
         DrawLineEx({float(i) * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 10}, {float(i) * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 2 * RIBBON_ROW_HEIGHT - 10}, 3, Color{128, 128, 128, 255});
     }
@@ -258,9 +303,12 @@ void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover
     // TODO access rectangle by enum mode explicitly instead of relying on integer cast and index alignment
     // highlight the selected mode cell
     for (int m = 0; m <= 3; ++m) {
-        if (m == int(mode)) {
-            DrawRectangleRec(button_rectangles[m], COLOR_TEXT_CONTROL_SELECT_BKGD);
-        }
+        const Rectangle& rec = button_rectangles[m];
+        const bool active = (m == int(mode));
+        const Color fill = active ? COLOR_BUTTON_BACKGROUND_ACTIVE : COLOR_BUTTON_BACKGROUND_INACTIVE;
+        const Color border = active ? COLOR_BUTTON_BORDER_ACTIVE : COLOR_BUTTON_BORDER_INACTIVE;
+        DrawRectangleRec(rec, fill);
+        DrawRectangleLinesEx(rec, 3, border);
     }
 
     static constexpr int TEXT_MARGIN_WIDTH = 20;
@@ -270,13 +318,6 @@ void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover
 
     // TODO center all text
 
-    // row 2
-    DrawTextEx(font, std::string(goal_reached ? "Goal reached" : "Goal missed").c_str(), {0.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, computeGoalColor(goal_reached));
-
-    DrawTextEx(font, TextFormat("%2i FPS", fps), {1.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, computeFpsColor(fps));
-
-    DrawTextEx(font, (std::to_string(tree.nodes.size()) + " nodes").c_str(), {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, 0.6 * TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
-
     DrawTextEx(font, ("Samples = " + std::to_string(num_samples)).c_str(), {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
     DrawTextEx(font, ("Carryover = " + std::to_string(num_carryover)).c_str(), {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
 
@@ -285,4 +326,7 @@ void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover
     DrawTextEx(font, "Place goal", {0.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::PLACE_GOAL) ? COLOR_BUTTON_BACKGROUND_INACTIVE : COLOR_BUTTON_BACKGROUND_ACTIVE);
     DrawTextEx(font, "- Obstacle", {1.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::DEL_OBSTACLE) ? COLOR_BUTTON_BACKGROUND_INACTIVE : COLOR_BUTTON_BACKGROUND_ACTIVE);
     DrawTextEx(font, "+ Obstacle", {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::ADD_OBSTACLE) ? COLOR_BUTTON_BACKGROUND_INACTIVE : COLOR_BUTTON_BACKGROUND_ACTIVE);
+
+    // Border
+    DrawRectangleLinesEx(rec, 3, COLOR_RIBBON_BORDER);
 }
