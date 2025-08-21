@@ -131,8 +131,8 @@ static constexpr int RIBBON_ROW_HEIGHT = RIBBON_HEIGHT / RIBBON_NUM_ROWS;
 static constexpr int ENVIRONMENT_WIDTH = SCREEN_WIDTH;
 static constexpr int ENVIRONMENT_HEIGHT = SCREEN_HEIGHT - RIBBON_HEIGHT;
 
-static constexpr int GRID_THICKNESS_MINOR = 1;
-static constexpr int GRID_THICKNESS_MAJOR = 3;
+static constexpr int GRID_THICKNESS_MINOR = 3;
+static constexpr int GRID_THICKNESS_MAJOR = 5;
 static constexpr int GRID_SPACING_MINOR = 50;
 static constexpr int GRID_SPACING_MAJOR = 200;
 

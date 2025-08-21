@@ -3,11 +3,120 @@
 #include <raylib.h>
 #include <raymath.h>
 
-#include "colors.h"
-#include "config.h"
-#include "mode.h"
-#include "obstacle.h"
-#include "tree.h"
+#include "core/config.h"
+#include "core/obstacle.h"
+#include "planner/tree.h"
+#include "ui/colors.h"
+#include "ui/mode.h"
+#include "ui/number_widget.h"
+
+void DrawChevron(const Rectangle& rec, const float dir, const Color color) {
+    const Vector2 c = {rec.x + 0.5f * rec.width, rec.y + 0.5f * rec.height};
+    const float s = 0.5f * 0.75f * std::min(rec.width, rec.height);
+
+    Vector2 v[6];
+    const float x_scale = std::abs(dir);
+
+    // TODO make this less verbose
+    if (dir > 0.0f) {
+        // Right-facing outline (top-left -> mid-top -> tip -> mid-bot -> bot-left -> inner-notch)
+        v[0] = {c.x - x_scale * s, c.y - s};  // top-left
+        v[1] = {c.x, c.y - s};                // mid-top
+        v[2] = {c.x + x_scale * s, c.y};      // tip (right)
+        v[3] = {c.x, c.y + s};                // mid-bot
+        v[4] = {c.x - x_scale * s, c.y + s};  // bot-left
+        v[5] = {c.x - x_scale, c.y};          // inner notch (left of center)
+
+        DrawTriangle(v[5], v[1], v[0], color);
+        DrawTriangle(v[5], v[2], v[1], color);
+        DrawTriangle(v[5], v[3], v[2], color);
+        DrawTriangle(v[5], v[4], v[3], color);
+    } else {
+        // Left-facing outline (top-right -> mid-top -> tip -> mid-bot -> bot-right -> inner-notch)
+        v[0] = {c.x + x_scale * s, c.y - s};  // top-right
+        v[1] = {c.x, c.y - s};                // mid-top
+        v[2] = {c.x - x_scale * s, c.y};      // tip (left)
+        v[3] = {c.x, c.y + s};                // mid-bot
+        v[4] = {c.x + x_scale * s, c.y + s};  // bot-right
+        v[5] = {c.x + x_scale, c.y};          // inner notch (right of center)
+
+        DrawTriangle(v[0], v[1], v[5], color);
+        DrawTriangle(v[1], v[2], v[5], color);
+        DrawTriangle(v[2], v[3], v[5], color);
+        DrawTriangle(v[3], v[4], v[5], color);
+    }
+}
+
+void DrawDoubleChevron(const Rectangle& rec, const float dir, const Color color) {
+    const float offset = 0.18f * rec.width;
+    const float mult = (dir > 0.0f) ? 1.0f : -1.0f;
+
+    Rectangle rec1 = rec;
+    Rectangle rec2 = rec;
+
+    rec1.x += mult * offset;
+    rec2.x -= mult * offset;
+
+    DrawChevron(rec1, dir, color);
+    DrawChevron(rec2, dir, color);
+}
+
+void DrawScrollWheel(Rectangle bounds, Color color, const float thickness) {
+    const float center_x = bounds.x + 0.5f * bounds.width;
+    const float center_y = bounds.y + 0.5f * bounds.height;
+
+    // Dimensions relative to rectangle
+    const float body_height = 0.7f * bounds.height;
+    const float body_width = 0.3f * bounds.width;
+
+    // Draw scroll wheel body (oval/rounded rectangle)
+    Rectangle body = {
+        center_x - 0.5f * body_width,
+        center_y - 0.5f * body_height,
+        body_width,
+        body_height};
+    DrawRectangleRoundedLinesEx(body, 1.0f, 16, thickness, color);
+
+    // Draw horizontal bars inside wheel
+    const int lines = 5;
+    const float bar_width_min = 0.3f * body_width;
+    const float bar_width_max = 0.7f * body_width;
+    for (int i = 0; i < lines; i++) {
+        const float t = (i + 1.0f) / (lines + 1.0f);
+        const float y = body.y + t * body_height;
+        const float bar_width = Lerp(bar_width_min, bar_width_max, (1.0f - 2.0f * std::abs(t - 0.5)));
+        DrawLineEx({center_x - 0.5f * bar_width, y},
+                   {center_x + 0.5f * bar_width, y},
+                   thickness,
+                   color);
+    }
+}
+
+void DrawToggleButton(const ToggleButton& b) {
+    DrawRectangleRec(b.rec, b.engaged ? COLOR_BUTTON_BACKGROUND_ACTIVE : COLOR_BUTTON_BACKGROUND_INACTIVE);
+    DrawRectangleLinesEx(b.rec, 3.0f, b.engaged ? COLOR_BUTTON_BORDER_ACTIVE : COLOR_BUTTON_BORDER_INACTIVE);
+    DrawScrollWheel(b.rec, b.engaged ? COLOR_BUTTON_CONTENT_ACTIVE : COLOR_BUTTON_CONTENT_INACTIVE, b.engaged ? 5.0f : 3.0f);
+}
+
+void DrawDeltaButtonGroup(const DeltaButtonGroup& b) {
+    for (const auto& [delta, rec] : b.rectangles) {
+        DrawRectangleRec(rec, COLOR_BUTTON_BACKGROUND_INACTIVE);
+        DrawRectangleLinesEx(rec, 3.0f, COLOR_BUTTON_BORDER_INACTIVE);
+        const int delta_int = static_cast<int>(delta);
+        const int delta_sign = delta_int > 0 ? 1 : -1;
+        const float dir = 0.6f * delta_sign;
+        if (abs(delta_int) > 1) {
+            DrawDoubleChevron(rec, dir, COLOR_BUTTON_CONTENT_INACTIVE);
+        } else {
+            DrawChevron(rec, dir, COLOR_BUTTON_CONTENT_INACTIVE);
+        }
+    }
+}
+
+void DrawNumberWidget(const NumberWidget& w) {
+    DrawDeltaButtonGroup(w.delta_button_group);
+    DrawToggleButton(w.scroll_toggle_button);
+}
 
 struct SelectorParams {
     float radius;
@@ -139,6 +248,10 @@ void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover
         DrawRectangleLinesEx(rect, 3, COLOR_TEXT_CONTROL_SELECT_BKGD);
     }
 
+    for (int i = 1; i < 4; ++i) {
+        DrawLineEx({float(i) * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 10}, {float(i) * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 2 * RIBBON_ROW_HEIGHT - 10}, 3, Color{128, 128, 128, 255});
+    }
+
     // TODO use the Rectangle objects directly
     // TODO make class for clickable button to handle color of button and text
 
@@ -164,19 +277,12 @@ void DrawRibbon(const Tree& tree, const int num_samples, const int num_carryover
 
     DrawTextEx(font, (std::to_string(tree.nodes.size()) + " nodes").c_str(), {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, 0.6 * TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
 
-    DrawTextEx(font, ("Carryover = " + std::to_string(num_carryover)).c_str(), {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
-
-    DrawTextEx(font, ("Samples = " + std::to_string(num_samples)).c_str(), {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
+    DrawTextEx(font, ("Samples = " + std::to_string(num_samples)).c_str(), {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
+    DrawTextEx(font, ("Carryover = " + std::to_string(num_carryover)).c_str(), {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_2_Y}, TEXT_HEIGHT_STAT, 1, COLOR_NODE_COUNT);
 
     // row 1a
-    DrawTextEx(font, "Place start", {0.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::PLACE_START) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "Place goal", {0.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::PLACE_GOAL) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "- Obstacle", {1.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::DEL_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "+ Obstacle", {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::ADD_OBSTACLE) ? COLOR_RIBBON_BACKGROUND : COLOR_TEXT_CONTROLS);
-
-    DrawTextEx(font, "- Carryover", {2.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "+ Carryover", {2.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
-
-    DrawTextEx(font, "- Samples", {3.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
-    DrawTextEx(font, "+ Samples", {3.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, COLOR_TEXT_CONTROLS);
+    DrawTextEx(font, "Place start", {0.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::PLACE_START) ? COLOR_BUTTON_BACKGROUND_INACTIVE : COLOR_BUTTON_BACKGROUND_ACTIVE);
+    DrawTextEx(font, "Place goal", {0.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::PLACE_GOAL) ? COLOR_BUTTON_BACKGROUND_INACTIVE : COLOR_BUTTON_BACKGROUND_ACTIVE);
+    DrawTextEx(font, "- Obstacle", {1.0 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::DEL_OBSTACLE) ? COLOR_BUTTON_BACKGROUND_INACTIVE : COLOR_BUTTON_BACKGROUND_ACTIVE);
+    DrawTextEx(font, "+ Obstacle", {1.5 * RIBBON_COL_WIDTH + TEXT_MARGIN_WIDTH, RIBBON_ROW_1_Y}, TEXT_HEIGHT_CONTROL_MODE, 1, (mode == SelectorMode::ADD_OBSTACLE) ? COLOR_BUTTON_BACKGROUND_INACTIVE : COLOR_BUTTON_BACKGROUND_ACTIVE);
 }

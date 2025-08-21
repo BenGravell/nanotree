@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "config.h"
+#include "core/config.h"
 
 using Obstacle = Vector2;
 using Obstacles = std::vector<Obstacle>;

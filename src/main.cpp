@@ -7,41 +7,25 @@
 #include <random>
 #include <vector>
 
-#include "config.h"
-#include "draw.h"
-#include "mode.h"
-#include "obstacle.h"
-#include "rng.h"
-#include "tree.h"
+#include "core/config.h"
+#include "core/obstacle.h"
+#include "core/rng.h"
+#include "planner/tree.h"
+#include "ui/draw.h"
+#include "ui/mode.h"
+#include "ui/number_widget.h"
 
-// TODO these rectangles should not be globals...
+// TODO these rectangles should not be globals... they should be collected in a Selector struct along with getSelectorMode()
 
-const Rectangle place_start_button = {0 + 0.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
-const Rectangle place_goal_button = {0 + 0.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
-const Rectangle del_obstacle_button = {0 + 1.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
-const Rectangle add_obstacle_button = {0 + 1.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
-const Rectangle dec_tree_size_button = {0 + 2.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
-const Rectangle inc_tree_size_button = {0 + 2.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
-const Rectangle dec_num_samples_button = {0 + 3.0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
-const Rectangle inc_num_samples_button = {0 + 3.5 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH / 2, RIBBON_ROW_HEIGHT};
-
-const Rectangle ribbon_row_2_col_0 = {0 + 0 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
-const Rectangle ribbon_row_2_col_1 = {0 + 1 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
-const Rectangle ribbon_row_2_col_2 = {0 + 2 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
-const Rectangle ribbon_row_2_col_3 = {0 + 3 * RIBBON_COL_WIDTH, ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT, RIBBON_COL_WIDTH, RIBBON_ROW_HEIGHT};
+const Rectangle place_start_button = {0 + 0.0 * RIBBON_COL_WIDTH + 10, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 10, RIBBON_COL_WIDTH / 2 - 20, RIBBON_ROW_HEIGHT - 20};
+const Rectangle place_goal_button = {0 + 0.5 * RIBBON_COL_WIDTH + 10, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 10, RIBBON_COL_WIDTH / 2 - 20, RIBBON_ROW_HEIGHT - 20};
+const Rectangle del_obstacle_button = {0 + 1.0 * RIBBON_COL_WIDTH + 10, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 10, RIBBON_COL_WIDTH / 2 - 20, RIBBON_ROW_HEIGHT - 20};
+const Rectangle add_obstacle_button = {0 + 1.5 * RIBBON_COL_WIDTH + 10, ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + 10, RIBBON_COL_WIDTH / 2 - 20, RIBBON_ROW_HEIGHT - 20};
 
 const std ::vector<Rectangle> ribbon_rectangles = {place_start_button,
                                                    place_goal_button,
                                                    del_obstacle_button,
-                                                   add_obstacle_button,
-                                                   dec_tree_size_button,
-                                                   inc_tree_size_button,
-                                                   dec_num_samples_button,
-                                                   inc_num_samples_button,
-                                                   ribbon_row_2_col_0,
-                                                   ribbon_row_2_col_1,
-                                                   ribbon_row_2_col_2,
-                                                   ribbon_row_2_col_3};
+                                                   add_obstacle_button};
 
 std::optional<SelectorMode> getSelectorMode() {
     if (!IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -64,49 +48,14 @@ std::optional<SelectorMode> getSelectorMode() {
     return std::nullopt;
 }
 
-std::optional<int> getIdxDelta(const Rectangle& dec_button, const Rectangle& inc_button) {
-    const Vector2 mouse = GetMousePosition();
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        if (CheckCollisionPointRec(mouse, inc_button)) {
-            return 1;
-        }
-        if (CheckCollisionPointRec(mouse, dec_button)) {
-            return -1;
-        }
-    }
-    return std::nullopt;
-}
-
-int getScrollSign() {
-    const int scroll = GetMouseWheelMove();
-    return (scroll > 0) - (scroll < 0);
-}
-
-int getSamplesIdxDelta() {
-    return getIdxDelta(dec_num_samples_button, inc_num_samples_button).value_or(getScrollSign());
-}
-
-int getCarryoverIdxDelta() {
-    return getIdxDelta(dec_tree_size_button, inc_tree_size_button).value_or(0);
-}
-
-int updateSamplesOption(const int num_samples, const int idx_delta) {
-    const int idx_old = int(std::lower_bound(NUM_SAMPLES_OPTIONS.begin(), NUM_SAMPLES_OPTIONS.end(), num_samples) - NUM_SAMPLES_OPTIONS.begin());
-    const int idx_new = std::clamp(idx_old + idx_delta, 0, int(NUM_SAMPLES_OPTIONS.size() - 1));
-    return NUM_SAMPLES_OPTIONS[idx_new];
-}
-
-int updateCarryoverOption(const int num_samples, const int idx_delta) {
-    const int idx_old = int(std::lower_bound(NUM_CARRYOVER_OPTIONS.begin(), NUM_CARRYOVER_OPTIONS.end(), num_samples) - NUM_CARRYOVER_OPTIONS.begin());
-    const int idx_new = std::clamp(idx_old + idx_delta, 0, int(NUM_CARRYOVER_OPTIONS.size() - 1));
-    return NUM_CARRYOVER_OPTIONS[idx_new];
-}
+NumberWidget num_samples_widget{200, std::vector(std::begin(NUM_SAMPLES_OPTIONS), std::end(NUM_SAMPLES_OPTIONS)), true, {10 + 2 * RIBBON_COL_WIDTH, 10 + ENVIRONMENT_HEIGHT}};
+NumberWidget num_carryover_widget{2000, std::vector(std::begin(NUM_CARRYOVER_OPTIONS), std::end(NUM_CARRYOVER_OPTIONS)), false, {10 + 3 * RIBBON_COL_WIDTH, 10 + ENVIRONMENT_HEIGHT}};
 
 int main() {
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "nanotree");
 
-    Font font = LoadFontEx("assets/Oxanium-Regular.ttf", 40, 0, 0);
+    Font font = LoadFontEx("assets/Oxanium/static/Oxanium-Regular.ttf", 40, 0, 0);
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
     Vector2 start = DEFAULT_START;
@@ -140,8 +89,11 @@ int main() {
         const bool is_down_mmb = IsMouseButtonDown(MOUSE_BUTTON_MIDDLE);
 
         mode = getSelectorMode().value_or(mode);
-        num_samples = updateSamplesOption(num_samples, getSamplesIdxDelta());
-        num_carryover = updateCarryoverOption(num_carryover, getCarryoverIdxDelta());
+
+        num_samples_widget.update();
+        num_carryover_widget.update();
+        num_samples = num_samples_widget.current;
+        num_carryover = num_carryover_widget.current;
 
         const Vector2 selector_pos = clampToEnvironment(mouse);
         const bool mouse_in_environment = insideEnvironment(mouse);
@@ -251,6 +203,8 @@ int main() {
         DrawStart(start);
         DrawGoal(goal, goal_reached);
         DrawRibbon(tree, num_samples, num_carryover, goal_reached, mode, fps, ribbon_rectangles, font);
+        DrawNumberWidget(num_samples_widget);
+        DrawNumberWidget(num_carryover_widget);
 
         if (show_debug) {
             DrawRectangle(0, 0, 500, 220, COLOR_RIBBON_BACKGROUND);

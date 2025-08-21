@@ -9,9 +9,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "geometry.h"
-#include "obstacle.h"
-#include "rng.h"
+#include "core/geometry.h"
+#include "core/obstacle.h"
+#include "core/rng.h"
 
 struct Node;
 
