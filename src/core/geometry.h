@@ -3,7 +3,7 @@
 #include <raylib.h>
 #include <raymath.h>
 
-#include "core/config.h"
+#include "config.h"
 
 bool insideEnvironment(const Vector2 pos) {
     return (0.0f < pos.x) && (pos.x < ENVIRONMENT_WIDTH) && (0.0f < pos.y) && (pos.y < ENVIRONMENT_HEIGHT);

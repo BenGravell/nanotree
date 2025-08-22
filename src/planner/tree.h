@@ -6,36 +6,12 @@
 #include <algorithm>
 #include <memory>
 #include <random>
-#include <unordered_set>
-#include <vector>
 
 #include "core/geometry.h"
 #include "core/obstacle.h"
 #include "core/rng.h"
-
-struct Node;
-
-using NodePtr = std::shared_ptr<Node>;
-using Nodes = std::vector<NodePtr>;
-using Path = std::vector<NodePtr>;
-
-struct Node {
-    NodePtr parent;
-    Vector2 pos;
-    float cost_to_come;
-};
-
-struct NodePtrHash {
-    std::size_t operator()(const NodePtr& n) const noexcept {
-        return std::hash<Node*>()(n.get());
-    }
-};
-
-struct NodePtrEq {
-    bool operator()(const NodePtr& a, const NodePtr& b) const noexcept {
-        return a.get() == b.get();
-    }
-};
+#include "planner/node.h"
+#include "planner/path.h"
 
 float computeCost(const Vector2 a, const Vector2 b) {
     return Vector2Distance(a, b);
@@ -74,7 +50,7 @@ NodePtr getNearest(const Vector2 target, const Nodes& nodes) {
 }
 
 NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const float max_dist) {
-    std::vector<NodePtr> neighbors;
+    Nodes neighbors;
     neighbors.reserve(nodes.size());
     for (const NodePtr& node : nodes) {
         if (Vector2Distance(node->pos, target) <= max_dist) {
@@ -145,8 +121,8 @@ struct Tree {
     void carryover(const Path path, const int num_carryover, const bool carryover_path) {
         // TODO do not retain nodes or their children if in collision!
 
-        std::vector<NodePtr> retained_nodes;
-        std::unordered_set<NodePtr, NodePtrHash, NodePtrEq> retained_set;
+        Nodes retained_nodes;
+        NodeSet retained_set;
 
         if (!path.empty() && carryover_path) {
             for (const NodePtr& node : path) {

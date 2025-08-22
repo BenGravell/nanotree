@@ -175,7 +175,7 @@ static constexpr int RIBBON_HEIGHT = 180;
 static constexpr int RIBBON_COL_WIDTH = RIBBON_WIDTH / RIBBON_NUM_COLS;
 static constexpr int RIBBON_ROW_HEIGHT = RIBBON_HEIGHT / RIBBON_NUM_ROWS;
 
-static constexpr int STATBAR_NUM_ROWS = 10;
+static constexpr int STATBAR_NUM_ROWS = 18;
 static constexpr int STATBAR_WIDTH = 360;
 static constexpr int STATBAR_HEIGHT = SCREEN_HEIGHT - RIBBON_HEIGHT;
 static constexpr int STATBAR_ROW_HEIGHT = STATBAR_HEIGHT / STATBAR_NUM_ROWS;
@@ -183,13 +183,11 @@ static constexpr int STATBAR_ROW_HEIGHT = STATBAR_HEIGHT / STATBAR_NUM_ROWS;
 static constexpr int ENVIRONMENT_WIDTH = SCREEN_WIDTH - STATBAR_WIDTH;
 static constexpr int ENVIRONMENT_HEIGHT = STATBAR_HEIGHT;
 
-static constexpr int GRID_THICKNESS_MINOR = 3;
-static constexpr int GRID_THICKNESS_MAJOR = 5;
-static constexpr int GRID_SPACING_MINOR = 60;
-static constexpr int GRID_SPACING_MAJOR = 240;
+static constexpr int GRID_THICKNESS = 3;
+static constexpr int GRID_SPACING = 60;
 
 static constexpr int TEXT_HEIGHT_CONTROL_MODE = 0.4 * RIBBON_ROW_HEIGHT;
-static constexpr int TEXT_HEIGHT_STAT = 0.4 * STATBAR_ROW_HEIGHT;
+static constexpr int TEXT_HEIGHT_STAT = 0.7 * STATBAR_ROW_HEIGHT;
 
 static constexpr int BUTTON_MARGIN = 10;
 static constexpr int BUTTON_HEIGHT = RIBBON_ROW_HEIGHT - (2 * BUTTON_MARGIN);
