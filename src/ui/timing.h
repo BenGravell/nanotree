@@ -29,7 +29,7 @@ struct Timing {
     void record() {
         const float now = GetTime();
         const float duration = now - start_time;
-        history.emplace_back(now, duration);
+        history.emplace_back(Observation{now, duration});
 
         // Remove old entries outside the window.
         while (!history.empty() && ((now - history.front().timestamp) > TIMING_WINDOW_SEC)) {
