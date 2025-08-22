@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "core/obstacle.h"
+#include "planner/cost.h"
 #include "planner/tree.h"
 #include "ui/colors.h"
 #include "ui/text.h"

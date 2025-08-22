@@ -10,16 +10,9 @@
 #include "core/geometry.h"
 #include "core/obstacle.h"
 #include "core/rng.h"
+#include "planner/cost.h"
 #include "planner/node.h"
 #include "planner/path.h"
-
-float computeCost(const Vector2 a, const Vector2 b) {
-    return Vector2Distance(a, b);
-}
-
-float computeHeuristicCost(const NodePtr& node, const Vector2 goal) {
-    return node->cost_to_come + computeCost(node->pos, goal);
-}
 
 struct TargetDistanceComparator {
     Vector2 target;

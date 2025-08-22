@@ -2,6 +2,7 @@
 
 #include <raylib.h>
 
+#include "planner/cost.h"
 #include "planner/node.h"
 #include "planner/path.h"
 #include "planner/tree.h"
