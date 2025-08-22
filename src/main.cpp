@@ -92,14 +92,13 @@ int main() {
         }
     }
 
-    Timing timing_all;
+    Timing timing_total;
     Timing timing_grow;
-    Timing timing_carr;
-    Timing timing_path;
+    Timing timing_carryover;
     Timing timing_draw;
 
     while (!WindowShouldClose()) {
-        timing_all.start();
+        timing_total.start();
         // ---- UI LOGIC
         Vector2 mouse = GetMousePosition();
 
@@ -168,30 +167,32 @@ int main() {
             tree.reset(start);
         }
 
-        timing_grow.start();
         if (tree_should_grow) {
-            timing_carr.start();
+            timing_carryover.start();
             tree.carryover(path, num_carryover, carryover_path);
-            timing_carr.record();
+            timing_carryover.record();
 
             timing_grow.start();
             tree.grow(num_samples, goal, obstacles);
             timing_grow.record();
+        } else {
+            timing_carryover.start();
+            timing_carryover.record();
+            timing_grow.start();
+            timing_grow.record();
         }
 
-        timing_path.start();
         path = extractPath(goal, tree.nodes);
-        timing_path.record();
 
         const bool goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
 
         const float dt_grow_tree = timing_grow.averageDuration();
-        const float dt_carryover = timing_carr.averageDuration();
-        const float dt_extract_path = timing_path.averageDuration();
+        const float dt_carryover = timing_carryover.averageDuration();
         const float dt_draw = timing_draw.averageDuration();
-        const DurationParts duration_parts{dt_grow_tree, dt_carryover, dt_extract_path, dt_draw};
+        const float dt_total = timing_total.averageDuration();
+        const DurationParts duration_parts{dt_grow_tree, dt_carryover, dt_draw, dt_total};
 
-        const int fps = std::lround(1.0f / std::max(1e-6f, timing_all.averageDuration()));
+        const int fps = std::lround(1.0f / std::max(1e-6f, dt_total));
 
         // ---- DRAWING LOGIC
         timing_draw.start();
@@ -215,7 +216,7 @@ int main() {
 
         EndDrawing();
         timing_draw.record();
-        timing_all.record();
+        timing_total.record();
     }
     UnloadFont(font);
     CloseWindow();

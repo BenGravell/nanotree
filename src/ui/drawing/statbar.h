@@ -45,8 +45,8 @@ void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bo
 
     DrawTextEx(font, TextFormat("%4d ms [grow]", int(1000.0f * duration_parts.grow_tree)), {X, ROW_7_Y}, TEXT_HEIGHT_STAT, 1, COLOR_TIMING_STAT);
     DrawTextEx(font, TextFormat("%4d ms [carryover]", int(1000.0f * duration_parts.carryover_tree)), {X, ROW_8_Y}, TEXT_HEIGHT_STAT, 1, COLOR_TIMING_STAT);
-    DrawTextEx(font, TextFormat("%4d ms [path]", int(1000.0f * duration_parts.extract_path)), {X, ROW_9_Y}, TEXT_HEIGHT_STAT, 1, COLOR_TIMING_STAT);
-    DrawTextEx(font, TextFormat("%4d ms [draw]", int(1000.0f * duration_parts.draw)), {X, ROW_10_Y}, TEXT_HEIGHT_STAT, 1, COLOR_TIMING_STAT);
+    DrawTextEx(font, TextFormat("%4d ms [draw]", int(1000.0f * duration_parts.draw)), {X, ROW_9_Y}, TEXT_HEIGHT_STAT, 1, COLOR_TIMING_STAT);
+    DrawTextEx(font, TextFormat("%4d ms [total]", int(1000.0f * duration_parts.total)), {X, ROW_10_Y}, TEXT_HEIGHT_STAT, 1, COLOR_GRAY_192);
 
     DrawTextEx(font, TextFormat("%2i FPS", fps), {X, ROW_13_Y}, TEXT_HEIGHT_STAT, 1, computeFpsColor(fps));
 
