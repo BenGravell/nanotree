@@ -32,6 +32,7 @@ void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bo
     static constexpr int ROW_11_Y = 11 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
     static constexpr int ROW_12_Y = 12 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
     static constexpr int ROW_13_Y = 13 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+    static constexpr int ROW_14_Y = 14 * STATBAR_ROW_HEIGHT + (STATBAR_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
 
     // TODO center all text
 
