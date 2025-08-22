@@ -48,9 +48,6 @@ void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bo
     DrawTextEx(font, TextFormat("%4d ms [path]", int(1000.0f * duration_parts.extract_path)), {X, ROW_9_Y}, TEXT_HEIGHT_STAT, 1, COLOR_TIMING_STAT);
     DrawTextEx(font, TextFormat("%4d ms [draw]", int(1000.0f * duration_parts.draw)), {X, ROW_10_Y}, TEXT_HEIGHT_STAT, 1, COLOR_TIMING_STAT);
 
-    const Vector2 mouse = GetMousePosition();
-    DrawTextEx(font, ("Mouse: " + Vector2ToString(mouse)).c_str(), {X, ROW_12_Y}, TEXT_HEIGHT_STAT, 1, COLOR_STAT);
-
     DrawTextEx(font, TextFormat("%2i FPS", fps), {X, ROW_13_Y}, TEXT_HEIGHT_STAT, 1, computeFpsColor(fps));
 
     // Border
