@@ -186,8 +186,13 @@ static constexpr int ENVIRONMENT_HEIGHT = STATBAR_HEIGHT;
 static constexpr int GRID_THICKNESS = 3;
 static constexpr int GRID_SPACING = 60;
 
-static constexpr int TEXT_HEIGHT_CONTROL_MODE = 0.4 * RIBBON_ROW_HEIGHT;
-static constexpr int TEXT_HEIGHT_STAT = 0.7 * STATBAR_ROW_HEIGHT;
+static constexpr int TEXT_HEIGHT_CONTROL = 36;
+static constexpr int TEXT_HEIGHT_STAT = 36;
+
+static constexpr int RIBBON_ROW_1_Y = ENVIRONMENT_HEIGHT + 0 * RIBBON_ROW_HEIGHT + (RIBBON_ROW_HEIGHT - TEXT_HEIGHT_CONTROL) / 2;
+static constexpr int RIBBON_ROW_2_Y = ENVIRONMENT_HEIGHT + 1 * RIBBON_ROW_HEIGHT + (RIBBON_ROW_HEIGHT - TEXT_HEIGHT_STAT) / 2;
+
+static constexpr int TEXT_MARGIN_WIDTH = 20;
 
 static constexpr int BUTTON_MARGIN = 10;
 static constexpr int BUTTON_HEIGHT = RIBBON_ROW_HEIGHT - (2 * BUTTON_MARGIN);
@@ -199,3 +204,6 @@ static constexpr int DELTA_BUTTON_WIDTH = DELTA_BUTTON_HEIGHT;
 static constexpr int LINE_WIDTH_TREE = 5;
 static constexpr int LINE_WIDTH_PATH = 15;
 static constexpr int NODE_WIDTH_PATH = 30;
+
+// TIMING
+static constexpr float TIMING_WINDOW_SEC = 2.0f;

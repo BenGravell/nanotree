@@ -6,16 +6,14 @@
 #include "core/obstacle.h"
 #include "planner/tree.h"
 #include "ui/colors.h"
-#include "ui/timing.h"
 #include "ui/text.h"
+#include "ui/timing.h"
+
+static constexpr Rectangle STATBAR_REC = {ENVIRONMENT_WIDTH, 0, STATBAR_WIDTH, STATBAR_HEIGHT};
 
 void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bool goal_reached, const Obstacles& obstacles, const DurationParts duration_parts, const int fps, const Font font) {
-    const Rectangle rec{ENVIRONMENT_WIDTH, 0, STATBAR_WIDTH, STATBAR_HEIGHT};
-
     // Background
-    DrawRectangleRec(rec, COLOR_STATBAR_BACKGROUND);
-
-    static constexpr int TEXT_MARGIN_WIDTH = 20;
+    DrawRectangleRec(STATBAR_REC, COLOR_STATBAR_BACKGROUND);
 
     static constexpr int X = ENVIRONMENT_WIDTH + TEXT_MARGIN_WIDTH;
 
@@ -55,5 +53,5 @@ void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bo
     DrawTextEx(font, TextFormat("%2i FPS", fps), {X, ROW_13_Y}, TEXT_HEIGHT_STAT, 1, computeFpsColor(fps));
 
     // Border
-    DrawRectangleLinesEx(rec, 3, COLOR_STATBAR_BORDER);
+    DrawRectangleLinesEx(STATBAR_REC, 3, COLOR_STATBAR_BORDER);
 }

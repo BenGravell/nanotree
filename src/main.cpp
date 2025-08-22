@@ -24,40 +24,45 @@
 #include "ui/elements/selector.h"
 #include "ui/timing.h"
 
-// TODO these rectangles should not be globals...
-
-static constexpr int BUTTON_Y = ENVIRONMENT_HEIGHT + BUTTON_MARGIN;
-
-const Rectangle place_start_button = {0 + 0.0 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT};
-const Rectangle place_goal_button = {0 + 0.5 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT};
-const Rectangle del_obstacle_button = {0 + 1.0 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT};
-const Rectangle add_obstacle_button = {0 + 1.5 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT};
-
-const std ::vector<Rectangle> ribbon_rectangles = {place_start_button,
-                                                   place_goal_button,
-                                                   del_obstacle_button,
-                                                   add_obstacle_button};
-
-Selector selector{SelectorMode::PLACE_GOAL,
-                  place_start_button,
-                  place_goal_button,
-                  del_obstacle_button,
-                  add_obstacle_button};
-
-NumberWidget num_samples_widget{200, std::vector(std::begin(NUM_SAMPLES_OPTIONS), std::end(NUM_SAMPLES_OPTIONS)), true, {10 + 2 * RIBBON_COL_WIDTH, 10 + ENVIRONMENT_HEIGHT}};
-NumberWidget num_carryover_widget{2000, std::vector(std::begin(NUM_CARRYOVER_OPTIONS), std::end(NUM_CARRYOVER_OPTIONS)), false, {10 + 3 * RIBBON_COL_WIDTH, 10 + ENVIRONMENT_HEIGHT}};
+// KEYMAP
+// ------
+// MMB:     Delete obstacle
+// RMB:     Add obstacle
+// Scroll:  Adjust assigned number setting(s)
+// G:       Grow tree (once)
+// T:       Grow tree (continuously)
+// P:       Toggle carryover of path
+// R:       Reset tree
 
 int main() {
+    // RAYLIB INIT
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "nanotree");
 
+    // UI INIT
     Font font = LoadFontEx("assets/Oxanium/static/Oxanium-Regular.ttf", 40, 0, 0);
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
+    NumberWidget num_samples_widget{200, std::vector(std::begin(NUM_SAMPLES_OPTIONS), std::end(NUM_SAMPLES_OPTIONS)), true, {10 + 2 * RIBBON_COL_WIDTH, 10 + ENVIRONMENT_HEIGHT}};
+    NumberWidget num_carryover_widget{2000, std::vector(std::begin(NUM_CARRYOVER_OPTIONS), std::end(NUM_CARRYOVER_OPTIONS)), false, {10 + 3 * RIBBON_COL_WIDTH, 10 + ENVIRONMENT_HEIGHT}};
+
+    static constexpr int BUTTON_Y = ENVIRONMENT_HEIGHT + BUTTON_MARGIN;
+
+    Selector selector{
+        .mode = SelectorMode::PLACE_GOAL,
+        .rectangles = {
+            {SelectorMode::PLACE_START, {0 + 0.0 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT}},
+            {SelectorMode::PLACE_GOAL, {0 + 0.5 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT}},
+            {SelectorMode::DEL_OBSTACLE, {0 + 1.0 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT}},
+            {SelectorMode::ADD_OBSTACLE, {0 + 1.5 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT}},
+        }};
+
+    // ENVIRONMENT INIT
     Vector2 start = DEFAULT_START;
     Vector2 goal = DEFAULT_GOAL;
     Obstacles obstacles = DEFAULT_OBSTACLES;
 
+    // PLANNER INIT
     Tree tree;
     tree.reset(start);
 
@@ -66,7 +71,6 @@ int main() {
     int num_samples = num_samples_widget.current;
     int num_carryover = num_carryover_widget.current;
     bool carryover_path = true;
-    float dt_draw = 0;
 
     // Run the planner until:
     // 1: tree filled up to carryover limit
@@ -88,7 +92,14 @@ int main() {
         }
     }
 
+    Timing timing_all;
+    Timing timing_grow;
+    Timing timing_carr;
+    Timing timing_path;
+    Timing timing_draw;
+
     while (!WindowShouldClose()) {
+        timing_all.start();
         // ---- UI LOGIC
         Vector2 mouse = GetMousePosition();
 
@@ -135,15 +146,6 @@ int main() {
             }
         }
 
-        // KEYMAP
-        // MMB: Delete obstacle
-        // RMB: Add obstacle
-        // Scroll: Adjust assigned number setting(s)
-        // G: Grow tree (once)
-        // T: Grow tree (continuously)
-        // P: Toggle carryover of path
-        // R: Reset tree
-
         if (IsKeyPressed(KEY_G)) {
             tree_should_grow = true;
         }
@@ -166,38 +168,35 @@ int main() {
             tree.reset(start);
         }
 
-        float t1_carryover = GetTime();
-        float t2_carryover = GetTime();
-        float t1_grow_tree = GetTime();
-        float t2_grow_tree = GetTime();
+        timing_grow.start();
         if (tree_should_grow) {
-            t1_carryover = GetTime();
+            timing_carr.start();
             tree.carryover(path, num_carryover, carryover_path);
-            t2_carryover = GetTime();
+            timing_carr.record();
 
-            t1_grow_tree = GetTime();
+            timing_grow.start();
             tree.grow(num_samples, goal, obstacles);
-            t2_grow_tree = GetTime();
+            timing_grow.record();
         }
-        const float dt_carryover = t2_carryover - t1_carryover;
-        const float dt_grow_tree = t2_grow_tree - t1_grow_tree;
 
-        const float t1_extract_path = GetTime();
+        timing_path.start();
         path = extractPath(goal, tree.nodes);
-        const float t2_extract_path = GetTime();
-        const float dt_extract_path = t2_extract_path - t1_extract_path;
+        timing_path.record();
 
         const bool goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
 
-        const DurationParts duration_parts{dt_grow_tree, dt_carryover,
-                                           dt_extract_path,
-                                           dt_draw};
+        const float dt_grow_tree = timing_grow.averageDuration();
+        const float dt_carryover = timing_carr.averageDuration();
+        const float dt_extract_path = timing_path.averageDuration();
+        const float dt_draw = timing_draw.averageDuration();
+        const DurationParts duration_parts{dt_grow_tree, dt_carryover, dt_extract_path, dt_draw};
 
-        const int fps = GetFPS();
+        const int fps = std::lround(1.0f / std::max(1e-6f, timing_all.averageDuration()));
 
         // ---- DRAWING LOGIC
-        const float t1_draw = GetTime();
+        timing_draw.start();
         BeginDrawing();
+
         // Environment
         DrawRectangle(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_BACKGROUND);
         DrawFlatGrid(0, ENVIRONMENT_WIDTH, 0, ENVIRONMENT_HEIGHT, {GRID_SPACING, GRID_THICKNESS, COLOR_GRID});
@@ -210,16 +209,13 @@ int main() {
         // Statbar
         DrawStatBar(tree, path, goal, goal_reached, obstacles, duration_parts, fps, font);
         // Ribbon
-        DrawRibbon(num_samples, num_carryover, mode, ribbon_rectangles, font);
-        DrawNumberWidget(num_samples_widget);
-        DrawNumberWidget(num_carryover_widget);
-
+        DrawRibbon(num_samples_widget, num_carryover_widget, selector, font);
         // Border around whole screen
         DrawRectangleLinesEx({0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}, 3, COLOR_SCREEN_BORDER);
 
         EndDrawing();
-        const float t2_draw = GetTime();
-        dt_draw = t2_draw - t1_draw;
+        timing_draw.record();
+        timing_all.record();
     }
     UnloadFont(font);
     CloseWindow();

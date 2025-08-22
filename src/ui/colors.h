@@ -22,6 +22,10 @@ static constexpr Color COLOR_GRAY_192 = {192, 192, 192, 255};
 static constexpr Color COLOR_GRAY_240 = {240, 240, 240, 255};
 static constexpr Color COLOR_GRAY_255 = {255, 255, 255, 255};
 
+const Color COLOR_GOOD = guppyColor(0.0f);
+const Color COLOR_OK = GOLD;
+const Color COLOR_BAD = guppyColor(0.8f);
+
 static constexpr Color COLOR_BACKGROUND = COLOR_GRAY_016;
 static constexpr Color COLOR_RIBBON_BACKGROUND = COLOR_GRAY_032;
 static constexpr Color COLOR_STATBAR_BACKGROUND = COLOR_RIBBON_BACKGROUND;
@@ -36,17 +40,13 @@ static constexpr Color COLOR_PATH = COLOR_GRAY_255;
 static constexpr Color COLOR_BUTTON_BACKGROUND_INACTIVE = COLOR_GRAY_064;
 static constexpr Color COLOR_BUTTON_BACKGROUND_ACTIVE = COLOR_GRAY_240;
 static constexpr Color COLOR_BUTTON_BORDER_INACTIVE = COLOR_BUTTON_BACKGROUND_ACTIVE;
-static constexpr Color COLOR_BUTTON_BORDER_ACTIVE = COLOR_BUTTON_BACKGROUND_INACTIVE;
+static constexpr Color COLOR_BUTTON_BORDER_ACTIVE = COLOR_BUTTON_BORDER_INACTIVE;
 static constexpr Color COLOR_BUTTON_CONTENT_INACTIVE = COLOR_BUTTON_BORDER_INACTIVE;
 static constexpr Color COLOR_BUTTON_CONTENT_ACTIVE = COLOR_GRAY_032;
 
 static constexpr Color COLOR_GRID = COLOR_GRAY_048;
 
-const Color COLOR_GOOD = guppyColor(0.0f);
-const Color COLOR_OK = GOLD;
-const Color COLOR_BAD = guppyColor(0.8f);
-
-static constexpr Color COLOR_START = COLOR_GRAY_240;
+static constexpr Color COLOR_START = GOLD;
 const Color COLOR_GOAL_REACHED = COLOR_GOOD;
 const Color COLOR_GOAL_NOT_REACHED = COLOR_BAD;
 

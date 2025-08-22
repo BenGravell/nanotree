@@ -3,6 +3,7 @@
 #include <raylib.h>
 
 #include <optional>
+#include <map>
 
 enum class SelectorMode {
     PLACE_START = 0,
@@ -13,10 +14,7 @@ enum class SelectorMode {
 
 struct Selector {
     SelectorMode mode;
-    Rectangle place_start_button;
-    Rectangle place_goal_button;
-    Rectangle del_obstacle_button;
-    Rectangle add_obstacle_button;
+    std::map<SelectorMode, Rectangle> rectangles;
 
     std::optional<SelectorMode> getSelectorMode() const {
         if (!IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -24,17 +22,10 @@ struct Selector {
         }
 
         const Vector2 mouse = GetMousePosition();
-        if (CheckCollisionPointRec(mouse, place_start_button)) {
-            return SelectorMode::PLACE_START;
-        }
-        if (CheckCollisionPointRec(mouse, place_goal_button)) {
-            return SelectorMode::PLACE_GOAL;
-        }
-        if (CheckCollisionPointRec(mouse, del_obstacle_button)) {
-            return SelectorMode::DEL_OBSTACLE;
-        }
-        if (CheckCollisionPointRec(mouse, add_obstacle_button)) {
-            return SelectorMode::ADD_OBSTACLE;
+        for (const auto& [rec_mode, rec] : rectangles) {
+            if (CheckCollisionPointRec(mouse, rec)) {
+                return rec_mode;
+            }
         }
 
         return std::nullopt;
