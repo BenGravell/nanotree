@@ -3,8 +3,8 @@
 #include <raylib.h>
 
 struct ToggleButton {
-    bool engaged;
     Rectangle rec;
+    bool engaged = false;
 
     void update() {
         if (!IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {

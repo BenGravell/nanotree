@@ -20,6 +20,7 @@
 #include "ui/drawing/start_goal.h"
 #include "ui/drawing/statbar.h"
 #include "ui/drawing/tree.h"
+#include "ui/duration_parts.h"
 #include "ui/elements/number_widget.h"
 #include "ui/elements/selector.h"
 #include "ui/timing.h"

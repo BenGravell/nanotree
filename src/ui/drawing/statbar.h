@@ -7,6 +7,7 @@
 #include "planner/cost.h"
 #include "planner/tree.h"
 #include "ui/colors.h"
+#include "ui/duration_parts.h"
 #include "ui/text.h"
 #include "ui/timing.h"
 

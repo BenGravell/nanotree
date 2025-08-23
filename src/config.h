@@ -171,8 +171,7 @@ const std::vector<Vector2> DEFAULT_OBSTACLES = {
     {1470, 450},
     {1500, 450},
     {1530, 450},
-    {1560, 450}
-};
+    {1560, 450}};
 
 static constexpr std::array<int, 14> NUM_SAMPLES_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
 static constexpr std::array<int, 16> NUM_CARRYOVER_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000};
@@ -217,6 +216,9 @@ static constexpr int DELTA_BUTTON_WIDTH = DELTA_BUTTON_HEIGHT;
 static constexpr int LINE_WIDTH_TREE = 5;
 static constexpr int LINE_WIDTH_PATH = 15;
 static constexpr int NODE_WIDTH_PATH = 30;
+
+// UI TIMES
+static constexpr float MOMENT_DURATION = 0.050f;
 
 // TIMING
 static constexpr float TIMING_WINDOW_SEC = 2.0f;

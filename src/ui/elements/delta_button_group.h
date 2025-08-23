@@ -5,6 +5,7 @@
 #include <map>
 
 #include "config.h"
+#include "ui/elements/momentary_button.h"
 
 enum class DeltaSize {
     DEC_LARGE = -3,
@@ -14,26 +15,27 @@ enum class DeltaSize {
 };
 
 struct DeltaButtonGroup {
-    std::map<DeltaSize, Rectangle> rectangles;
+    std::map<DeltaSize, MomentaryButton> button_map;
 
     DeltaButtonGroup(const Vector2 pos) {
-        rectangles[DeltaSize::DEC_LARGE] = {pos.x + 0 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT};
-        rectangles[DeltaSize::DEC_SMALL] = {pos.x + 1 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT};
-        rectangles[DeltaSize::INC_SMALL] = {pos.x + 2 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT};
-        rectangles[DeltaSize::INC_LARGE] = {pos.x + 3 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT};
+        button_map[DeltaSize::DEC_LARGE] = MomentaryButton{{pos.x + 0 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT}, MOMENT_DURATION};
+        button_map[DeltaSize::DEC_SMALL] = MomentaryButton{{pos.x + 1 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT}, MOMENT_DURATION};
+        button_map[DeltaSize::INC_SMALL] = MomentaryButton{{pos.x + 2 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT}, MOMENT_DURATION};
+        button_map[DeltaSize::INC_LARGE] = MomentaryButton{{pos.x + 3 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN), pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT}, MOMENT_DURATION};
     }
 
     int get() {
-        if (!IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            return 0;
-        }
+        const bool lmb_pressed = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 
+        int delta = 0;
         const Vector2 mouse = GetMousePosition();
-        for (const auto& [delta, rec] : rectangles) {
-            if (CheckCollisionPointRec(mouse, rec)) {
-                return static_cast<int>(delta);
+        for (auto& [delta_size, button] : button_map) {
+            const bool button_pressed = lmb_pressed && button.CheckCollisionPoint(mouse);
+            button.update(button_pressed);
+            if (button_pressed) {
+                delta = static_cast<int>(delta_size);
             }
         }
-        return 0;
+        return delta;
     }
 };

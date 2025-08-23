@@ -6,13 +6,6 @@
 #include <numeric>
 #include <utility>
 
-struct DurationParts {
-    float grow_tree;
-    float carryover_tree;
-    float draw;
-    float total;
-};
-
 struct Observation {
     float timestamp;
     float duration;

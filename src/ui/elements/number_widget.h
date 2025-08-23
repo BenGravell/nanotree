@@ -20,7 +20,7 @@ struct NumberWidget {
     ToggleButton scroll_toggle_button;
 
     NumberWidget(const int current, const std::vector<int>& options, const bool scrollable, const Vector2 pos)
-        : current(current), options(options), scrollable(scrollable), pos(pos), delta_button_group(pos), scroll_toggle_button({false, {pos.x + 4 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN) + BUTTON_MARGIN, pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT}}) {
+        : current(current), options(options), scrollable(scrollable), pos(pos), delta_button_group(pos), scroll_toggle_button({{pos.x + 4 * (DELTA_BUTTON_WIDTH + BUTTON_MARGIN) + BUTTON_MARGIN, pos.y, DELTA_BUTTON_WIDTH, DELTA_BUTTON_HEIGHT}}) {
     }
 
     void update() {
