@@ -78,6 +78,7 @@ const std::vector<Vector2> DEFAULT_OBSTACLES = {
     {960, 390},
     {960, 420},
     {960, 450},
+    {960, 480},
     {960, 510},
     {960, 540},
     {960, 570},
@@ -218,7 +219,7 @@ static constexpr int LINE_WIDTH_PATH = 15;
 static constexpr int NODE_WIDTH_PATH = 30;
 
 // UI TIMES
-static constexpr float MOMENT_DURATION = 0.050f;
+static constexpr float MOMENT_DURATION = 0.100f;
 
 // TIMING
 static constexpr float TIMING_WINDOW_SEC = 2.0f;
