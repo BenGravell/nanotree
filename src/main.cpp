@@ -1,6 +1,7 @@
 #include <raylib.h>
 #include <raymath.h>
 
+#define RAYGUI_IMPLEMENTATION
 #include <algorithm>
 #include <memory>
 #include <optional>
@@ -11,6 +12,7 @@
 #include "core/obstacle.h"
 #include "core/rng.h"
 #include "planner/tree.h"
+#include "raygui.h"
 #include "ui/drawing/flat_grid.h"
 #include "ui/drawing/number_widget.h"
 #include "ui/drawing/object_brush.h"
@@ -25,16 +27,6 @@
 #include "ui/elements/selector.h"
 #include "ui/timing.h"
 
-// KEYMAP
-// ------
-// MMB:     Delete obstacle
-// RMB:     Add obstacle
-// Scroll:  Adjust assigned number setting(s)
-// G:       Grow tree (once)
-// T:       Grow tree (continuously)
-// P:       Toggle carryover of path
-// R:       Reset tree
-
 int main() {
     // RAYLIB INIT
     SetTraceLogLevel(LOG_ERROR);
@@ -43,6 +35,8 @@ int main() {
     // UI INIT
     Font font = LoadFontEx("assets/Oxanium/static/Oxanium-Regular.ttf", 40, 0, 0);
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
+
+    GuiSetFont(font);
 
     NumberWidget num_samples_widget{200, std::vector(std::begin(NUM_SAMPLES_OPTIONS), std::end(NUM_SAMPLES_OPTIONS)), true, {10 + 2 * RIBBON_COL_WIDTH, 10 + ENVIRONMENT_HEIGHT}};
     NumberWidget num_carryover_widget{2000, std::vector(std::begin(NUM_CARRYOVER_OPTIONS), std::end(NUM_CARRYOVER_OPTIONS)), false, {10 + 3 * RIBBON_COL_WIDTH, 10 + ENVIRONMENT_HEIGHT}};
@@ -97,6 +91,8 @@ int main() {
     Timing timing_grow;
     Timing timing_carryover;
     Timing timing_draw;
+
+    bool showMessageBox = false;
 
     while (!WindowShouldClose()) {
         timing_total.start();
@@ -199,6 +195,8 @@ int main() {
         timing_draw.start();
         BeginDrawing();
 
+        // ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+
         // Environment
         DrawRectangle(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_BACKGROUND);
         DrawFlatGrid(0, ENVIRONMENT_WIDTH, 0, ENVIRONMENT_HEIGHT, {GRID_SPACING, GRID_THICKNESS, COLOR_GRID});
@@ -214,6 +212,31 @@ int main() {
         DrawRibbon(num_samples_widget, num_carryover_widget, selector, font);
         // Border around whole screen
         DrawRectangleLinesEx({0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}, 3, COLOR_SCREEN_BORDER);
+
+        static constexpr int SHOW_KEYMAP_BUTTON_Y = STATBAR_ROW_HEIGHT * (STATBAR_NUM_ROWS - 1);
+        if (GuiButton((Rectangle){ENVIRONMENT_WIDTH, SHOW_KEYMAP_BUTTON_Y, STATBAR_WIDTH, STATBAR_ROW_HEIGHT}, "#191#Show Key Map")) {
+            showMessageBox = true;
+        }
+
+        if (showMessageBox) {
+            const char* keymap_message =
+                "KEYMAP\n"
+                "------\n"
+                "MMB:     Delete obstacle\n"
+                "RMB:     Add obstacle\n"
+                "Scroll:  Adjust assigned number setting(s)\n"
+                "G:       Grow tree (once)\n"
+                "T:       Grow tree (continuously)\n"
+                "P:       Toggle carryover of path\n"
+                "R:       Reset tree";
+
+            int result = GuiMessageBox((Rectangle){ENVIRONMENT_WIDTH, 0, STATBAR_WIDTH, SHOW_KEYMAP_BUTTON_Y},
+                                       "#191#Key Map", keymap_message, "Close");
+
+            if (result >= 0) {
+                showMessageBox = false;
+            }
+        }
 
         EndDrawing();
         timing_draw.record();
