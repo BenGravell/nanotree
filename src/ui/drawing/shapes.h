@@ -64,31 +64,3 @@ void DrawDoubleChevron(const Rectangle& rec, const float dir, const Color color)
     DrawChevron(rec1, dir, color);
     DrawChevron(rec2, dir, color);
 }
-
-void DrawScrollWheel(Rectangle rec, Color color, const float thickness) {
-    const Vector2 center = {rec.x + 0.5f * rec.width, rec.y + 0.5f * rec.height};
-
-    // Dimensions relative to rectangle
-    const float body_height = 0.7f * rec.height;
-    const float body_width = 0.35f * rec.width;
-
-    // Draw scroll wheel body (oval/rounded rectangle)
-    Rectangle body = {
-        center.x - 0.5f * body_width,
-        center.y - 0.5f * body_height,
-        body_width,
-        body_height};
-    DrawRectangleRoundedLinesEx(body, 1.0f, 16, thickness, color);
-
-    // Draw horizontal bars inside wheel
-    const int lines = 5;
-    const float bar_width = 0.6f * body_width;
-    for (int i = 0; i < lines; i++) {
-        const float t = (i + 1.0f) / (lines + 1.0f);
-        const float y = body.y + t * body_height;
-        DrawLineEx({center.x - 0.5f * bar_width, y},
-                   {center.x + 0.5f * bar_width, y},
-                   thickness,
-                   color);
-    }
-}

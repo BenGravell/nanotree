@@ -8,5 +8,4 @@
 
 void DrawNumberWidget(const NumberWidget& w) {
     DrawDeltaButtonGroup(w.delta_button_group);
-    DrawToggleButton(w.scroll_toggle_button);
 }
