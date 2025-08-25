@@ -29,7 +29,7 @@ int main() {
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "nanotree");
 
-    // UI INIT
+    // GUI STYLE INIT
     Font font = LoadFontEx("assets/Oxanium/static/Oxanium-Regular.ttf", 40, 0, 0);
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
@@ -41,6 +41,10 @@ int main() {
     // GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 
+    // GUI ELEMENTS INIT
+    CtrlState ctrl_state;
+    TimingParts timing;
+
     // ENVIRONMENT INIT
     Vector2 start = DEFAULT_START;
     Vector2 goal = DEFAULT_GOAL;
@@ -51,8 +55,6 @@ int main() {
     tree.reset(start);
 
     Path path;
-
-    CtrlState ctrl_state;
 
     // Run the planner until:
     // 1: tree filled up to carryover limit
@@ -74,21 +76,14 @@ int main() {
         }
     }
 
-    TimingParts timing;
-
-    bool showMessageBox = false;
-
     while (!WindowShouldClose()) {
         timing.total.start();
         // ---- UI LOGIC
         Vector2 mouse = GetMousePosition();
-
         const bool is_down_lmb = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-
-        const SelectorMode mode = ctrl_state.selector_mode;
-
         const Vector2 brush_pos = clampToEnvironment(mouse);
         const bool mouse_in_environment = insideEnvironment(mouse);
+        const SelectorMode mode = ctrl_state.selector_mode;
 
         bool trigger_tree_reset = false;
         bool trigger_tree_growth = false;
