@@ -6,9 +6,9 @@
 #include "config.h"
 
 bool insideEnvironment(const Vector2 pos) {
-    return (0.0f < pos.x) && (pos.x < ENVIRONMENT_WIDTH) && (0.0f < pos.y) && (pos.y < ENVIRONMENT_HEIGHT);
+    return (ENVIRONMENT_X_MIN < pos.x) && (pos.x < ENVIRONMENT_X_MAX) && (ENVIRONMENT_Y_MIN < pos.y) && (pos.y < ENVIRONMENT_Y_MAX);
 }
 
 Vector2 clampToEnvironment(const Vector2 pos) {
-    return Vector2Clamp(pos, {0, 0}, {ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT});
+    return Vector2Clamp(pos, {ENVIRONMENT_X_MIN, ENVIRONMENT_Y_MIN}, {ENVIRONMENT_X_MAX, ENVIRONMENT_Y_MAX});
 }

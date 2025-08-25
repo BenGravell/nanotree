@@ -13,18 +13,16 @@
 #include "core/rng.h"
 #include "planner/tree.h"
 #include "raygui.h"
+#include "ui/drawing/ctrl_bar.h"
+#include "ui/drawing/environment.h"
 #include "ui/drawing/flat_grid.h"
-#include "ui/drawing/number_widget.h"
 #include "ui/drawing/object_brush.h"
 #include "ui/drawing/obstacles.h"
 #include "ui/drawing/path.h"
-#include "ui/drawing/ribbon.h"
 #include "ui/drawing/start_goal.h"
-#include "ui/drawing/statbar.h"
+#include "ui/drawing/stat_bar.h"
 #include "ui/drawing/tree.h"
 #include "ui/duration_parts.h"
-#include "ui/elements/number_widget.h"
-#include "ui/elements/selector.h"
 #include "ui/timing.h"
 
 int main() {
@@ -37,20 +35,12 @@ int main() {
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
     GuiSetFont(font);
+    GuiSetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH, 60);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 30);
+    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 35);
 
-    NumberWidget num_samples_widget{200, std::vector(std::begin(NUM_SAMPLES_OPTIONS), std::end(NUM_SAMPLES_OPTIONS)), {10 + 2 * RIBBON_COL_WIDTH, 10 + ENVIRONMENT_HEIGHT}};
-    NumberWidget num_carryover_widget{2000, std::vector(std::begin(NUM_CARRYOVER_OPTIONS), std::end(NUM_CARRYOVER_OPTIONS)), {10 + 3 * RIBBON_COL_WIDTH, 10 + ENVIRONMENT_HEIGHT}};
-
-    static constexpr int BUTTON_Y = ENVIRONMENT_HEIGHT + BUTTON_MARGIN;
-
-    Selector selector{
-        .mode = SelectorMode::PLACE_GOAL,
-        .rectangles = {
-            {SelectorMode::PLACE_START, {0 + 0.0 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT}},
-            {SelectorMode::PLACE_GOAL, {0 + 0.5 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT}},
-            {SelectorMode::DEL_OBSTACLE, {0 + 1.0 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT}},
-            {SelectorMode::ADD_OBSTACLE, {0 + 1.5 * RIBBON_COL_WIDTH + BUTTON_MARGIN, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT}},
-        }};
+    // GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 
     // ENVIRONMENT INIT
     Vector2 start = DEFAULT_START;
@@ -63,21 +53,19 @@ int main() {
 
     Path path;
 
-    int num_samples = num_samples_widget.current;
-    int num_carryover = num_carryover_widget.current;
-    bool carryover_path = true;
+    CtrlState ctrl_state;
 
     // Run the planner until:
     // 1: tree filled up to carryover limit
     // 2: goal reached
     // 3: ran out of attempts
+    const int num_init_attempts_max = 5 * (ctrl_state.num_carryover / ctrl_state.num_samples);
     int num_init_attempts = 0;
-    const int num_init_attempts_max = 5 * (num_carryover / num_samples);
     {
         bool goal_reached = false;
-        while ((tree.nodes.size() < num_carryover) || !goal_reached) {
-            tree.grow(num_samples, goal, obstacles);
-            tree.carryover(path, num_carryover, carryover_path);
+        while ((tree.nodes.size() < ctrl_state.num_carryover) || !goal_reached) {
+            tree.grow(ctrl_state.num_samples, goal, obstacles);
+            tree.carryover(path, ctrl_state.num_carryover, ctrl_state.carryover_path);
             path = extractPath(goal, tree.nodes);
             goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
             num_init_attempts++;
@@ -87,6 +75,7 @@ int main() {
         }
     }
 
+    // TODO aggregate these into a TimingParts struct
     Timing timing_total;
     Timing timing_grow;
     Timing timing_carryover;
@@ -100,77 +89,61 @@ int main() {
         Vector2 mouse = GetMousePosition();
 
         const bool is_down_lmb = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-        const bool is_down_rmb = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
-        const bool is_down_mmb = IsMouseButtonDown(MOUSE_BUTTON_MIDDLE);
 
-        selector.update();
-        const SelectorMode mode = selector.mode;
+        const SelectorMode mode = ctrl_state.selector_mode;
 
-        num_samples_widget.update();
-        num_carryover_widget.update();
-        num_samples = num_samples_widget.current;
-        num_carryover = num_carryover_widget.current;
-
-        const Vector2 selector_pos = clampToEnvironment(mouse);
+        const Vector2 brush_pos = clampToEnvironment(mouse);
         const bool mouse_in_environment = insideEnvironment(mouse);
-        bool tree_should_reset = false;
-        bool tree_should_grow = false;
+
+        bool trigger_tree_reset = false;
+        bool trigger_tree_growth = false;
+
+        // TODO factor the mode action to a function and switch case on mode
         if (mouse_in_environment) {
             if (is_down_lmb && mode == SelectorMode::PLACE_START) {
-                const bool start_changed = Vector2Distance(start, selector_pos) > START_CHANGED_DIST_MIN;
+                const bool start_changed = Vector2Distance(start, brush_pos) > START_CHANGED_DIST_MIN;
                 if (start_changed) {
-                    start = selector_pos;
-                    tree_should_reset = true;
+                    start = brush_pos;
+                    trigger_tree_reset = true;
                 } else {
-                    tree_should_grow = true;
+                    trigger_tree_growth = true;
                 }
             }
             if (is_down_lmb && mode == SelectorMode::PLACE_GOAL) {
-                goal = selector_pos;
-                tree_should_grow = true;
+                goal = brush_pos;
+                trigger_tree_growth = true;
             }
 
-            if ((is_down_lmb && mode == SelectorMode::ADD_OBSTACLE) || is_down_rmb) {
-                if (std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, selector_pos) < OBSTACLE_SPACING_MIN; })) {
-                    obstacles.push_back(selector_pos);
-                    tree_should_reset = true;
+            if (is_down_lmb && mode == SelectorMode::ADD_OBSTACLE) {
+                if (std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, brush_pos) < OBSTACLE_SPACING_MIN; })) {
+                    obstacles.push_back(brush_pos);
+                    trigger_tree_reset = true;
                 }
             }
 
-            if ((is_down_lmb && mode == SelectorMode::DEL_OBSTACLE) || is_down_mmb) {
-                obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, selector_pos) < (OBSTACLE_RADIUS + OBSTACLE_DEL_RADIUS); }), obstacles.end());
+            if (is_down_lmb && mode == SelectorMode::DEL_OBSTACLE) {
+                obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, brush_pos) < (OBSTACLE_RADIUS + OBSTACLE_DEL_RADIUS); }), obstacles.end());
             }
         }
 
-        if (IsKeyPressed(KEY_G)) {
-            tree_should_grow = true;
-        }
-
-        if (IsKeyDown(KEY_T)) {
-            tree_should_grow = true;
-        }
-
-        if (IsKeyPressed(KEY_R)) {
-            tree_should_reset = true;
-        }
-
-        if (IsKeyPressed(KEY_P)) {
-            carryover_path = !carryover_path;
+        // CTRL STATE PRE-UPDATE
+        if (trigger_tree_reset) {
+            ctrl_state.tree_should_reset = true;
         }
 
         // ---- PLANNER LOGIC
 
-        if (tree_should_reset) {
+        if (ctrl_state.tree_should_reset) {
             tree.reset(start);
         }
 
-        if (tree_should_grow) {
+        if (ctrl_state.tree_should_grow) {
             timing_carryover.start();
-            tree.carryover(path, num_carryover, carryover_path);
+            tree.carryover(path, ctrl_state.num_carryover, ctrl_state.carryover_path);
             timing_carryover.record();
 
             timing_grow.start();
-            tree.grow(num_samples, goal, obstacles);
+            tree.grow(ctrl_state.num_samples, goal, obstacles);
             timing_grow.record();
         } else {
             timing_carryover.start();
@@ -183,6 +156,7 @@ int main() {
 
         const bool goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
 
+        // TODO factor to TimingParts method getDuration
         const float dt_grow_tree = timing_grow.averageDuration();
         const float dt_carryover = timing_carryover.averageDuration();
         const float dt_draw = timing_draw.averageDuration();
@@ -197,46 +171,14 @@ int main() {
 
         // ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
-        // Environment
-        DrawRectangle(0, 0, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_BACKGROUND);
-        DrawFlatGrid(0, ENVIRONMENT_WIDTH, 0, ENVIRONMENT_HEIGHT, {GRID_SPACING, GRID_THICKNESS, COLOR_GRID});
-        DrawObstacles(obstacles);
-        DrawTree(tree, path, goal);
-        DrawPath(path);
-        DrawObjectBrushByMode(selector_pos, mode);
-        DrawStart(start);
-        DrawGoal(goal, goal_reached);
-        // Statbar
+        DrawEnvironment(brush_pos, ctrl_state.selector_mode, start, goal, goal_reached, obstacles, tree, path);
+
         DrawStatBar(tree, path, goal, goal_reached, obstacles, duration_parts, fps, font);
-        // Ribbon
-        DrawRibbon(num_samples_widget, num_carryover_widget, selector, font);
+
+        ctrl_state = DrawCtrlBar(ctrl_state, trigger_tree_reset, trigger_tree_growth);
+
         // Border around whole screen
         DrawRectangleLinesEx({0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}, 3, COLOR_SCREEN_BORDER);
-
-        static constexpr int SHOW_KEYMAP_BUTTON_Y = STATBAR_ROW_HEIGHT * (STATBAR_NUM_ROWS - 1);
-        if (GuiButton((Rectangle){ENVIRONMENT_WIDTH, SHOW_KEYMAP_BUTTON_Y, STATBAR_WIDTH, STATBAR_ROW_HEIGHT}, "#191#Show Key Map")) {
-            showMessageBox = true;
-        }
-
-        if (showMessageBox) {
-            const char* keymap_message =
-                "KEYMAP\n"
-                "------\n"
-                "MMB:     Delete obstacle\n"
-                "RMB:     Add obstacle\n"
-                "Scroll:  Adjust assigned number setting(s)\n"
-                "G:       Grow tree (once)\n"
-                "T:       Grow tree (continuously)\n"
-                "P:       Toggle carryover of path\n"
-                "R:       Reset tree";
-
-            int result = GuiMessageBox((Rectangle){ENVIRONMENT_WIDTH, 0, STATBAR_WIDTH, SHOW_KEYMAP_BUTTON_Y},
-                                       "#191#Key Map", keymap_message, "Close");
-
-            if (result >= 0) {
-                showMessageBox = false;
-            }
-        }
 
         EndDrawing();
         timing_draw.record();

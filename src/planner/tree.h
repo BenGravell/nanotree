@@ -72,8 +72,8 @@ Path extractPath(const Vector2 target, const Nodes& nodes) {
 
 Vector2 sample(const Vector2 goal) {
     static std::uniform_real_distribution<float> dist_select(0.0f, 1.0f);
-    static std::uniform_real_distribution<float> dist_x(0.0f, ENVIRONMENT_WIDTH);
-    static std::uniform_real_distribution<float> dist_y(0.0f, ENVIRONMENT_HEIGHT);
+    static std::uniform_real_distribution<float> dist_x(ENVIRONMENT_X_MIN, ENVIRONMENT_X_MAX);
+    static std::uniform_real_distribution<float> dist_y(ENVIRONMENT_Y_MIN, ENVIRONMENT_Y_MAX);
     static std::uniform_real_distribution<float> dist_goal_x(-GOAL_RADIUS, GOAL_RADIUS);
     static std::uniform_real_distribution<float> dist_goal_y(-GOAL_RADIUS, GOAL_RADIUS);
 
@@ -153,8 +153,8 @@ struct Tree {
     }
 
     void grow(const int num_samples, const Vector2 goal, const Obstacles& obstacles) {
-        for (int i = 0; i <= num_samples; ++i) {
-            Vector2 pos = (i == num_samples) ? goal : sample(goal);
+        for (int i = 0; i < num_samples; ++i) {
+            Vector2 pos = ((i + 1) == num_samples) ? goal : sample(goal);
             NodePtr parent = getCheapest(pos, nodes, CHEAP_PARENT_SEARCH_RADIUS);
             pos = clampToEnvironment(pos);
             pos = attractByDistance(pos, parent);

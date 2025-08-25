@@ -28,11 +28,11 @@ const Color COLOR_BAD = guppyColor(0.8f);
 
 static constexpr Color COLOR_BACKGROUND = COLOR_GRAY_016;
 static constexpr Color COLOR_RIBBON_BACKGROUND = COLOR_GRAY_032;
-static constexpr Color COLOR_STATBAR_BACKGROUND = COLOR_RIBBON_BACKGROUND;
+static constexpr Color COLOR_STAT_BAR_BACKGROUND = COLOR_RIBBON_BACKGROUND;
 
 static constexpr Color COLOR_SCREEN_BORDER = COLOR_GRAY_240;
 static constexpr Color COLOR_RIBBON_BORDER = COLOR_SCREEN_BORDER;
-static constexpr Color COLOR_STATBAR_BORDER = COLOR_SCREEN_BORDER;
+static constexpr Color COLOR_STAT_BAR_BORDER = COLOR_SCREEN_BORDER;
 
 static constexpr Color COLOR_OBSTACLE = COLOR_GRAY_096;
 static constexpr Color COLOR_PATH = COLOR_GRAY_255;

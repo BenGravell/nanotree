@@ -5,7 +5,6 @@
 #include <cmath>
 
 #include "config.h"
-#include "ui/elements/selector.h"
 
 struct DrawObjectBrushParams {
     float radius;
@@ -26,22 +25,5 @@ void DrawObjectBrush(const Vector2 pos, const DrawObjectBrushParams params) {
     for (int i = 0; i < params.num_segments; ++i) {
         const float start_angle = 2 * i * delta_angle + offset_angle;
         DrawRing(pos, ring_inner_radius, ring_outer_radius, start_angle, start_angle + delta_angle, 0, LIGHTGRAY);
-    }
-}
-
-void DrawObjectBrushByMode(const Vector2 pos, const SelectorMode mode) {
-    switch (mode) {
-        case SelectorMode::PLACE_START:
-            DrawObjectBrush(pos, {START_RADIUS, 0.6f, 6, 3.0f});
-            return;
-        case SelectorMode::PLACE_GOAL:
-            DrawObjectBrush(pos, {GOAL_RADIUS, 0.4f, 8, 4.0f});
-            return;
-        case SelectorMode::ADD_OBSTACLE:
-            DrawObjectBrush(pos, {OBSTACLE_RADIUS, 0.2f, 12, 5.0f});
-            return;
-        case SelectorMode::DEL_OBSTACLE:
-            DrawObjectBrush(pos, {OBSTACLE_DEL_RADIUS, 0.6f, 6, 3.0f});
-            return;
     }
 }

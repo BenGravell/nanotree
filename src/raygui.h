@@ -726,7 +726,7 @@ RAYGUIAPI int GuiGetTextWidth(const char *text);                // Get text widt
 // Controls
 //----------------------------------------------------------------------------------------------------------
 // Container/separator controls, useful for controls organization
-RAYGUIAPI int GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
+RAYGUIAPI int GuiWindowBox(Rectangle bounds, const char *title, const bool showCloseButton);                                       // Window Box control, shows a window that can be closed
 RAYGUIAPI int GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with text name
 RAYGUIAPI int GuiLine(Rectangle bounds, const char *text);                                             // Line separator control, could contain text
 RAYGUIAPI int GuiPanel(Rectangle bounds, const char *text);                                            // Panel control, useful to group controls
@@ -1597,16 +1597,16 @@ int GuiGetStyle(int control, int property)
 //----------------------------------------------------------------------------------
 
 // Window Box control
-int GuiWindowBox(Rectangle bounds, const char *title)
+int GuiWindowBox(Rectangle bounds, const char *title, const bool showCloseButton = true)
 {
     // Window title bar height (including borders)
     // NOTE: This define is also used by GuiMessageBox() and GuiTextInputBox()
     #if !defined(RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT)
-        #define RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT        24
+        #define RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT        40
     #endif
 
     #if !defined(RAYGUI_WINDOWBOX_CLOSEBUTTON_HEIGHT)
-        #define RAYGUI_WINDOWBOX_CLOSEBUTTON_HEIGHT      18
+        #define RAYGUI_WINDOWBOX_CLOSEBUTTON_HEIGHT      30
     #endif
 
     int result = 0;
@@ -1638,9 +1638,9 @@ int GuiWindowBox(Rectangle bounds, const char *title)
     GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 #if defined(RAYGUI_NO_ICONS)
-    result = GuiButton(closeButtonRec, "x");
+    if (showCloseButton) result = GuiButton(closeButtonRec, "x");
 #else
-    result = GuiButton(closeButtonRec, GuiIconText(ICON_CROSS_SMALL, NULL));
+    if (showCloseButton) result = GuiButton(closeButtonRec, GuiIconText(ICON_CROSS, NULL));
 #endif
     GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
@@ -4088,10 +4088,10 @@ int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
 int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons)
 {
     #if !defined(RAYGUI_MESSAGEBOX_BUTTON_HEIGHT)
-        #define RAYGUI_MESSAGEBOX_BUTTON_HEIGHT    24
+        #define RAYGUI_MESSAGEBOX_BUTTON_HEIGHT    40
     #endif
     #if !defined(RAYGUI_MESSAGEBOX_BUTTON_PADDING)
-        #define RAYGUI_MESSAGEBOX_BUTTON_PADDING   12
+        #define RAYGUI_MESSAGEBOX_BUTTON_PADDING   10
     #endif
 
     int result = -1;    // Returns clicked button from buttons list, 0 refers to closed window button
@@ -4114,7 +4114,7 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
 
     // Draw control
     //--------------------------------------------------------------------
-    if (GuiWindowBox(bounds, title)) result = 0;
+    GuiWindowBox(bounds, title, false);
 
     int prevTextAlignment = GuiGetStyle(LABEL, TEXT_ALIGNMENT);
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
@@ -4321,7 +4321,7 @@ void GuiLoadStyle(const char *fileName)
     if (rgsFile != NULL)
     {
         char buffer[MAX_LINE_BUFFER_SIZE] = { 0 };
-        fgets(buffer, MAX_LINE_BUFFER_SIZE, rgsFile);
+        std::ignore = fgets(buffer, MAX_LINE_BUFFER_SIZE, rgsFile);
 
         if (buffer[0] == '#')
         {
@@ -4388,7 +4388,7 @@ void GuiLoadStyle(const char *fileName)
                     default: break;
                 }
 
-                fgets(buffer, MAX_LINE_BUFFER_SIZE, rgsFile);
+                std::ignore = fgets(buffer, MAX_LINE_BUFFER_SIZE, rgsFile);
             }
         }
         else tryBinary = true;
@@ -4409,7 +4409,7 @@ void GuiLoadStyle(const char *fileName)
             if (fileDataSize > 0)
             {
                 unsigned char *fileData = (unsigned char *)RAYGUI_MALLOC(fileDataSize*sizeof(unsigned char));
-                fread(fileData, sizeof(unsigned char), fileDataSize, rgsFile);
+                std::ignore = fread(fileData, sizeof(unsigned char), fileDataSize, rgsFile);
 
                 GuiLoadStyleFromMemory(fileData, fileDataSize);
 
@@ -4603,11 +4603,11 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
         short iconCount = 0;
         short iconSize = 0;
 
-        fread(signature, 1, 4, rgiFile);
-        fread(&version, sizeof(short), 1, rgiFile);
-        fread(&reserved, sizeof(short), 1, rgiFile);
-        fread(&iconCount, sizeof(short), 1, rgiFile);
-        fread(&iconSize, sizeof(short), 1, rgiFile);
+        std::ignore = fread(signature, 1, 4, rgiFile);
+        std::ignore = fread(&version, sizeof(short), 1, rgiFile);
+        std::ignore = fread(&reserved, sizeof(short), 1, rgiFile);
+        std::ignore = fread(&iconCount, sizeof(short), 1, rgiFile);
+        std::ignore = fread(&iconSize, sizeof(short), 1, rgiFile);
 
         if ((signature[0] == 'r') &&
             (signature[1] == 'G') &&
@@ -4620,13 +4620,13 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
                 for (int i = 0; i < iconCount; i++)
                 {
                     guiIconsName[i] = (char *)RAYGUI_MALLOC(RAYGUI_ICON_MAX_NAME_LENGTH);
-                    fread(guiIconsName[i], 1, RAYGUI_ICON_MAX_NAME_LENGTH, rgiFile);
+                    std::ignore = fread(guiIconsName[i], 1, RAYGUI_ICON_MAX_NAME_LENGTH, rgiFile);
                 }
             }
             else fseek(rgiFile, iconCount*RAYGUI_ICON_MAX_NAME_LENGTH, SEEK_CUR);
 
             // Read icons data directly over internal icons array
-            fread(guiIconsPtr, sizeof(unsigned int), (int)iconCount*((int)iconSize*(int)iconSize/32), rgiFile);
+            std::ignore = fread(guiIconsPtr, sizeof(unsigned int), (int)iconCount*((int)iconSize*(int)iconSize/32), rgiFile);
         }
 
         fclose(rgiFile);
