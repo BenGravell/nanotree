@@ -4,31 +4,13 @@
 
 #include "config.h"
 #include "ui/colors.h"
-#include "ui/selector_mode.h"
+#include "ui/ctrl_state.h"
 
 static constexpr int CTRL_BAR_X_MIN = ENVIRONMENT_X_MAX;
 static constexpr int CTRL_BAR_X_MAX = CTRL_BAR_X_MIN + CTRL_BAR_WIDTH;
 static constexpr int CTRL_BAR_Y_MIN = 0;
 static constexpr int CTRL_BAR_Y_MAX = CTRL_BAR_Y_MIN + CTRL_BAR_HEIGHT;
 static constexpr Rectangle CTRL_BAR_REC = {CTRL_BAR_X_MIN, CTRL_BAR_Y_MIN, CTRL_BAR_WIDTH, CTRL_BAR_HEIGHT};
-
-enum class TreeGrowthMode {
-    ALWAYS = 0,
-    ON_TRIGGER = 1,
-    NEVER = 2
-};
-
-struct CtrlState {
-    SelectorMode selector_mode = SelectorMode::PLACE_GOAL;
-    TreeGrowthMode tree_growth_mode = TreeGrowthMode::ON_TRIGGER;
-    bool tree_should_reset = false;
-    bool tree_should_grow = false;
-    bool carryover_path = true;
-    int num_samples = 200;
-    int num_carryover = 2000;
-    bool num_samples_edit_mode = false;
-    bool num_carryover_edit_mode = false;
-};
 
 static constexpr int CTRL_BAR_ROW_0_Y = CTRL_BAR_Y_MIN + 0 * CTRL_BAR_ROW_HEIGHT;
 static constexpr int CTRL_BAR_ROW_1_Y = CTRL_BAR_Y_MIN + 1 * CTRL_BAR_ROW_HEIGHT;
@@ -90,7 +72,6 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
         state.num_samples_edit_mode = !state.num_samples_edit_mode;
     }
     GuiLabel((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_16_Y, CTRL_BAR_WIDTH, float(GuiGetStyle(DEFAULT, TEXT_SIZE) + 10)}, "Carryover");
-
 
     // Border
     DrawRectangleLinesEx(CTRL_BAR_REC, 3, COLOR_STAT_BAR_BORDER);
