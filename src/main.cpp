@@ -125,6 +125,9 @@ int main() {
 
         if (ctrl_state.tree_should_reset) {
             tree.reset(start);
+            // NOTE: Critical to ensure path is not carried over when obstacles collide with existing path.
+            // TODO: remove once carryover() method respects obstacles
+            ctrl_state.carryover_path = false;
         }
 
         if (ctrl_state.tree_should_grow) {
