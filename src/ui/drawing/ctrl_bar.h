@@ -49,8 +49,8 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
     GuiToggleGroup((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_5_Y, CTRL_BAR_WIDTH, CTRL_BAR_ROW_HEIGHT}, "Grow Always\nGrow On Trigger\nGrow Never", &tree_growth_mode_int);
     state.tree_growth_mode = static_cast<TreeGrowthMode>(tree_growth_mode_int);
 
-    const bool tree_should_grow_once = GuiButton((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_9_Y, CTRL_BAR_WIDTH, CTRL_BAR_ROW_HEIGHT}, "Grow Once");
-    state.tree_should_reset = GuiButton((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_10_Y, CTRL_BAR_WIDTH, CTRL_BAR_ROW_HEIGHT}, "Reset Tree");
+    const bool tree_should_grow_once = GuiButton((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_9_Y - CTRL_BAR_ROW_HEIGHT / 2, CTRL_BAR_WIDTH, CTRL_BAR_ROW_HEIGHT}, "Grow Once");
+    state.tree_should_reset = GuiButton((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_10_Y - CTRL_BAR_ROW_HEIGHT / 2, CTRL_BAR_WIDTH, CTRL_BAR_ROW_HEIGHT}, "Reset Tree");
     if (trigger_tree_reset) {
         state.tree_should_reset = true;
     }
