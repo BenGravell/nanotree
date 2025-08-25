@@ -63,12 +63,12 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
 
     // TODO use NUM_CARRYOVER_OPTIONS and NUM_SAMPLES_OPTIONS in spinners
 
-    if (GuiSpinner((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_13_Y, CTRL_BAR_WIDTH, CTRL_BAR_ROW_HEIGHT}, NULL, &state.num_carryover, 0, 10000, state.num_carryover_edit_mode)) {
+    if (GuiSpinner((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_13_Y, CTRL_BAR_WIDTH, CTRL_BAR_ROW_HEIGHT}, NULL, &state.num_carryover, 0, 50000, state.num_carryover_edit_mode)) {
         state.num_carryover_edit_mode = !state.num_carryover_edit_mode;
     }
     GuiLabel((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_14_Y, CTRL_BAR_WIDTH, float(GuiGetStyle(DEFAULT, TEXT_SIZE) + 10)}, "Carryover");
 
-    if (GuiSpinner((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_15_Y, CTRL_BAR_WIDTH, CTRL_BAR_ROW_HEIGHT}, NULL, &state.num_samples, 0, 50000, state.num_samples_edit_mode)) {
+    if (GuiSpinner((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_15_Y, CTRL_BAR_WIDTH, CTRL_BAR_ROW_HEIGHT}, NULL, &state.num_samples, 0, 10000, state.num_samples_edit_mode)) {
         state.num_samples_edit_mode = !state.num_samples_edit_mode;
     }
     GuiLabel((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_16_Y, CTRL_BAR_WIDTH, float(GuiGetStyle(DEFAULT, TEXT_SIZE) + 10)}, "Samples");
