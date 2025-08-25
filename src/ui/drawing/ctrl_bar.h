@@ -91,5 +91,9 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
     }
     GuiLabel((Rectangle){CTRL_BAR_X_MIN, CTRL_BAR_ROW_16_Y, CTRL_BAR_WIDTH, float(GuiGetStyle(DEFAULT, TEXT_SIZE) + 10)}, "Carryover");
 
+
+    // Border
+    DrawRectangleLinesEx(CTRL_BAR_REC, 3, COLOR_STAT_BAR_BORDER);
+
     return state;
 }
