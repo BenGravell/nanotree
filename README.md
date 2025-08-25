@@ -14,7 +14,7 @@ cmake -B build/release -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCH
 cmake --build build/release --config Release
 ```
 
-## Debug
+### Build Debug
 
 ```bash
 conan install . --build=missing -of=build/conan --settings=build_type=Debug
@@ -24,18 +24,16 @@ cmake -B build/debug -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_
 cmake --build build/debug --config Debug
 ```
 
-## Run
+### Run
 
 ```pwsh
 build/release/nanotree
-
-build/debug/nanotree
 ```
 
-### Run
+### Run debug
 
-```bash
-build/release/nanotree
+```pwsh
+build/debug/nanotree
 ```
 
 ## Web app
