@@ -22,7 +22,6 @@
 #include "ui/drawing/start_goal.h"
 #include "ui/drawing/stat_bar.h"
 #include "ui/drawing/tree.h"
-#include "ui/duration_parts.h"
 #include "ui/timing.h"
 
 int main() {
@@ -75,16 +74,12 @@ int main() {
         }
     }
 
-    // TODO aggregate these into a TimingParts struct
-    Timing timing_total;
-    Timing timing_grow;
-    Timing timing_carryover;
-    Timing timing_draw;
+    TimingParts timing;
 
     bool showMessageBox = false;
 
     while (!WindowShouldClose()) {
-        timing_total.start();
+        timing.total.start();
         // ---- UI LOGIC
         Vector2 mouse = GetMousePosition();
 
@@ -138,42 +133,36 @@ int main() {
         }
 
         if (ctrl_state.tree_should_grow) {
-            timing_carryover.start();
+            timing.carryover.start();
             tree.carryover(path, ctrl_state.num_carryover, ctrl_state.carryover_path);
-            timing_carryover.record();
+            timing.carryover.record();
 
-            timing_grow.start();
+            timing.grow.start();
             tree.grow(ctrl_state.num_samples, goal, obstacles);
-            timing_grow.record();
+            timing.grow.record();
         } else {
-            timing_carryover.start();
-            timing_carryover.record();
-            timing_grow.start();
-            timing_grow.record();
+            timing.carryover.start();
+            timing.carryover.record();
+            timing.grow.start();
+            timing.grow.record();
         }
 
         path = extractPath(goal, tree.nodes);
 
         const bool goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
 
-        // TODO factor to TimingParts method getDuration
-        const float dt_grow_tree = timing_grow.averageDuration();
-        const float dt_carryover = timing_carryover.averageDuration();
-        const float dt_draw = timing_draw.averageDuration();
-        const float dt_total = timing_total.averageDuration();
-        const DurationParts duration_parts{dt_grow_tree, dt_carryover, dt_draw, dt_total};
-
-        const int fps = std::lround(1.0f / std::max(1e-6f, dt_total));
+        const DurationParts duration = timing.averageDuration();
+        const int fps = std::lround(1.0f / std::max(1e-6f, duration.total));
 
         // ---- DRAWING LOGIC
-        timing_draw.start();
+        timing.draw.start();
         BeginDrawing();
 
         // ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
         DrawEnvironment(brush_pos, ctrl_state.selector_mode, start, goal, goal_reached, obstacles, tree, path);
 
-        DrawStatBar(tree, path, goal, goal_reached, obstacles, duration_parts, fps, font);
+        DrawStatBar(tree, path, goal, goal_reached, obstacles, duration, fps, font);
 
         ctrl_state = DrawCtrlBar(ctrl_state, trigger_tree_reset, trigger_tree_growth);
 
@@ -181,8 +170,8 @@ int main() {
         DrawRectangleLinesEx({0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}, 3, COLOR_SCREEN_BORDER);
 
         EndDrawing();
-        timing_draw.record();
-        timing_total.record();
+        timing.draw.record();
+        timing.total.record();
     }
     UnloadFont(font);
     CloseWindow();
