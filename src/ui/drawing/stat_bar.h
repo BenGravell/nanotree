@@ -56,12 +56,17 @@ void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bo
 
     GuiLabelColor((Rectangle){STAT_BAR_X_MIN, ROW_5_Y, STAT_BAR_WIDTH, STAT_BAR_ROW_HEIGHT}, (std::to_string(obstacles.size()) + " obstacles").c_str(), COLOR_STAT);
 
-    GuiLabelColor((Rectangle){STAT_BAR_X_MIN, ROW_7_Y, STAT_BAR_WIDTH, STAT_BAR_ROW_HEIGHT}, TextFormat("%4d ms [grow]", int(1000.0f * duration_parts.grow)), COLOR_TIMING_STAT);
-    GuiLabelColor((Rectangle){STAT_BAR_X_MIN, ROW_8_Y, STAT_BAR_WIDTH, STAT_BAR_ROW_HEIGHT}, TextFormat("%4d ms [carryover]", int(1000.0f * duration_parts.carryover)), COLOR_TIMING_STAT);
-    GuiLabelColor((Rectangle){STAT_BAR_X_MIN, ROW_9_Y, STAT_BAR_WIDTH, STAT_BAR_ROW_HEIGHT}, TextFormat("%4d ms [draw]", int(1000.0f * duration_parts.draw)), COLOR_TIMING_STAT);
-    GuiLabelColor((Rectangle){STAT_BAR_X_MIN, ROW_10_Y, STAT_BAR_WIDTH, STAT_BAR_ROW_HEIGHT}, TextFormat("%4d ms [total]", int(1000.0f * duration_parts.total)), COLOR_TIMING_STAT);
+    const int original_font_size = GuiGetStyle(DEFAULT, TEXT_SIZE);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 24);
 
-    GuiLabelColor((Rectangle){STAT_BAR_X_MIN, ROW_13_Y, STAT_BAR_WIDTH, STAT_BAR_ROW_HEIGHT}, TextFormat("%2i FPS", fps), computeFpsColor(fps));
+    GuiLabelColor((Rectangle){STAT_BAR_X_MIN, ROW_7_Y, STAT_BAR_WIDTH, STAT_BAR_ROW_HEIGHT / 2}, TextFormat("%4d ms [grow]", int(1000.0f * duration_parts.grow)), COLOR_TIMING_STAT);
+    GuiLabelColor((Rectangle){STAT_BAR_X_MIN, ROW_7_Y + STAT_BAR_ROW_HEIGHT / 2, STAT_BAR_WIDTH, STAT_BAR_ROW_HEIGHT / 2}, TextFormat("%4d ms [carryover]", int(1000.0f * duration_parts.carryover)), COLOR_TIMING_STAT);
+    GuiLabelColor((Rectangle){STAT_BAR_X_MIN, ROW_8_Y, STAT_BAR_WIDTH, STAT_BAR_ROW_HEIGHT / 2}, TextFormat("%4d ms [draw]", int(1000.0f * duration_parts.draw)), COLOR_TIMING_STAT);
+    GuiLabelColor((Rectangle){STAT_BAR_X_MIN, ROW_8_Y + STAT_BAR_ROW_HEIGHT / 2, STAT_BAR_WIDTH, STAT_BAR_ROW_HEIGHT / 2}, TextFormat("%4d ms [total]", int(1000.0f * duration_parts.total)), COLOR_TIMING_STAT);
+
+    GuiSetStyle(DEFAULT, TEXT_SIZE, original_font_size);
+
+    GuiLabelColor((Rectangle){STAT_BAR_X_MIN, ROW_10_Y, STAT_BAR_WIDTH, STAT_BAR_ROW_HEIGHT}, TextFormat("%2i FPS", fps), computeFpsColor(fps));
 
     // Border
     DrawRectangleLinesEx(STAT_BAR_REC, 3, COLOR_STAT_BAR_BORDER);
