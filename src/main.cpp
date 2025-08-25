@@ -35,8 +35,8 @@ int main() {
 
     GuiSetFont(font);
     GuiSetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH, 60);
-    GuiSetStyle(DEFAULT, TEXT_SIZE, 30);
-    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 35);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 40);
+    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 45);
 
     // GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
