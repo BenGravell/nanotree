@@ -11,38 +11,29 @@ Color guppyColor(const float x) {
     return Color{rgb[0], rgb[1], rgb[2], 255};
 }
 
-static constexpr Color COLOR_GRAY_000 = {0, 0, 0, 255};
 static constexpr Color COLOR_GRAY_016 = {16, 16, 16, 255};
 static constexpr Color COLOR_GRAY_032 = {32, 32, 32, 255};
 static constexpr Color COLOR_GRAY_048 = {48, 48, 48, 255};
 static constexpr Color COLOR_GRAY_064 = {64, 64, 64, 255};
 static constexpr Color COLOR_GRAY_096 = {96, 96, 96, 255};
+static constexpr Color COLOR_GRAY_128 = {128, 128, 128, 255};
 static constexpr Color COLOR_GRAY_160 = {160, 160, 160, 255};
 static constexpr Color COLOR_GRAY_192 = {192, 192, 192, 255};
+static constexpr Color COLOR_GRAY_224 = {224, 224, 224, 255};
 static constexpr Color COLOR_GRAY_240 = {240, 240, 240, 255};
-static constexpr Color COLOR_GRAY_255 = {255, 255, 255, 255};
 
 const Color COLOR_GOOD = guppyColor(0.0f);
-const Color COLOR_OK = GOLD;
+const Color COLOR_OK = guppyColor(1.0f);
 const Color COLOR_BAD = guppyColor(0.8f);
 
 static constexpr Color COLOR_BACKGROUND = COLOR_GRAY_016;
-static constexpr Color COLOR_RIBBON_BACKGROUND = COLOR_GRAY_032;
-static constexpr Color COLOR_STAT_BAR_BACKGROUND = COLOR_RIBBON_BACKGROUND;
+static constexpr Color COLOR_STAT_BAR_BACKGROUND = COLOR_GRAY_032;
 
 static constexpr Color COLOR_SCREEN_BORDER = COLOR_GRAY_240;
-static constexpr Color COLOR_RIBBON_BORDER = COLOR_SCREEN_BORDER;
 static constexpr Color COLOR_STAT_BAR_BORDER = COLOR_SCREEN_BORDER;
 
 static constexpr Color COLOR_OBSTACLE = COLOR_GRAY_096;
-static constexpr Color COLOR_PATH = COLOR_GRAY_255;
-
-static constexpr Color COLOR_BUTTON_BACKGROUND_INACTIVE = COLOR_GRAY_064;
-static constexpr Color COLOR_BUTTON_BACKGROUND_ACTIVE = COLOR_GRAY_240;
-static constexpr Color COLOR_BUTTON_BORDER_INACTIVE = COLOR_BUTTON_BACKGROUND_ACTIVE;
-static constexpr Color COLOR_BUTTON_BORDER_ACTIVE = COLOR_BUTTON_BORDER_INACTIVE;
-static constexpr Color COLOR_BUTTON_CONTENT_INACTIVE = COLOR_BUTTON_BORDER_INACTIVE;
-static constexpr Color COLOR_BUTTON_CONTENT_ACTIVE = COLOR_GRAY_032;
+static constexpr Color COLOR_PATH = COLOR_GRAY_240;
 
 static constexpr Color COLOR_GRID = COLOR_GRAY_048;
 

@@ -13,38 +13,50 @@ static constexpr std::array<int, 16> NUM_CARRYOVER_OPTIONS = {0, 1, 2, 5, 10, 20
 static constexpr int SCREEN_WIDTH = 1920;
 static constexpr int SCREEN_HEIGHT = 1080;
 
-static constexpr int STAT_BAR_WIDTH = 360;
+static constexpr int CELL_SIZE = 60;
+
+static constexpr int BORDER_THICKNESS = 3;
+
+static constexpr int STAT_BAR_WIDTH = 6 * CELL_SIZE;
+static constexpr int CTRL_BAR_WIDTH = STAT_BAR_WIDTH;
+static constexpr int ENVIRONMENT_WIDTH = SCREEN_WIDTH - STAT_BAR_WIDTH - CTRL_BAR_WIDTH;
+
 static constexpr int STAT_BAR_HEIGHT = SCREEN_HEIGHT;
-static constexpr int STAT_BAR_ROW_HEIGHT = 60;
+static constexpr int CTRL_BAR_HEIGHT = STAT_BAR_HEIGHT;
+static constexpr int ENVIRONMENT_HEIGHT = SCREEN_HEIGHT;
+
+static constexpr int STAT_BAR_X_MIN = 0;
+static constexpr int STAT_BAR_X_MAX = STAT_BAR_X_MIN + STAT_BAR_WIDTH;
+static constexpr int STAT_BAR_Y_MIN = 0;
+static constexpr int STAT_BAR_Y_MAX = STAT_BAR_Y_MIN + STAT_BAR_HEIGHT;
+static constexpr Rectangle STAT_BAR_REC = {STAT_BAR_X_MIN, STAT_BAR_Y_MIN, STAT_BAR_WIDTH, STAT_BAR_HEIGHT};
+static constexpr int STAT_BAR_ROW_HEIGHT = CELL_SIZE;
 static constexpr int STAT_BAR_NUM_ROWS = STAT_BAR_HEIGHT / STAT_BAR_ROW_HEIGHT;
 
-static constexpr int CTRL_BAR_WIDTH = STAT_BAR_WIDTH;
-static constexpr int CTRL_BAR_HEIGHT = STAT_BAR_HEIGHT;
+static constexpr int CTRL_BAR_X_MIN = STAT_BAR_WIDTH + ENVIRONMENT_WIDTH;
+static constexpr int CTRL_BAR_X_MAX = CTRL_BAR_X_MIN + CTRL_BAR_WIDTH;
+static constexpr int CTRL_BAR_Y_MIN = 0;
+static constexpr int CTRL_BAR_Y_MAX = CTRL_BAR_Y_MIN + CTRL_BAR_HEIGHT;
+static constexpr Rectangle CTRL_BAR_REC = {CTRL_BAR_X_MIN, CTRL_BAR_Y_MIN, CTRL_BAR_WIDTH, CTRL_BAR_HEIGHT};
 static constexpr int CTRL_BAR_ROW_HEIGHT = STAT_BAR_ROW_HEIGHT;
 static constexpr int CTRL_BAR_NUM_ROWS = CTRL_BAR_HEIGHT / CTRL_BAR_ROW_HEIGHT;
 
-static constexpr int ENVIRONMENT_WIDTH = SCREEN_WIDTH - 2 * STAT_BAR_WIDTH;
-static constexpr int ENVIRONMENT_HEIGHT = SCREEN_HEIGHT;
-
-static constexpr int ENVIRONMENT_X_MIN = STAT_BAR_WIDTH;
-static constexpr int ENVIRONMENT_X_MAX = STAT_BAR_WIDTH + ENVIRONMENT_WIDTH;
-
+static constexpr int ENVIRONMENT_X_MIN = STAT_BAR_X_MAX;
+static constexpr int ENVIRONMENT_X_MAX = CTRL_BAR_X_MIN;
 static constexpr int ENVIRONMENT_Y_MIN = 0;
 static constexpr int ENVIRONMENT_Y_MAX = ENVIRONMENT_HEIGHT;
 
-static constexpr int GRID_THICKNESS = 3;
-static constexpr int GRID_SPACING = 60;
+static constexpr int GRID_THICKNESS = BORDER_THICKNESS;
+static constexpr int GRID_SPACING = CELL_SIZE;
 
-static constexpr int TEXT_HEIGHT_CONTROL = 36;
-static constexpr int TEXT_HEIGHT_STAT = 36;
-
-static constexpr int TEXT_MARGIN_WIDTH = 20;
-
-static constexpr int BUTTON_MARGIN = 10;
+static constexpr int BUTTON_SPACING_X = 15;
+static constexpr int BUTTON_SPACING_Y = 6;
 
 static constexpr int LINE_WIDTH_TREE = 5;
 static constexpr int LINE_WIDTH_PATH = 15;
 static constexpr int NODE_WIDTH_PATH = 30;
+
+static constexpr int TEXT_HEIGHT = 0.7 * CELL_SIZE;
 
 // UI TIMES
 static constexpr float MOMENT_DURATION = 0.100f;

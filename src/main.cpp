@@ -30,15 +30,35 @@ int main() {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "nanotree");
 
     // GUI STYLE INIT
-    Font font = LoadFontEx("assets/Oxanium/static/Oxanium-Regular.ttf", 40, 0, 0);
+    Font font = LoadFontEx("assets/Bai_Jamjuree/BaiJamjuree-Regular.ttf", TEXT_HEIGHT, 0, 0);
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
     GuiSetFont(font);
-    GuiSetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH, 60);
-    GuiSetStyle(DEFAULT, TEXT_SIZE, 40);
-    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 45);
+    GuiSetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH, CELL_SIZE);
+    GuiSetStyle(VALUEBOX, SPINNER_BUTTON_SPACING, BUTTON_SPACING_Y);
 
-    // GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
+    // GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 1.1 * TEXT_HEIGHT);
+
+    GuiSetStyle(DEFAULT, BORDER_WIDTH, BORDER_THICKNESS);
+    GuiSetStyle(TOGGLE, GROUP_PADDING, BUTTON_SPACING_Y);
+
+    GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, ColorToInt(COLOR_GRAY_096));
+    GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, ColorToInt(COLOR_GRAY_064));
+    GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, ColorToInt(COLOR_GRAY_160));
+
+    GuiSetStyle(DEFAULT, BORDER_COLOR_FOCUSED, ColorToInt(COLOR_GRAY_160));
+    GuiSetStyle(DEFAULT, BASE_COLOR_FOCUSED, ColorToInt(COLOR_GRAY_128));
+    GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, ColorToInt(COLOR_GRAY_240));
+
+    GuiSetStyle(DEFAULT, BORDER_COLOR_PRESSED, ColorToInt(COLOR_GRAY_240));
+    GuiSetStyle(DEFAULT, BASE_COLOR_PRESSED, ColorToInt(COLOR_GRAY_240));
+    GuiSetStyle(DEFAULT, TEXT_COLOR_PRESSED, ColorToInt(COLOR_GRAY_064));
+
+    GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, ColorToInt(COLOR_GRAY_064));
+    GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, ColorToInt(COLOR_GRAY_048));
+    GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, ColorToInt(COLOR_GRAY_096));
+
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 
     // GUI ELEMENTS INIT
@@ -56,17 +76,20 @@ int main() {
 
     Path path;
 
+    const int num_carryover = NUM_CARRYOVER_OPTIONS[ctrl_state.num_carryover_ix];
+    const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
+
     // Run the planner until:
     // 1: tree filled up to carryover limit
     // 2: goal reached
     // 3: ran out of attempts
-    const int num_init_attempts_max = 5 * (ctrl_state.num_carryover / ctrl_state.num_samples);
+    const int num_init_attempts_max = 5 * (num_carryover / num_samples);
     int num_init_attempts = 0;
     {
         bool goal_reached = false;
-        while ((tree.nodes.size() < ctrl_state.num_carryover) || !goal_reached) {
-            tree.grow(ctrl_state.num_samples, goal, obstacles);
-            tree.carryover(path, ctrl_state.num_carryover, ctrl_state.carryover_path);
+        while ((tree.nodes.size() < num_carryover) || !goal_reached) {
+            tree.grow(num_samples, goal, obstacles);
+            tree.carryover(path, num_carryover, ctrl_state.carryover_path);
             path = extractPath(goal, tree.nodes);
             goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
             num_init_attempts++;
@@ -86,7 +109,6 @@ int main() {
         const SelectorMode mode = ctrl_state.selector_mode;
 
         bool trigger_tree_reset = false;
-        bool trigger_tree_growth = false;
 
         // TODO factor the mode action to a function and switch case on mode
         if (mouse_in_environment) {
@@ -95,13 +117,10 @@ int main() {
                 if (start_changed) {
                     start = brush_pos;
                     trigger_tree_reset = true;
-                } else {
-                    trigger_tree_growth = true;
                 }
             }
             if (is_down_lmb && mode == SelectorMode::PLACE_GOAL) {
                 goal = brush_pos;
-                trigger_tree_growth = true;
             }
 
             if (is_down_lmb && mode == SelectorMode::ADD_OBSTACLE) {
@@ -116,6 +135,9 @@ int main() {
             }
         }
 
+        const int num_carryover = NUM_CARRYOVER_OPTIONS[ctrl_state.num_carryover_ix];
+        const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
+
         // CTRL STATE PRE-UPDATE
         if (trigger_tree_reset) {
             ctrl_state.tree_should_reset = true;
@@ -125,18 +147,18 @@ int main() {
 
         if (ctrl_state.tree_should_reset) {
             tree.reset(start);
-            // NOTE: Critical to ensure path is not carried over when obstacles collide with existing path.
-            // TODO: remove once carryover() method respects obstacles
-            ctrl_state.carryover_path = false;
         }
 
         if (ctrl_state.tree_should_grow) {
             timing.carryover.start();
-            tree.carryover(path, ctrl_state.num_carryover, ctrl_state.carryover_path);
+            // NOTE: It is critical not to carryover the path when the tree was reset
+            // to ensure path is not carried over when obstacles collide with existing path.
+            // TODO: remove once carryover() method respects obstacles
+            tree.carryover(path, num_carryover, ctrl_state.tree_should_reset ? false : ctrl_state.carryover_path);
             timing.carryover.record();
 
             timing.grow.start();
-            tree.grow(ctrl_state.num_samples, goal, obstacles);
+            tree.grow(num_samples, goal, obstacles);
             timing.grow.record();
         } else {
             timing.carryover.start();
@@ -150,7 +172,8 @@ int main() {
         const bool goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
 
         const DurationParts duration = timing.averageDuration();
-        const int fps = std::lround(1.0f / std::max(1e-6f, duration.total));
+        // const int fps = std::lround(1.0f / std::max(1e-6f, duration.total));
+        const int fps = GetFPS();
 
         // ---- DRAWING LOGIC
         timing.draw.start();
@@ -159,13 +182,11 @@ int main() {
         // ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
         DrawEnvironment(brush_pos, ctrl_state.selector_mode, start, goal, goal_reached, obstacles, tree, path);
-
-        DrawStatBar(tree, path, goal, goal_reached, obstacles, duration, fps, font);
-
-        ctrl_state = DrawCtrlBar(ctrl_state, trigger_tree_reset, trigger_tree_growth);
+        DrawStatBar(tree, path, goal, goal_reached, obstacles, duration, fps);
+        ctrl_state = DrawCtrlBar(ctrl_state, trigger_tree_reset, goal_reached);
 
         // Border around whole screen
-        DrawRectangleLinesEx({0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}, 3, COLOR_SCREEN_BORDER);
+        DrawRectangleLinesEx({0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}, BORDER_THICKNESS, COLOR_SCREEN_BORDER);
 
         EndDrawing();
         timing.draw.record();
