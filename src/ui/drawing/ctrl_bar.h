@@ -38,7 +38,7 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
 
     int selector_mode_int = static_cast<int>(state.selector_mode);
     const Rectangle selector_mode_bounds = {CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
-    GuiToggleGroup(selector_mode_bounds, "Place Start\nPlace Goal\nAdd Obstacle\nRemove Obstacle", &selector_mode_int);
+    GuiToggleGroup(selector_mode_bounds, "Place Goal\nPlace Start\nAdd Obstacle\nRemove Obstacle", &selector_mode_int);
     state.selector_mode = static_cast<SelectorMode>(selector_mode_int);
 
     static constexpr int CTRL_BAR_ROW_SPLIT_1 = (CTRL_BAR_ROW_5_Y + CTRL_BAR_ROW_6_Y) / 2;
