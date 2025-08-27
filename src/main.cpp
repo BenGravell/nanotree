@@ -104,11 +104,22 @@ int main() {
         // ---- UI LOGIC
         Vector2 mouse = GetMousePosition();
         const bool is_down_lmb = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-        const Vector2 brush_pos = clampToEnvironment(mouse);
+        Vector2 brush_pos = clampToEnvironment(mouse);
         const bool mouse_in_environment = insideEnvironment(mouse);
         const SelectorMode mode = ctrl_state.selector_mode;
 
         bool trigger_tree_reset = false;
+
+        if (ctrl_state.snap_to_grid) {
+            int bx = std::lround(brush_pos.x);
+            int by = std::lround(brush_pos.y);
+            brush_pos.x = bx - bx % CELL_SIZE + CELL_SIZE / 2;
+            brush_pos.y = by - by % CELL_SIZE + CELL_SIZE / 2;
+            if (ctrl_state.selector_mode == SelectorMode::ADD_OBSTACLE) {
+                brush_pos.x += CELL_SIZE / 2;
+                brush_pos.y += CELL_SIZE / 2;
+            }
+        }
 
         // TODO factor the mode action to a function and switch case on mode
         if (mouse_in_environment) {

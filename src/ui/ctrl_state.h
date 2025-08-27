@@ -18,4 +18,5 @@ struct CtrlState {
     bool carryover_path = true;
     int num_samples_ix = 8;
     int num_carryover_ix = 10;
+    bool snap_to_grid = false;
 };

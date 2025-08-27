@@ -85,6 +85,10 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
     GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 32);
+    GuiToggle((Rectangle){CTRL_BAR_BUTTON_X_MIN+60, CTRL_BAR_ROW_0_Y + 10, CTRL_BAR_BUTTON_WIDTH-120, CTRL_BAR_ROW_HEIGHT-20}, "Snap to Grid", &state.snap_to_grid);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
+
     // Border
     DrawRectangleLinesEx(CTRL_BAR_REC, 3, COLOR_STAT_BAR_BORDER);
 
