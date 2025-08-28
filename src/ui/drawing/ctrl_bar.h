@@ -5,6 +5,7 @@
 #include "config.h"
 #include "ui/colors.h"
 #include "ui/ctrl_state.h"
+#include "ui/label.h"
 
 static constexpr int CTRL_BAR_ROW_0_Y = CTRL_BAR_Y_MIN + 0 * CTRL_BAR_ROW_HEIGHT;
 static constexpr int CTRL_BAR_ROW_1_Y = CTRL_BAR_Y_MIN + 1 * CTRL_BAR_ROW_HEIGHT;
@@ -33,7 +34,6 @@ static constexpr int CTRL_BAR_ROW_SPLIT_SPACING_X = BUTTON_SPACING_X;
 static constexpr int CTRL_BAR_ROW_SPLIT_WIDTH = CTRL_BAR_BUTTON_WIDTH - 2 * CTRL_BAR_ROW_SPLIT_SPACING_X;
 static constexpr int CTRL_BAR_ROW_SPLIT_X_MIN = CTRL_BAR_BUTTON_X_MIN + CTRL_BAR_ROW_SPLIT_SPACING_X;
 static constexpr int CTRL_BAR_ROW_SPLIT_X_MAX = CTRL_BAR_ROW_SPLIT_X_MIN + CTRL_BAR_ROW_SPLIT_WIDTH;
-
 
 CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool goal_reached) {
     // Background
@@ -74,24 +74,16 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
     // TODO refactor the left+right aligned label+value to a function
     GuiSpinner((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_13_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, NULL, &state.num_carryover_ix, 0, NUM_CARRYOVER_OPTIONS.size() - 1, false);
     GuiSetStyle(DEFAULT, TEXT_SIZE, SPINNER_LABEL_TEXT_HEIGHT);
-    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-    GuiLabel((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_14_Y, CTRL_BAR_BUTTON_WIDTH, SPINNER_LABEL_HEIGHT}, "Carryover");
-    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_RIGHT);
-    GuiLabel((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_14_Y, CTRL_BAR_BUTTON_WIDTH, SPINNER_LABEL_HEIGHT}, TextFormat("%6d", NUM_CARRYOVER_OPTIONS[state.num_carryover_ix]));
+    GuiLabelValue((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_14_Y, CTRL_BAR_BUTTON_WIDTH, SPINNER_LABEL_HEIGHT}, "Carryover", TextFormat("%6d", NUM_CARRYOVER_OPTIONS[state.num_carryover_ix]));
     GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
-    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 
     GuiSpinner((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_15_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, NULL, &state.num_samples_ix, 0, NUM_SAMPLES_OPTIONS.size() - 1, false);
     GuiSetStyle(DEFAULT, TEXT_SIZE, SPINNER_LABEL_TEXT_HEIGHT);
-    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-    GuiLabel((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_16_Y, CTRL_BAR_BUTTON_WIDTH, SPINNER_LABEL_HEIGHT}, "Samples");
-    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_RIGHT);
-    GuiLabel((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_16_Y, CTRL_BAR_BUTTON_WIDTH, SPINNER_LABEL_HEIGHT}, TextFormat("%6d", NUM_SAMPLES_OPTIONS[state.num_samples_ix]));
+    GuiLabelValue((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_16_Y, CTRL_BAR_BUTTON_WIDTH, SPINNER_LABEL_HEIGHT}, "Samples", TextFormat("%6d", NUM_SAMPLES_OPTIONS[state.num_samples_ix]));
     GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
-    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, 32);
-    GuiToggle((Rectangle){CTRL_BAR_BUTTON_X_MIN+60, CTRL_BAR_ROW_0_Y + 10, CTRL_BAR_BUTTON_WIDTH-120, CTRL_BAR_ROW_HEIGHT-20}, "Snap to Grid", &state.snap_to_grid);
+    GuiToggle((Rectangle){CTRL_BAR_BUTTON_X_MIN + 60, CTRL_BAR_ROW_0_Y + 10, CTRL_BAR_BUTTON_WIDTH - 120, CTRL_BAR_ROW_HEIGHT - 20}, "Snap to Grid", &state.snap_to_grid);
     GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
 
     // Border
