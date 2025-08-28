@@ -25,10 +25,15 @@ static constexpr int CTRL_BAR_ROW_15_Y = CTRL_BAR_Y_MIN + 15 * CTRL_BAR_ROW_HEIG
 static constexpr int CTRL_BAR_ROW_16_Y = CTRL_BAR_Y_MIN + 16 * CTRL_BAR_ROW_HEIGHT;
 static constexpr int CTRL_BAR_ROW_17_Y = CTRL_BAR_Y_MIN + 17 * CTRL_BAR_ROW_HEIGHT;
 
-static constexpr int CTRL_BAR_ROW_SPLIT_MARGIN_X = 2 * BUTTON_SPACING_X;
-
-static constexpr int CTRL_BAR_BUTTON_X_MIN = CTRL_BAR_X_MIN + BUTTON_SPACING_X;
 static constexpr int CTRL_BAR_BUTTON_WIDTH = CTRL_BAR_WIDTH - 2 * BUTTON_SPACING_X;
+static constexpr int CTRL_BAR_BUTTON_X_MIN = CTRL_BAR_X_MIN + BUTTON_SPACING_X;
+static constexpr int CTRL_BAR_BUTTON_X_MAX = CTRL_BAR_BUTTON_X_MIN + CTRL_BAR_BUTTON_WIDTH;
+
+static constexpr int CTRL_BAR_ROW_SPLIT_SPACING_X = BUTTON_SPACING_X;
+static constexpr int CTRL_BAR_ROW_SPLIT_WIDTH = CTRL_BAR_BUTTON_WIDTH - 2 * CTRL_BAR_ROW_SPLIT_SPACING_X;
+static constexpr int CTRL_BAR_ROW_SPLIT_X_MIN = CTRL_BAR_BUTTON_X_MIN + CTRL_BAR_ROW_SPLIT_SPACING_X;
+static constexpr int CTRL_BAR_ROW_SPLIT_X_MAX = CTRL_BAR_ROW_SPLIT_X_MIN + CTRL_BAR_ROW_SPLIT_WIDTH;
+
 
 CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool goal_reached) {
     // Background
@@ -42,7 +47,7 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
     state.selector_mode = static_cast<SelectorMode>(selector_mode_int);
 
     static constexpr int CTRL_BAR_ROW_SPLIT_1 = (CTRL_BAR_ROW_5_Y + CTRL_BAR_ROW_6_Y) / 2;
-    DrawLineEx({CTRL_BAR_BUTTON_X_MIN + CTRL_BAR_ROW_SPLIT_MARGIN_X, CTRL_BAR_ROW_SPLIT_1}, {CTRL_BAR_X_MAX - CTRL_BAR_ROW_SPLIT_MARGIN_X, CTRL_BAR_ROW_SPLIT_1}, BORDER_THICKNESS, COLOR_GRAY_096);
+    DrawLineEx({CTRL_BAR_ROW_SPLIT_X_MIN, CTRL_BAR_ROW_SPLIT_1}, {CTRL_BAR_ROW_SPLIT_X_MAX, CTRL_BAR_ROW_SPLIT_1}, BORDER_THICKNESS, COLOR_GRAY_096);
 
     int tree_growth_mode_int = static_cast<int>(state.tree_growth_mode);
     const Rectangle tree_growth_mode_bounds = {CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_6_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
@@ -58,7 +63,7 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
     state.tree_should_grow = (state.tree_growth_mode == TreeGrowthMode::ALWAYS) || ((state.tree_growth_mode == TreeGrowthMode::UNTIL_GOAL_REACHED) && !goal_reached) || tree_should_grow_once;
 
     static constexpr int CTRL_BAR_ROW_SPLIT_2 = (CTRL_BAR_ROW_11_Y + CTRL_BAR_ROW_12_Y) / 2;
-    DrawLineEx({CTRL_BAR_BUTTON_X_MIN + CTRL_BAR_ROW_SPLIT_MARGIN_X, CTRL_BAR_ROW_SPLIT_2}, {CTRL_BAR_X_MAX - CTRL_BAR_ROW_SPLIT_MARGIN_X, CTRL_BAR_ROW_SPLIT_2}, BORDER_THICKNESS, COLOR_GRAY_096);
+    DrawLineEx({CTRL_BAR_ROW_SPLIT_X_MIN, CTRL_BAR_ROW_SPLIT_2}, {CTRL_BAR_ROW_SPLIT_X_MAX, CTRL_BAR_ROW_SPLIT_2}, BORDER_THICKNESS, COLOR_GRAY_096);
 
     GuiToggle((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_12_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Carryover Path", &state.carryover_path);
 
