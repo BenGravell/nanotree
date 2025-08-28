@@ -79,6 +79,7 @@ int main() {
     const int num_carryover = NUM_CARRYOVER_OPTIONS[ctrl_state.num_carryover_ix];
     const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
 
+    // TODO factor out to a free function
     // Run the planner until:
     // 1: tree filled up to carryover limit
     // 2: goal reached
@@ -101,13 +102,13 @@ int main() {
 
     while (!WindowShouldClose()) {
         timing.total.start();
+
         // ---- UI LOGIC
         Vector2 mouse = GetMousePosition();
         const bool is_down_lmb = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-        Vector2 brush_pos = clampToEnvironment(mouse);
         const bool mouse_in_environment = insideEnvironment(mouse);
+        Vector2 brush_pos = clampToEnvironment(mouse);
         const SelectorMode mode = ctrl_state.selector_mode;
-
         bool trigger_tree_reset = false;
 
         if (ctrl_state.snap_to_grid) {
@@ -115,7 +116,7 @@ int main() {
             int by = std::lround(brush_pos.y);
             brush_pos.x = bx - bx % CELL_SIZE + CELL_SIZE / 2;
             brush_pos.y = by - by % CELL_SIZE + CELL_SIZE / 2;
-            if (ctrl_state.selector_mode == SelectorMode::ADD_OBSTACLE) {
+            if ((ctrl_state.selector_mode == SelectorMode::ADD_OBSTACLE) || (ctrl_state.selector_mode == SelectorMode::DEL_OBSTACLE)) {
                 brush_pos.x += CELL_SIZE / 2;
                 brush_pos.y += CELL_SIZE / 2;
             }
@@ -183,14 +184,11 @@ int main() {
         const bool goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
 
         const DurationParts duration = timing.averageDuration();
-        // const int fps = std::lround(1.0f / std::max(1e-6f, duration.total));
-        const int fps = GetFPS();
+        const int fps = std::lround(1.0f / std::max(1e-3f, duration.total));
 
         // ---- DRAWING LOGIC
         timing.draw.start();
         BeginDrawing();
-
-        // ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
         DrawEnvironment(brush_pos, ctrl_state.selector_mode, start, goal, goal_reached, obstacles, tree, path);
         DrawStatBar(tree, path, goal, goal_reached, obstacles, duration, fps);

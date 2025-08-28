@@ -62,19 +62,19 @@ static constexpr int TEXT_HEIGHT = 0.7 * CELL_SIZE;
 static constexpr float MOMENT_DURATION = 0.100f;
 
 // TIMING
-static constexpr float TIMING_WINDOW_SEC = 2.0f;
+static constexpr float TIMING_WINDOW_SEC = 1.0f;
 
 // Physical elements
 static constexpr float OBSTACLE_RADIUS = 60.0f;
 static constexpr float DEVIATION_DISTANCE_MAX = 0.8f * OBSTACLE_RADIUS;
-static constexpr float START_RADIUS = 15.0f;
 static constexpr float GOAL_RADIUS = 30.0f;
+static constexpr float START_RADIUS = GOAL_RADIUS;
 static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 1.5f * GOAL_RADIUS;
 static constexpr float RADIUS_OF_CURVATURE_MIN = 0.95f * std::min(OBSTACLE_RADIUS, 2.0f * GOAL_RADIUS);
 static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
 
 static constexpr float OBSTACLE_SPACING_MIN = 0.25f * OBSTACLE_RADIUS;
-static constexpr float OBSTACLE_DEL_RADIUS = 15.0f;
+static constexpr float OBSTACLE_DEL_RADIUS = 30.0f;
 static constexpr float START_CHANGED_DIST_MIN = 1.0f;
 
 static constexpr Vector2 DEFAULT_START = {ENVIRONMENT_X_MIN + 120, ENVIRONMENT_Y_MIN + 540};
