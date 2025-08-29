@@ -2108,6 +2108,14 @@ int GuiToggle(Rectangle bounds, const char *text, bool *active)
     return result;
 }
 
+#include <iostream>
+
+std::string ReplaceSpacesWithNewlines(const char* text) {
+    std::string result(text);
+    std::replace(result.begin(), result.end(), ' ', '\n');
+    return result;
+}
+
 // Toggle Group control
 int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
 {
@@ -2139,15 +2147,16 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
             prevRow = rows[i];
         }
 
+        const char *const itemText =  ReplaceSpacesWithNewlines(items[i]).c_str();
         if (i == (*active))
         {
             toggle = true;
-            GuiToggle(bounds, items[i], &toggle);
+            GuiToggle(bounds, itemText, &toggle);
         }
         else
         {
             toggle = false;
-            GuiToggle(bounds, items[i], &toggle);
+            GuiToggle(bounds, itemText, &toggle);
             if (toggle) *active = i;
         }
 
@@ -5159,7 +5168,10 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
     int wrapMode = GuiGetStyle(DEFAULT, TEXT_WRAP_MODE);    // Wrap-mode only available in read-only mode, no for text editing
 
     // TODO: WARNING: This totalHeight is not valid for vertical alignment in case of word-wrap
-    float totalHeight = (float)(lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_SIZE)/2);
+    // float totalHeight = (float)(lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_SIZE)/2);
+
+    float totalHeight = (float)(GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1) * GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
+    
     float posOffsetY = 0.0f;
 
     for (int i = 0; i < lineCount; i++)

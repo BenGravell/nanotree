@@ -49,7 +49,7 @@ static constexpr int ENVIRONMENT_Y_MAX = ENVIRONMENT_HEIGHT;
 static constexpr int GRID_THICKNESS = BORDER_THICKNESS;
 static constexpr int GRID_SPACING = CELL_SIZE;
 
-static constexpr int BUTTON_SPACING_X = 15;
+static constexpr int BUTTON_SPACING_X = 6;
 static constexpr int BUTTON_SPACING_Y = 6;
 
 static constexpr int LINE_WIDTH_TREE = 5;
