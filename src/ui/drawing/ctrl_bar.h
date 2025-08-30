@@ -43,23 +43,27 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
     // Background
     DrawRectangleRec(CTRL_BAR_REC, COLOR_STAT_BAR_BACKGROUND);
 
-    const float CTRL_BAR_BUTTON_HEIGHT = float(2*CTRL_BAR_ROW_HEIGHT - BUTTON_SPACING_Y);
+    const float CTRL_BAR_BUTTON_HEIGHT = float(2 * CTRL_BAR_ROW_HEIGHT - BUTTON_SPACING_Y);
 
     int selector_mode_int = static_cast<int>(state.selector_mode);
     const Rectangle selector_mode_bounds = {CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
     GuiToggleGroup(selector_mode_bounds, "Place Goal\nPlace Start\nAdd Obstacle\nRemove Obstacle", &selector_mode_int);
     state.selector_mode = static_cast<SelectorMode>(selector_mode_int);
 
+    // GuiSetStyle(DEFAULT, TEXT_SIZE, 32);
+    GuiToggle((Rectangle){CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Snap\nTo Grid", &state.snap_to_grid);
+    // GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
+
     // static constexpr int CTRL_BAR_ROW_SPLIT_1 = (CTRL_BAR_ROW_5_Y + CTRL_BAR_ROW_6_Y) / 2;
     // DrawLineEx({CTRL_BAR_ROW_SPLIT_X_MIN, CTRL_BAR_ROW_SPLIT_1}, {CTRL_BAR_ROW_SPLIT_X_MAX, CTRL_BAR_ROW_SPLIT_1}, BORDER_THICKNESS, COLOR_GRAY_096);
 
     int tree_growth_mode_int = static_cast<int>(state.tree_growth_mode);
-    const Rectangle tree_growth_mode_bounds = {CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
+    const Rectangle tree_growth_mode_bounds = {CTRL_BAR_COL_1_X + BUTTON_SPACING_X / 2, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
     GuiToggleGroup(tree_growth_mode_bounds, "Play\nUntil Goal\nPause", &tree_growth_mode_int);
     state.tree_growth_mode = static_cast<TreeGrowthMode>(tree_growth_mode_int);
 
-    const bool tree_should_grow_once = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_7_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Advance");
-    state.tree_should_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Reset");
+    const bool tree_should_grow_once = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X / 2, CTRL_BAR_ROW_7_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Advance");
+    state.tree_should_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X / 2, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Reset");
     if (trigger_tree_reset) {
         state.tree_should_reset = true;
     }
@@ -85,10 +89,6 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
     GuiSetStyle(DEFAULT, TEXT_SIZE, SPINNER_LABEL_TEXT_HEIGHT);
     GuiLabelValue((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_17_Y, CTRL_BAR_WIDE_BUTTON_WIDTH, SPINNER_LABEL_HEIGHT}, "Samples", TextFormat("%6d", NUM_SAMPLES_OPTIONS[state.num_samples_ix]));
     GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
-
-    // GuiSetStyle(DEFAULT, TEXT_SIZE, 32);
-    // GuiToggle((Rectangle){CTRL_BAR_BUTTON_X_MIN + 60, CTRL_BAR_ROW_0_Y + 10, CTRL_BAR_BUTTON_WIDTH - 120, CTRL_BAR_ROW_HEIGHT - 20}, "Snap to Grid", &state.snap_to_grid);
-    // GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
 
     // Border
     DrawRectangleLinesEx(CTRL_BAR_REC, 3, COLOR_STAT_BAR_BORDER);
