@@ -33,7 +33,8 @@ static constexpr Color COLOR_SCREEN_BORDER = COLOR_GRAY_240;
 static constexpr Color COLOR_STAT_BAR_BORDER = COLOR_SCREEN_BORDER;
 
 static constexpr Color COLOR_OBSTACLE = COLOR_GRAY_096;
-static constexpr Color COLOR_PATH = COLOR_GRAY_240;
+static constexpr Color COLOR_PATH_GOAL_REACHED = COLOR_GRAY_240;
+static constexpr Color COLOR_PATH_GOAL_NOT_REACHED = GOLD;
 
 static constexpr Color COLOR_GRID = COLOR_GRAY_048;
 

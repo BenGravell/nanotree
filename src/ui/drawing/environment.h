@@ -32,7 +32,7 @@ void DrawEnvironment(const Vector2 brush_pos, const SelectorMode brush_mode, con
     DrawFlatGrid(ENVIRONMENT_X_MIN, ENVIRONMENT_X_MAX, ENVIRONMENT_Y_MIN, ENVIRONMENT_Y_MAX, {GRID_SPACING, GRID_THICKNESS, COLOR_GRID});
     DrawObstacles(obstacles);
     DrawTree(tree, path, goal);
-    DrawPath(path);
+    DrawPath(path, goal_reached);
     DrawObjectBrush(brush_pos, getObjectBrushParams(brush_mode));
     DrawStart(start);
     DrawGoal(goal, goal_reached);
