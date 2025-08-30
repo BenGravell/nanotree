@@ -347,6 +347,10 @@
     #include "raylib.h"
 #endif
 
+#include <iostream>
+#include <vector>
+#include <string>
+
 // Function specifiers in case library is build/used as a shared library (Windows)
 // NOTE: Microsoft specifiers to tell compiler that symbols are imported/exported from a .dll
 #if defined(_WIN32)
@@ -2108,8 +2112,6 @@ int GuiToggle(Rectangle bounds, const char *text, bool *active)
     return result;
 }
 
-#include <iostream>
-
 std::string ReplaceSpacesWithNewlines(const char* text) {
     std::string result(text);
     std::replace(result.begin(), result.end(), ' ', '\n');
@@ -2138,6 +2140,13 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
 
     int prevRow = rows[0];
 
+    std::vector<std::string> replacedItems;
+    replacedItems.reserve(itemCount);
+
+    for (int i = 0; i < itemCount; i++) {
+        replacedItems.push_back(ReplaceSpacesWithNewlines(items[i]));
+    }
+
     for (int i = 0; i < itemCount; i++)
     {
         if (prevRow != rows[i])
@@ -2147,7 +2156,7 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
             prevRow = rows[i];
         }
 
-        const char *const itemText =  ReplaceSpacesWithNewlines(items[i]).c_str();
+        const char *itemText = replacedItems[i].c_str();
         if (i == (*active))
         {
             toggle = true;
