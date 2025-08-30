@@ -91,7 +91,7 @@ int main() {
         bool goal_reached = false;
         while ((tree.nodes.size() < num_carryover) || !goal_reached) {
             tree.grow(num_samples, goal, obstacles);
-            tree.carryover(path, num_carryover, ctrl_state.carryover_path);
+            tree.carryover(path, num_carryover, true);
             path = extractPath(goal, tree.nodes);
             goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
             num_init_attempts++;
@@ -167,7 +167,7 @@ int main() {
             // NOTE: It is critical not to carryover the path when the tree was reset
             // to ensure path is not carried over when obstacles collide with existing path.
             // TODO: remove once carryover() method respects obstacles
-            tree.carryover(path, num_carryover, ctrl_state.tree_should_reset ? false : ctrl_state.carryover_path);
+            tree.carryover(path, num_carryover, ctrl_state.tree_should_reset ? false : true);
             timing.carryover.record();
 
             timing.grow.start();

@@ -15,8 +15,7 @@ struct CtrlState {
     TreeGrowthMode tree_growth_mode = TreeGrowthMode::UNTIL_GOAL_REACHED;
     bool tree_should_reset = false;
     bool tree_should_grow = false;
-    bool carryover_path = true;
-    int num_samples_ix = 8;
-    int num_carryover_ix = 10;
+    int num_samples_ix = 9;
+    int num_carryover_ix = 11;
     bool snap_to_grid = false;
 };
