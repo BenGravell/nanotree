@@ -56,5 +56,5 @@ Color computeFpsColor(const int fps) {
 
 Color computeCostColor(const float x) {
     static constexpr float r = 0.6f;
-    return (x < 0.5f) ? guppyColor(r * x) : COLOR_GRAY_096;
+    return (x < 0.5f) ? guppyColor(r * x) : COLOR_GRAY_064;
 }
