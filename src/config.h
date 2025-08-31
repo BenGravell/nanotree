@@ -52,7 +52,13 @@ static constexpr int GRID_SPACING = CELL_SIZE;
 static constexpr int BUTTON_SPACING_X = 6;
 static constexpr int BUTTON_SPACING_Y = 6;
 
-static constexpr int LINE_WIDTH_TREE = 5;
+static constexpr int LINE_WIDTH_TREE_MIN = 1;
+static constexpr int LINE_WIDTH_TREE_MAX = 5;
+static constexpr int LINE_WIDTH_TREE_SIZE_MIN = 2000;
+static constexpr int LINE_WIDTH_TREE_SIZE_MAX = 10000;
+static constexpr float TREE_SIZE_INV_MIN = 1.0f / LINE_WIDTH_TREE_SIZE_MAX;
+static constexpr float TREE_SIZE_INV_MAX = 1.0f / LINE_WIDTH_TREE_SIZE_MIN;
+
 static constexpr int LINE_WIDTH_PATH = 15;
 static constexpr int NODE_WIDTH_PATH = 30;
 
