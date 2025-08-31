@@ -8,6 +8,19 @@
 #include "planner/tree.h"
 #include "ui/colors.h"
 
+float computeLineWidth(const int tree_size) {
+    const int n = std::clamp(tree_size, LINE_WIDTH_TREE_SIZE_MIN, LINE_WIDTH_TREE_SIZE_MAX);
+    return Remap(1.0f / n, TREE_SIZE_INV_MIN, TREE_SIZE_INV_MAX, LINE_WIDTH_TREE_MIN, LINE_WIDTH_TREE_MAX);
+}
+
+float computeMaxCost(Nodes nodes, const Vector2 goal) {
+    float cost_max = 0.0f;
+    for (const NodePtr& node : nodes) {
+        cost_max = std::max(cost_max, computeHeuristicCost(node, goal));
+    }
+    return cost_max;
+}
+
 float normalizeCost(const float cost, const float cost_root, const float cost_path, const float cost_tree) {
     float x = 0.0f;
     if (cost < cost_path) {
@@ -18,26 +31,21 @@ float normalizeCost(const float cost, const float cost_root, const float cost_pa
     return std::clamp(x, 0.0f, 1.0f);
 }
 
-const float computeLineWidth(const int tree_size) {
-    const int n = std::clamp(tree_size, LINE_WIDTH_TREE_SIZE_MIN, LINE_WIDTH_TREE_SIZE_MAX);
-    return Remap(1.0f / n, TREE_SIZE_INV_MIN, TREE_SIZE_INV_MAX, LINE_WIDTH_TREE_MIN, LINE_WIDTH_TREE_MAX);
+Color computeCostColor(const float x, const bool goal_reached) {
+    if (goal_reached && (x > 0.5)) {
+        return COLOR_GRAY_064;
+    }
+    static constexpr float r = 0.4f;
+    return guppyColor(r * x);
 }
 
 void DrawTree(const Tree& tree, const Path& path, const Vector2 goal, const bool goal_reached) {
-    float cost_root = computeHeuristicCost(tree.nodes.front(), goal);
-
-    float cost_path = 0.0f;
-    for (const NodePtr& node : path) {
-        cost_path = std::max(cost_path, computeHeuristicCost(node, goal));
-    }
-
-    float cost_tree = 0.0f;
-    for (const NodePtr& node : tree.nodes) {
-        cost_tree = std::max(cost_tree, computeHeuristicCost(node, goal));
-    }
+    const float cost_root = computeHeuristicCost(tree.nodes.front(), goal);
+    const float cost_path = computeMaxCost(path, goal);
+    const float cost_tree = computeMaxCost(tree.nodes, goal);
 
     // TODO check if this is hurting runtime performance...
-    // Sort by heuristic cost
+    // Sort by heuristic cost.
     Nodes sorted_nodes = tree.nodes;
     std::sort(sorted_nodes.begin(), sorted_nodes.end(), TargetCostComparatorInv{goal});
 
