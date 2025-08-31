@@ -739,7 +739,7 @@ RAYGUIAPI int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle conte
 
 // Basic controls set
 RAYGUIAPI int GuiLabel(Rectangle bounds, const char *text);                                            // Label control
-RAYGUIAPI int GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
+RAYGUIAPI int GuiButton(Rectangle bounds, const char *text, const int shape = 0);                                           // Button control, returns true when clicked
 RAYGUIAPI int GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, returns true when clicked
 RAYGUIAPI int GuiToggle(Rectangle bounds, const char *text, bool *active);                             // Toggle Button control
 RAYGUIAPI int GuiToggleGroup(Rectangle bounds, const char *text, int *active);                         // Toggle Group control
@@ -1995,8 +1995,17 @@ int GuiLabel(Rectangle bounds, const char *text)
     return result;
 }
 
+
+
+#include "ui/drawing/shapes.h"
+
+
+static constexpr int SHAPE_NULL = 0;
+static constexpr int SHAPE_CHEVRON_LEFT = 1;
+static constexpr int SHAPE_CHEVRON_RIGHT = 2;
+
 // Button control, returns true when clicked
-int GuiButton(Rectangle bounds, const char *text)
+int GuiButton(Rectangle bounds, const char *text, const int shape)
 {
     int result = 0;
     GuiState state = guiState;
@@ -2022,6 +2031,13 @@ int GuiButton(Rectangle bounds, const char *text)
     //--------------------------------------------------------------------
     GuiDrawRectangle(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), GetColor(GuiGetStyle(BUTTON, BASE + (state*3))));
     GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))));
+
+    if (shape == SHAPE_CHEVRON_LEFT) {
+        DrawChevron(bounds, -1, GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))));
+    }
+    else if (shape == SHAPE_CHEVRON_RIGHT) {
+        DrawChevron(bounds, 1, GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))));
+    }
 
     if (state == STATE_FOCUSED) GuiTooltip(bounds);
     //------------------------------------------------------------------
@@ -2146,6 +2162,12 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
     for (int i = 0; i < itemCount; i++) {
         replacedItems.push_back(ReplaceSpacesWithNewlines(items[i]));
     }
+
+    // Background connector.
+    // NOTE: assumes vertical toggle group.
+    const int CONNECTOR_SPACING_X = 2 * GuiGetStyle(TOGGLE, GROUP_PADDING);
+    const Rectangle selector_mode_connector_bounds = {bounds.x + CONNECTOR_SPACING_X, bounds.y, bounds.width - 2 * CONNECTOR_SPACING_X, itemCount * bounds.height};
+    GuiDrawRectangle(selector_mode_connector_bounds, 0, GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL)), GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL)));
 
     for (int i = 0; i < itemCount; i++)
     {
@@ -2962,10 +2984,6 @@ int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int
 
     int tempValue = *value;
 
-    Rectangle valueBoxBounds = {
-        bounds.x + GuiGetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH) + GuiGetStyle(VALUEBOX, SPINNER_BUTTON_SPACING),
-        bounds.y,
-        bounds.width - 2*(GuiGetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH) + GuiGetStyle(VALUEBOX, SPINNER_BUTTON_SPACING)), bounds.height };
     Rectangle leftButtonBound = { (float)bounds.x, (float)bounds.y, (float)GuiGetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH), (float)bounds.height };
     Rectangle rightButtonBound = { (float)bounds.x + bounds.width - GuiGetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH), (float)bounds.y,
         (float)GuiGetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH), (float)bounds.height };
@@ -2998,8 +3016,8 @@ int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int
     if (GuiButton(leftButtonBound, "<")) tempValue--;
     if (GuiButton(rightButtonBound, ">")) tempValue++;
 #else
-    if (GuiButton(leftButtonBound, GuiIconText(ICON_ARROW_LEFT_FILL, NULL))) tempValue--;
-    if (GuiButton(rightButtonBound, GuiIconText(ICON_ARROW_RIGHT_FILL, NULL))) tempValue++;
+    if (GuiButton(leftButtonBound, NULL, SHAPE_CHEVRON_LEFT)) tempValue--;
+    if (GuiButton(rightButtonBound, NULL, SHAPE_CHEVRON_RIGHT)) tempValue++;
 #endif
 
     if (!editMode)
@@ -3007,25 +3025,6 @@ int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int
         if (tempValue < minValue) tempValue = minValue;
         if (tempValue > maxValue) tempValue = maxValue;
     }
-    //--------------------------------------------------------------------
-
-    // Draw control
-    //--------------------------------------------------------------------
-    result = GuiValueBox(valueBoxBounds, NULL, &tempValue, minValue, maxValue, editMode);
-
-    // Draw value selector custom buttons
-    // NOTE: BORDER_WIDTH and TEXT_ALIGNMENT forced values
-    int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
-    int tempTextAlign = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
-    GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(VALUEBOX, BORDER_WIDTH));
-    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-
-    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
-    GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
-
-    // Draw text label if provided
-    GuiDrawText(text, textBounds, (GuiGetStyle(VALUEBOX, TEXT_ALIGNMENT) == TEXT_ALIGN_RIGHT)? TEXT_ALIGN_LEFT : TEXT_ALIGN_RIGHT, GetColor(GuiGetStyle(LABEL, TEXT + (state*3))));
-    //--------------------------------------------------------------------
 
     *value = tempValue;
     return result;

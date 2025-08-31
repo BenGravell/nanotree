@@ -51,8 +51,8 @@ static constexpr int ENVIRONMENT_Y_MAX = ENVIRONMENT_HEIGHT;
 static constexpr int GRID_THICKNESS = BORDER_THICKNESS;
 static constexpr int GRID_SPACING = CELL_SIZE;
 
-static constexpr int BUTTON_SPACING_X = 6;
-static constexpr int BUTTON_SPACING_Y = 6;
+static constexpr int BUTTON_SPACING_X = 12;
+static constexpr int BUTTON_SPACING_Y = 12;
 
 static constexpr int LINE_WIDTH_TREE_MIN = 1;
 static constexpr int LINE_WIDTH_TREE_MAX = 5;
@@ -64,7 +64,7 @@ static constexpr float TREE_SIZE_INV_MAX = 1.0f / LINE_WIDTH_TREE_SIZE_MIN;
 static constexpr int LINE_WIDTH_PATH = 15;
 static constexpr int NODE_WIDTH_PATH = 30;
 
-static constexpr int TEXT_HEIGHT = 0.7 * CELL_SIZE;
+static constexpr int TEXT_HEIGHT = 0.6 * CELL_SIZE;
 
 // UI TIMES
 static constexpr float MOMENT_DURATION = 0.100f;

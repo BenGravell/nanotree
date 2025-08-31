@@ -47,6 +47,7 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
 
     int selector_mode_int = static_cast<int>(state.selector_mode);
     const Rectangle selector_mode_bounds = {CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
+
     GuiToggleGroup(selector_mode_bounds, "Place Goal\nPlace Start\nAdd Obstacle\nRemove Obstacle", &selector_mode_int);
     state.selector_mode = static_cast<SelectorMode>(selector_mode_int);
 
@@ -77,6 +78,8 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
     const float SPINNER_LABEL_HEIGHT = float(SPINNER_LABEL_TEXT_HEIGHT);
 
     const int CTRL_BAR_WIDE_BUTTON_WIDTH = CTRL_BAR_WIDTH - 2 * BUTTON_SPACING_X;
+
+    GuiSetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH, CTRL_BAR_BUTTON_WIDTH);
 
     // TODO refactor this to a spinner+label function
     // TODO refactor the left+right aligned label+value to a function

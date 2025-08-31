@@ -34,8 +34,6 @@ int main() {
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
     GuiSetFont(font);
-    GuiSetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH, 2*CELL_SIZE);
-    GuiSetStyle(VALUEBOX, SPINNER_BUTTON_SPACING, BUTTON_SPACING_Y);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
     GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, std::lround(0.9 * TEXT_HEIGHT));
