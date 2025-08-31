@@ -70,18 +70,24 @@ Path extractPath(const Vector2 target, const Nodes& nodes) {
     return path;
 }
 
-Vector2 sample(const Vector2 goal) {
-    static std::uniform_real_distribution<float> dist_select(0.0f, 1.0f);
+Vector2 sampleNearGoal(const Vector2 goal) {
+    static std::uniform_real_distribution<float> dist_goal_r(0, GOAL_RADIUS);
+    static std::uniform_real_distribution<float> dist_goal_t(0.0f, TWO_PI);
+    const float r = dist_goal_r(rng);
+    const float t = dist_goal_t(rng);
+    const Vector2 delta = {r * std::cos(t), r * std::sin(t)};
+    return clampToEnvironment(goal + delta);
+}
+
+Vector2 sampleEnv() {
     static std::uniform_real_distribution<float> dist_x(ENVIRONMENT_X_MIN, ENVIRONMENT_X_MAX);
     static std::uniform_real_distribution<float> dist_y(ENVIRONMENT_Y_MIN, ENVIRONMENT_Y_MAX);
-    static std::uniform_real_distribution<float> dist_goal_x(-GOAL_RADIUS, GOAL_RADIUS);
-    static std::uniform_real_distribution<float> dist_goal_y(-GOAL_RADIUS, GOAL_RADIUS);
-
-    if (dist_select(rng) < GOAL_SAMPLE_PROBABILITY) {
-        return clampToEnvironment(goal + Vector2{dist_goal_x(rng), dist_goal_y(rng)});
-    }
-
     return Vector2{dist_x(rng), dist_y(rng)};
+}
+
+Vector2 sample(const Vector2 goal) {
+    static std::uniform_real_distribution<float> dist_select(0.0f, 1.0f);
+    return (dist_select(rng) < GOAL_SAMPLE_PROBABILITY) ? sampleNearGoal(goal) : sampleEnv();
 }
 
 Vector2 attractByDistance(const Vector2 pos, const NodePtr parent) {

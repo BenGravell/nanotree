@@ -4,8 +4,10 @@
 
 #include <array>
 
-// UI options
+// Math
+static constexpr float TWO_PI = 2.0f * M_PI;
 
+// UI options
 static constexpr std::array<int, 14> NUM_SAMPLES_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
 static constexpr std::array<int, 16> NUM_CARRYOVER_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000};
 
@@ -77,7 +79,7 @@ static constexpr float GOAL_RADIUS = 30.0f;
 static constexpr float START_RADIUS = GOAL_RADIUS;
 static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 1.5f * GOAL_RADIUS;
 static constexpr float RADIUS_OF_CURVATURE_MIN = 0.95f * std::min(OBSTACLE_RADIUS, 2.0f * GOAL_RADIUS);
-static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
+static constexpr float GOAL_SAMPLE_PROBABILITY = 0.05;
 
 static constexpr float OBSTACLE_SPACING_MIN = 0.25f * OBSTACLE_RADIUS;
 static constexpr float OBSTACLE_DEL_RADIUS = 30.0f;
