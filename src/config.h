@@ -9,7 +9,7 @@ static constexpr float TWO_PI = 2.0f * M_PI;
 
 // UI options
 static constexpr std::array<int, 14> NUM_SAMPLES_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
-static constexpr std::array<int, 16> NUM_CARRYOVER_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000};
+static constexpr std::array<int, 15> NUM_CARRYOVER_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000};
 
 // UI sizes
 static constexpr int SCREEN_WIDTH = 1920;
@@ -54,10 +54,10 @@ static constexpr int GRID_SPACING = CELL_SIZE;
 static constexpr int BUTTON_SPACING_X = 12;
 static constexpr int BUTTON_SPACING_Y = 12;
 
-static constexpr int LINE_WIDTH_TREE_MIN = 1;
-static constexpr int LINE_WIDTH_TREE_MAX = 5;
-static constexpr int LINE_WIDTH_TREE_SIZE_MIN = 2000;
-static constexpr int LINE_WIDTH_TREE_SIZE_MAX = 10000;
+static constexpr float LINE_WIDTH_TREE_MIN = 2.0f;
+static constexpr float LINE_WIDTH_TREE_MAX = 6.0f;
+static constexpr int LINE_WIDTH_TREE_SIZE_MIN = 1000;
+static constexpr int LINE_WIDTH_TREE_SIZE_MAX = 20000;
 static constexpr float TREE_SIZE_INV_MIN = 1.0f / LINE_WIDTH_TREE_SIZE_MAX;
 static constexpr float TREE_SIZE_INV_MAX = 1.0f / LINE_WIDTH_TREE_SIZE_MIN;
 
