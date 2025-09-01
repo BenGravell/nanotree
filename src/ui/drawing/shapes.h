@@ -9,13 +9,13 @@ void DrawSquare(const Vector2 center, const float radius, const Color color) {
     DrawRectangle(center.x - radius, center.y - radius, 2 * radius, 2 * radius, color);
 }
 
-void DrawChevron(const Rectangle& rec, const int dir, const Color color) {
+void DrawChevron(const Rectangle& rec, const int dir, const Color color, const float scale = 1.0f) {
     const Vector2 center = {rec.x + 0.5f * rec.width, rec.y + 0.5f * rec.height};
 
     const float size = std::min(rec.height, rec.width);
 
-    const float height = 0.75f * size;
-    const float width = 0.75f * size;
+    const float height = scale * size;
+    const float width = scale * size;
     const float half_height = 0.5f * height;
     const float half_width = 0.5f * width;
 
@@ -51,7 +51,7 @@ void DrawChevron(const Rectangle& rec, const int dir, const Color color) {
     }
 }
 
-void DrawDoubleChevron(const Rectangle& rec, const float dir, const Color color) {
+void DrawDoubleChevron(const Rectangle& rec, const float dir, const Color color, const float scale = 1.0f) {
     const float offset = 0.18f * rec.width;
     const float mult = (dir > 0.0f) ? 1.0f : -1.0f;
 
@@ -61,6 +61,6 @@ void DrawDoubleChevron(const Rectangle& rec, const float dir, const Color color)
     rec1.x += mult * offset;
     rec2.x -= mult * offset;
 
-    DrawChevron(rec1, dir, color);
-    DrawChevron(rec2, dir, color);
+    DrawChevron(rec1, dir, color, scale);
+    DrawChevron(rec2, dir, color, scale);
 }

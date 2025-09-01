@@ -2033,10 +2033,10 @@ int GuiButton(Rectangle bounds, const char *text, const int shape)
     GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))));
 
     if (shape == SHAPE_CHEVRON_LEFT) {
-        DrawChevron(bounds, -1, GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))));
+        DrawChevron(bounds, -1, GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), 0.6f);
     }
     else if (shape == SHAPE_CHEVRON_RIGHT) {
-        DrawChevron(bounds, 1, GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))));
+        DrawChevron(bounds, 1, GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), 0.6f);
     }
 
     if (state == STATE_FOCUSED) GuiTooltip(bounds);
