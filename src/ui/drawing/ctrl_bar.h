@@ -30,10 +30,10 @@ static constexpr int CTRL_BAR_COL_WIDTH = CTRL_BAR_WIDTH / 2;
 static constexpr int CTRL_BAR_COL_0_X = CTRL_BAR_X_MIN + 0 * CTRL_BAR_COL_WIDTH;
 static constexpr int CTRL_BAR_COL_1_X = CTRL_BAR_X_MIN + 1 * CTRL_BAR_COL_WIDTH;
 
+static constexpr int CTRL_BAR_BUTTON_HEIGHT = 2 * CTRL_BAR_ROW_HEIGHT - BUTTON_SPACING_Y;
 static constexpr int CTRL_BAR_BUTTON_WIDTH = CTRL_BAR_COL_WIDTH - 2 * BUTTON_SPACING_X;
 static constexpr int CTRL_BAR_BUTTON_X_MIN = CTRL_BAR_X_MIN + BUTTON_SPACING_X;
 static constexpr int CTRL_BAR_BUTTON_X_MAX = CTRL_BAR_BUTTON_X_MIN + CTRL_BAR_BUTTON_WIDTH;
-
 static constexpr int CTRL_BAR_WIDE_BUTTON_WIDTH = CTRL_BAR_WIDTH - 2 * BUTTON_SPACING_X;
 
 template <size_t N>
@@ -47,22 +47,18 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
     // Background
     DrawRectangleRec(CTRL_BAR_REC, COLOR_STAT_BAR_BACKGROUND);
 
-    const float CTRL_BAR_BUTTON_HEIGHT = float(2 * CTRL_BAR_ROW_HEIGHT - BUTTON_SPACING_Y);
-
     int selector_mode_int = static_cast<int>(state.selector_mode);
     const Rectangle selector_mode_bounds = {CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
 
     GuiToggleGroup(selector_mode_bounds, "Place Goal\nPlace Start\nAdd Obstacle\nRemove Obstacle", &selector_mode_int);
     state.selector_mode = static_cast<SelectorMode>(selector_mode_int);
 
-    // GuiSetStyle(DEFAULT, TEXT_SIZE, 32);
     GuiToggle((Rectangle){CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Snap\nTo Grid", &state.snap_to_grid);
-    // GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
 
     // Vertical line separator
-    DrawLineEx({CTRL_BAR_COL_1_X, CTRL_BAR_ROW_1_Y + 2 * BUTTON_SPACING_Y}, {CTRL_BAR_COL_1_X, CTRL_BAR_ROW_11_Y}, BORDER_THICKNESS, COLOR_GRAY_064);
+    DrawLineEx({CTRL_BAR_COL_1_X, CTRL_BAR_ROW_1_Y + BUTTON_SPACING_Y}, {CTRL_BAR_COL_1_X, CTRL_BAR_ROW_11_Y}, BORDER_THICKNESS, COLOR_GRAY_064);
     // Horizontal line separator
-    DrawLineEx({CTRL_BAR_COL_0_X + 3 * BUTTON_SPACING_X, CTRL_BAR_ROW_11_Y}, {CTRL_BAR_COL_1_X + CTRL_BAR_COL_WIDTH - 3 * BUTTON_SPACING_X, CTRL_BAR_ROW_11_Y}, BORDER_THICKNESS, COLOR_GRAY_064);
+    DrawLineEx({CTRL_BAR_COL_0_X + 2 * BUTTON_SPACING_X, CTRL_BAR_ROW_11_Y}, {CTRL_BAR_COL_1_X, CTRL_BAR_ROW_11_Y}, BORDER_THICKNESS, COLOR_GRAY_064);
 
     int tree_growth_mode_int = static_cast<int>(state.tree_growth_mode);
     const Rectangle tree_growth_mode_bounds = {CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
@@ -79,7 +75,7 @@ CtrlState DrawCtrlBar(CtrlState state, const bool trigger_tree_reset, const bool
 
     GuiSetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH, CTRL_BAR_BUTTON_WIDTH);
     GuiLabelSpinner((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_11_Y + BUTTON_SPACING_Y, CTRL_BAR_WIDE_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Carryover", &state.num_carryover_ix, NUM_CARRYOVER_OPTIONS);
-    GuiLabelSpinner((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_14_Y + BUTTON_SPACING_Y, CTRL_BAR_WIDE_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Samples", &state.num_samples_ix, NUM_SAMPLES_OPTIONS);
+    GuiLabelSpinner((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_14_Y, CTRL_BAR_WIDE_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Samples", &state.num_samples_ix, NUM_SAMPLES_OPTIONS);
 
     // Border
     DrawRectangleLinesEx(CTRL_BAR_REC, 3, COLOR_STAT_BAR_BORDER);

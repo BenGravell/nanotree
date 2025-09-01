@@ -24,13 +24,24 @@
 #include "ui/drawing/tree.h"
 #include "ui/timing.h"
 
+int snapToGridCenter(const float x, const int s) {
+    const int i = std::lround(x);
+    return i - (i % s) + (s / 2);
+}
+
+int snapToGridEdge(const float x, const int s) {
+    const int i = std::lround(x);
+    const int r = i % s;
+    return (r < (s / 2)) ? (i - r) : (i - r + s);
+}
+
 int main() {
     // RAYLIB INIT
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "nanotree");
 
     // GUI STYLE INIT
-    Font font = LoadFontEx("assets/Bai_Jamjuree/BaiJamjuree-Regular.ttf", TEXT_HEIGHT, 0, 0);
+    Font font = LoadFontEx("assets/Bai_Jamjuree/BaiJamjuree-Regular.ttf", BIG_TEXT_HEIGHT, 0, 0);
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
     GuiSetFont(font);
@@ -54,7 +65,7 @@ int main() {
     GuiSetStyle(DEFAULT, TEXT_COLOR_PRESSED, ColorToInt(COLOR_GRAY_064));
 
     GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, ColorToInt(COLOR_GRAY_064));
-    GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, ColorToInt(COLOR_GRAY_032));
+    GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, ColorToInt(COLOR_GRAY_048));
     GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, ColorToInt(COLOR_GRAY_096));
 
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
@@ -110,14 +121,23 @@ int main() {
         const SelectorMode mode = ctrl_state.selector_mode;
         bool trigger_tree_reset = false;
 
+        // TODO factor to a function
         if (ctrl_state.snap_to_grid) {
-            int bx = std::lround(brush_pos.x);
-            int by = std::lround(brush_pos.y);
-            brush_pos.x = bx - bx % CELL_SIZE + CELL_SIZE / 2;
-            brush_pos.y = by - by % CELL_SIZE + CELL_SIZE / 2;
-            if ((ctrl_state.selector_mode == SelectorMode::ADD_OBSTACLE) || (ctrl_state.selector_mode == SelectorMode::DEL_OBSTACLE)) {
-                brush_pos.x += CELL_SIZE / 2;
-                brush_pos.y += CELL_SIZE / 2;
+            // int bx = std::lround(brush_pos.x);
+            // int by = std::lround(brush_pos.y);
+            // brush_pos.x = bx - bx % CELL_SIZE + CELL_SIZE / 2;
+            // brush_pos.y = by - by % CELL_SIZE + CELL_SIZE / 2;
+            // if ((ctrl_state.selector_mode == SelectorMode::ADD_OBSTACLE) || (ctrl_state.selector_mode == SelectorMode::DEL_OBSTACLE)) {
+            //     brush_pos.x += CELL_SIZE / 2;
+            //     brush_pos.y += CELL_SIZE / 2;
+            // }
+            const bool snap_to_edge = (ctrl_state.selector_mode == SelectorMode::ADD_OBSTACLE) || (ctrl_state.selector_mode == SelectorMode::DEL_OBSTACLE);
+            if (snap_to_edge) {
+                brush_pos.x = snapToGridEdge(brush_pos.x, CELL_SIZE);
+                brush_pos.y = snapToGridEdge(brush_pos.y, CELL_SIZE);
+            } else {
+                brush_pos.x = snapToGridCenter(brush_pos.x, CELL_SIZE);
+                brush_pos.y = snapToGridCenter(brush_pos.y, CELL_SIZE);
             }
         }
 

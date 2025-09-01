@@ -38,7 +38,8 @@ void GuiLabelValueColor(const Rectangle bounds, const char* label_text, const ch
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, text_alignment_original);
 }
 
-void GuiLabelTimingStat(const Rectangle bounds, const char* label_text, const float duration) {
+void GuiLabelTimingStat(const Rectangle bounds, const char* label_text, const float duration, const bool major) {
     const char* value_text = TextFormat("%4d ms", int(1000.0f * duration));
-    GuiLabelValueColor(bounds, label_text, value_text, COLOR_TIMING_STAT);
+    const Color color = major ? computeFrameTimeColor(duration) : COLOR_MINOR_STAT;
+    GuiLabelValueColor(bounds, label_text, value_text, color);
 }

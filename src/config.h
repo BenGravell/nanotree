@@ -65,6 +65,8 @@ static constexpr int LINE_WIDTH_PATH = 15;
 static constexpr int NODE_WIDTH_PATH = 30;
 
 static constexpr int TEXT_HEIGHT = 0.6 * CELL_SIZE;
+static constexpr int BIG_TEXT_HEIGHT = 0.8 * CELL_SIZE;
+static constexpr int SMALL_TEXT_HEIGHT = 0.5 * CELL_SIZE;
 
 // UI TIMES
 static constexpr float MOMENT_DURATION = 0.100f;
