@@ -123,7 +123,6 @@ int main() {
         const bool mouse_in_environment = insideEnvironment(mouse);
         Vector2 brush_pos = clampToEnvironment(mouse);
         const SelectorMode mode = ctrl_state.selector_mode;
-        bool trigger_tree_reset = false;
 
         // TODO factor to a function
         if (ctrl_state.snap_to_grid) {
@@ -145,7 +144,6 @@ int main() {
                 start_changed = Vector2Distance(start, brush_pos) > START_CHANGED_DIST_MIN;
                 if (start_changed) {
                     start = brush_pos;
-                    trigger_tree_reset = true;
                 }
             }
             if (is_down_lmb && mode == SelectorMode::PLACE_GOAL) {
@@ -168,6 +166,7 @@ int main() {
         const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
 
         // CTRL STATE PRE-UPDATE
+        const bool trigger_tree_reset = start_changed;
         if (trigger_tree_reset) {
             ctrl_state.tree_should_reset = true;
         }
