@@ -204,23 +204,28 @@ struct Tree {
         nodes = std::move(retained_nodes);
     }
 
+    void growOnce(Vector2 pos, const Obstacles& obstacles) {
+        NodePtr parent = getCheapest(pos, nodes, CHEAP_PARENT_SEARCH_RADIUS);
+        
+        pos = clampToEnvironment(pos);
+        pos = attractByDistance(pos, parent);
+        pos = attractByAngle(pos, parent);
+
+        if (!insideEnvironment(pos)) {
+            return;
+        }
+
+        if (collides(pos, obstacles)) {
+            return;
+        }
+
+        nodes.push_back(std::make_shared<Node>(Node{parent, pos, computeHeuristicCost(parent, pos)}));
+    }
+
     void grow(const int num_samples, const Vector2 goal, const Obstacles& obstacles) {
         for (int i = 0; i < num_samples; ++i) {
             Vector2 pos = ((i + 1) == num_samples) ? goal : sample(goal);
-            NodePtr parent = getCheapest(pos, nodes, CHEAP_PARENT_SEARCH_RADIUS);
-            pos = clampToEnvironment(pos);
-            pos = attractByDistance(pos, parent);
-            pos = attractByAngle(pos, parent);
-
-            if (!insideEnvironment(pos)) {
-                continue;
-            }
-
-            if (collides(pos, obstacles)) {
-                continue;
-            }
-
-            nodes.push_back(std::make_shared<Node>(Node{parent, pos, computeHeuristicCost(parent, pos)}));
+            growOnce(pos, obstacles);
         }
     }
 };
