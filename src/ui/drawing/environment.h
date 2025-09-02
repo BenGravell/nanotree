@@ -27,12 +27,18 @@ DrawObjectBrushParams getObjectBrushParams(const SelectorMode mode) {
     }
 }
 
-void DrawEnvironment(const Vector2 brush_pos, const SelectorMode brush_mode, const Vector2 start, const Vector2 goal, const bool goal_reached, const Obstacles obstacles,  const Tree& tree, const Path& path) {
+void DrawEnvironment(const Vector2 brush_pos, const SelectorMode brush_mode, const Vector2 start, const Vector2 goal, const bool goal_reached, const Obstacles obstacles, const Tree& tree, const Path& path, const Visibility& visibility) {
     DrawRectangleRec(ENVIRONMENT_REC, COLOR_BACKGROUND);
     DrawFlatGrid(ENVIRONMENT_X_MIN, ENVIRONMENT_X_MAX, ENVIRONMENT_Y_MIN, ENVIRONMENT_Y_MAX, {GRID_SPACING, GRID_THICKNESS, COLOR_GRID});
-    DrawObstacles(obstacles);
-    DrawTree(tree, path, goal, goal_reached);
-    DrawPath(path, goal_reached);
+    if (visibility.obstacles) {
+        DrawObstacles(obstacles);
+    }
+    if (visibility.tree) {
+        DrawTree(tree, path, goal, goal_reached);
+    }
+    if (visibility.path) {
+        DrawPath(path, goal_reached);
+    }
     DrawObjectBrush(brush_pos, getObjectBrushParams(brush_mode));
     DrawStart(start);
     DrawGoal(goal, goal_reached);

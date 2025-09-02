@@ -10,6 +10,12 @@ enum class TreeGrowthMode {
     NEVER = 2
 };
 
+struct Visibility {
+    bool tree = true;
+    bool path = true;
+    bool obstacles = true;
+};
+
 struct CtrlState {
     SelectorMode selector_mode = SelectorMode::PLACE_GOAL;
     TreeGrowthMode tree_growth_mode = TreeGrowthMode::UNTIL_GOAL_REACHED;
@@ -18,4 +24,5 @@ struct CtrlState {
     int num_samples_ix = 9;
     int num_carryover_ix = 11;
     bool snap_to_grid = false;
+    Visibility visibility;
 };
