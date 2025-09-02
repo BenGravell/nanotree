@@ -44,7 +44,6 @@ void DrawTree(const Tree& tree, const Path& path, const Vector2 goal, const bool
     const float cost_path = computeMaxCost(path, goal);
     const float cost_tree = computeMaxCost(tree.nodes, goal);
 
-    // TODO check if this is hurting runtime performance...
     // Sort by heuristic cost.
     Nodes sorted_nodes = tree.nodes;
     std::sort(sorted_nodes.begin(), sorted_nodes.end(), TargetCostComparatorInv{goal});
@@ -55,7 +54,9 @@ void DrawTree(const Tree& tree, const Path& path, const Vector2 goal, const bool
         if (!node->parent) {
             continue;
         }
-        const Color color = computeCostColor(normalizeCost(computeHeuristicCost(node, goal), cost_root, cost_path, cost_tree), goal_reached);
+        const float cost = computeHeuristicCost(node, goal);
+        const float cost_normalized = normalizeCost(cost, cost_root, cost_path, cost_tree);
+        const Color color = computeCostColor(cost_normalized, goal_reached);
         DrawLineEx(node->parent->pos, node->pos, line_width, color);
     }
 }
