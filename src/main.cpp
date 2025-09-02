@@ -29,26 +29,26 @@ bool goalReached(const Path& path, const Vector2 goal) {
     return Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
 }
 
-void plan(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carryover, const int num_samples) {
+void plan(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carry, const int num_samples) {
     tree.grow(num_samples, goal, obstacles);
-    tree.carryover(path, num_carryover, true);
+    tree.carry(path, num_carry, obstacles);
     path = extractPath(goal, tree.nodes);
 }
 
-void prepTree(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carryover, const int num_samples) {
+void prepTree(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carry, const int num_samples) {
     tree.reset(start);
 
     // Run the planner until:
-    // 1: tree filled up to carryover limit
+    // 1: tree filled up to carry limit
     // 2: goal reached
     // 3: ran out of attempts
     static constexpr int num_init_attempts_scale = 5;
-    const int num_init_attempts_max = num_init_attempts_scale * (num_carryover / num_samples);
+    const int num_init_attempts_max = num_init_attempts_scale * (num_carry / num_samples);
     int num_init_attempts = 0;
     {
         bool goal_reached = false;
-        while ((tree.nodes.size() < num_carryover) || !goal_reached) {
-            plan(tree, path, start, goal, obstacles, num_carryover, num_samples);
+        while ((tree.nodes.size() < num_carry) || !goal_reached) {
+            plan(tree, path, start, goal, obstacles, num_carry, num_samples);
             goal_reached = goalReached(path, goal);
             num_init_attempts++;
             if (num_init_attempts >= num_init_attempts_max) {
@@ -97,7 +97,7 @@ int main() {
 
     // GUI ELEMENTS INIT
     CtrlState ctrl_state;
-    const int num_carryover = NUM_CARRYOVER_OPTIONS[ctrl_state.num_carryover_ix];
+    const int num_carry = NUM_CARRY_OPTIONS[ctrl_state.num_carry_ix];
     const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
 
     TimingParts timing;
@@ -106,11 +106,13 @@ int main() {
     Vector2 start = DEFAULT_START;
     Vector2 goal = DEFAULT_GOAL;
     Obstacles obstacles = DEFAULT_OBSTACLES;
+    bool start_changed = true;
+    bool obstacle_added = true;
 
     // PLANNER INIT
     Tree tree;
     Path path;
-    prepTree(tree, path, start, goal, obstacles, num_carryover, num_samples);
+    prepTree(tree, path, start, goal, obstacles, num_carry, num_samples);
 
     while (!WindowShouldClose()) {
         timing.total.start();
@@ -136,9 +138,11 @@ int main() {
         }
 
         // TODO factor the mode action to a function and switch case on mode
+        start_changed = false;
+        obstacle_added = false;
         if (mouse_in_environment) {
             if (is_down_lmb && mode == SelectorMode::PLACE_START) {
-                const bool start_changed = Vector2Distance(start, brush_pos) > START_CHANGED_DIST_MIN;
+                start_changed = Vector2Distance(start, brush_pos) > START_CHANGED_DIST_MIN;
                 if (start_changed) {
                     start = brush_pos;
                     trigger_tree_reset = true;
@@ -151,7 +155,7 @@ int main() {
             if (is_down_lmb && mode == SelectorMode::ADD_OBSTACLE) {
                 if (std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, brush_pos) < OBSTACLE_SPACING_MIN; })) {
                     obstacles.push_back(brush_pos);
-                    trigger_tree_reset = true;
+                    obstacle_added = true;
                 }
             }
 
@@ -160,7 +164,7 @@ int main() {
             }
         }
 
-        const int num_carryover = NUM_CARRYOVER_OPTIONS[ctrl_state.num_carryover_ix];
+        const int num_carry = NUM_CARRY_OPTIONS[ctrl_state.num_carry_ix];
         const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
 
         // CTRL STATE PRE-UPDATE
@@ -174,23 +178,22 @@ int main() {
             tree.reset(start);
         }
 
-        if (ctrl_state.tree_should_grow) {
-            timing.carryover.start();
-            // NOTE: It is critical not to carryover the path when the tree was reset
-            // to ensure path is not carried over when obstacles collide with existing path.
-            // TODO: remove once carryover() method respects obstacles
-            tree.carryover(path, num_carryover, ctrl_state.tree_should_reset ? false : true);
-            timing.carryover.record();
+        timing.carry.start();
+        tree.carry(path, num_carry, obstacles);
+        timing.carry.record();
 
-            timing.grow.start();
-            tree.grow(num_samples, goal, obstacles);
-            timing.grow.record();
-        } else {
-            timing.carryover.start();
-            timing.carryover.record();
-            timing.grow.start();
-            timing.grow.record();
+        timing.cull.start();
+        const bool do_cull = obstacle_added || start_changed;
+        if (do_cull) {
+            tree.cullByObstacles(obstacles);
         }
+        timing.cull.record();
+
+        timing.grow.start();
+        if (ctrl_state.tree_should_grow) {
+            tree.grow(num_samples, goal, obstacles);
+        }
+        timing.grow.record();
 
         path = extractPath(goal, tree.nodes);
 
@@ -202,6 +205,7 @@ int main() {
         timing.draw.start();
         BeginDrawing();
 
+        // TODO draw env after ctrl bar so viz updates show up one frame faster
         DrawEnvironment(brush_pos, ctrl_state.selector_mode, start, goal, goal_reached, obstacles, tree, path, ctrl_state.visibility);
         DrawStatBar(tree, path, goal, goal_reached, obstacles, duration);
         DrawCtrlBar(ctrl_state, trigger_tree_reset, goal_reached);

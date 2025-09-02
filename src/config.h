@@ -6,7 +6,7 @@
 
 // UI options
 static constexpr std::array<int, 14> NUM_SAMPLES_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
-static constexpr std::array<int, 15> NUM_CARRYOVER_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000};
+static constexpr std::array<int, 15> NUM_CARRY_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000};
 
 // UI sizes
 static constexpr int SCREEN_WIDTH = 1920;

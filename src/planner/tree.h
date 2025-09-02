@@ -110,6 +110,18 @@ Vector2 attractByAngle(const Vector2 pos, const NodePtr parent) {
     return Vector2Add(parent->pos, direction_out * distance_yz);
 }
 
+using ChildMap = std::unordered_map<NodePtr, std::vector<NodePtr>>;
+
+inline ChildMap buildChildMap(const Nodes& nodes) {
+    ChildMap child_map;
+    for (const NodePtr& node : nodes) {
+        if (node->parent) {
+            child_map[node->parent].push_back(node);
+        }
+    }
+    return child_map;
+}
+
 struct Tree {
     Nodes nodes;
 
@@ -117,29 +129,30 @@ struct Tree {
         nodes = {std::make_shared<Node>(Node{nullptr, start, 0.0f})};
     }
 
-    void carryover(const Path path, const int num_carryover, const bool carryover_path) {
-        // TODO do not retain nodes or their children if in collision!
-
+    void carry(const Path path, const int num_carry, const Obstacles& obstacles) {
         Nodes retained_nodes;
         NodeSet retained_set;
 
-        if (!path.empty() && carryover_path) {
-            for (const NodePtr& node : path) {
-                retained_nodes.push_back(node);
-                retained_set.insert(node);
+        // Ensure root is retained at the front.
+        NodePtr root = nodes.front();
+        retained_nodes.push_back(root);
+        retained_set.insert(root);
+
+        // Retain path.
+        if (!path.empty()) {
+            for (const NodePtr& node_add : path) {
+                if (retained_set.find(node_add) == retained_set.end()) {
+                    retained_nodes.push_back(node_add);
+                    retained_set.insert(node_add);
+                }
             }
         }
 
-        NodePtr root = nodes.front();
-        if (retained_set.find(root) == retained_set.end()) {
-            retained_nodes.push_back(root);
-            retained_set.insert(root);
-        }
-
+        // Retain random nodes & all their ancestors.
         Nodes shuffled = nodes;
         std::shuffle(shuffled.begin(), shuffled.end(), rng);
         for (const NodePtr& node : shuffled) {
-            if (retained_nodes.size() > num_carryover) {
+            if (retained_nodes.size() > num_carry) {
                 break;
             }
 
@@ -153,9 +166,42 @@ struct Tree {
             }
         }
 
-        if (!retained_nodes.empty()) {
-            nodes = std::move(retained_nodes);
-        }
+        nodes = std::move(retained_nodes);
+    }
+
+    void cullByObstacles(const Obstacles& obstacles) {
+        Nodes retained_nodes;
+
+        // Ensure root is retained at the front.
+        NodePtr root = nodes.front();
+        retained_nodes.push_back(root);
+
+        const ChildMap child_map = buildChildMap(nodes);
+
+        // Traverse from root and keep only collision-free nodes and subtrees.
+        std::function<void(const NodePtr&)> dfs = [&](const NodePtr& node) {
+            if (collides(node->pos, obstacles)) {
+                // Prune entire subtree.
+                return;
+            }
+
+            // Keep this node.
+            if (node != root) {
+                retained_nodes.push_back(node);
+            }
+
+            // Recurse on children.
+            auto it = child_map.find(node);
+            if (it != child_map.end()) {
+                for (const NodePtr& child : it->second) {
+                    dfs(child);
+                }
+            }
+        };
+
+        dfs(root);
+
+        nodes = std::move(retained_nodes);
     }
 
     void grow(const int num_samples, const Vector2 goal, const Obstacles& obstacles) {

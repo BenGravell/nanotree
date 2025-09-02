@@ -42,18 +42,20 @@ struct Timing {
 
 struct DurationParts {
     float grow;
-    float carryover;
+    float carry;
+    float cull;
     float draw;
     float total;
 };
 
 struct TimingParts {
     Timing grow;
-    Timing carryover;
+    Timing carry;
+    Timing cull;
     Timing draw;
     Timing total;
 
     DurationParts averageDuration() const {
-        return {grow.averageDuration(), carryover.averageDuration(), draw.averageDuration(), total.averageDuration()};
+        return {grow.averageDuration(), carry.averageDuration(), cull.averageDuration(), draw.averageDuration(), total.averageDuration()};
     }
 };
