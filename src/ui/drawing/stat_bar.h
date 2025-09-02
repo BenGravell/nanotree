@@ -7,7 +7,7 @@
 #include "planner/cost.h"
 #include "planner/tree.h"
 #include "ui/colors.h"
-#include "ui/label.h"
+#include "ui/gui_label.h"
 #include "ui/text.h"
 #include "ui/timing.h"
 
@@ -15,7 +15,7 @@ static constexpr int STAT_BAR_BUTTON_X_MIN = STAT_BAR_X_MIN + BUTTON_SPACING_X;
 static constexpr int STAT_BAR_BUTTON_WIDTH = STAT_BAR_WIDTH - 2 * BUTTON_SPACING_X;
 static constexpr int STAT_BAR_HALF_ROW_HEIGHT = STAT_BAR_ROW_HEIGHT / 2;
 
-void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bool goal_reached, const Obstacles& obstacles, const DurationParts duration_parts, const int fps) {
+void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bool goal_reached, const Obstacles& obstacles, const DurationParts duration_parts) {
     // Background
     DrawRectangleRec(STAT_BAR_REC, COLOR_STAT_BAR_BACKGROUND);
 
@@ -44,7 +44,7 @@ void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bo
     const float path_cost_to_go = computeCost(path.back()->pos, goal);
     const float path_cost = path_cost_to_come + path_cost_to_go;
     GuiSetStyle(DEFAULT, TEXT_SIZE, BIG_TEXT_HEIGHT);
-    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_3_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_ROW_HEIGHT}, "Path Cost", TextFormat("%d", std::lround(path_cost)), goal_reached ? COLOR_STAT : COLOR_PATH_GOAL_NOT_REACHED);
+    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_3_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_ROW_HEIGHT}, "Cost", TextFormat("%d", std::lround(path_cost)), goal_reached ? COLOR_STAT : COLOR_PATH_GOAL_NOT_REACHED);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, SMALL_TEXT_HEIGHT);
     GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_4_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Cost-to-Come", TextFormat("%d", std::lround(path_cost_to_come)), COLOR_MINOR_STAT);
@@ -55,7 +55,7 @@ void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bo
     GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_6_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_ROW_HEIGHT}, "Nodes", TextFormat("%d", tree.nodes.size()), COLOR_STAT);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, SMALL_TEXT_HEIGHT);
-    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_7_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Path Nodes", TextFormat("%d", path.size()), COLOR_MINOR_STAT);
+    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_7_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Path", TextFormat("%d", path.size()), COLOR_MINOR_STAT);
 
     // Count low and high cost nodes.
     // TODO factor this out to a tree stats struct and compute just once, pass to tree draw func.
@@ -70,8 +70,8 @@ void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bo
         }
     }
 
-    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_7_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Low Cost Nodes", TextFormat("%d", num_nodes_lo_cost), COLOR_MINOR_STAT);
-    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_8_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "High Cost Nodes", TextFormat("%d", num_nodes_hi_cost), COLOR_MINOR_STAT);
+    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_7_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Low Cost", TextFormat("%d", num_nodes_lo_cost), COLOR_MINOR_STAT);
+    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_8_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "High Cost", TextFormat("%d", num_nodes_hi_cost), COLOR_MINOR_STAT);
 
     // Env info
     GuiSetStyle(DEFAULT, TEXT_SIZE, BIG_TEXT_HEIGHT);
@@ -84,7 +84,7 @@ void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bo
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, SMALL_TEXT_HEIGHT);
     GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_14_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Grow", duration_parts.grow, false);
-    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_14_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Carryover", duration_parts.carryover, false);
+    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_14_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Carry", duration_parts.carryover, false);
     GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_15_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Draw", duration_parts.draw, false);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);

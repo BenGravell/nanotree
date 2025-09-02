@@ -4,9 +4,6 @@
 
 #include <array>
 
-// Math
-static constexpr float TWO_PI = 2.0f * M_PI;
-
 // UI options
 static constexpr std::array<int, 14> NUM_SAMPLES_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
 static constexpr std::array<int, 15> NUM_CARRYOVER_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000};
@@ -14,6 +11,7 @@ static constexpr std::array<int, 15> NUM_CARRYOVER_OPTIONS = {0, 1, 2, 5, 10, 20
 // UI sizes
 static constexpr int SCREEN_WIDTH = 1920;
 static constexpr int SCREEN_HEIGHT = 1080;
+static constexpr Rectangle SCREEN_REC = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 
 static constexpr int CELL_SIZE = 60;
 
@@ -47,12 +45,13 @@ static constexpr int ENVIRONMENT_X_MIN = STAT_BAR_X_MAX;
 static constexpr int ENVIRONMENT_X_MAX = CTRL_BAR_X_MIN;
 static constexpr int ENVIRONMENT_Y_MIN = 0;
 static constexpr int ENVIRONMENT_Y_MAX = ENVIRONMENT_HEIGHT;
+static constexpr Rectangle ENVIRONMENT_REC = {ENVIRONMENT_X_MIN, ENVIRONMENT_Y_MIN, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT};
 
 static constexpr int GRID_THICKNESS = BORDER_THICKNESS;
 static constexpr int GRID_SPACING = CELL_SIZE;
 
-static constexpr int BUTTON_SPACING_X = 12;
-static constexpr int BUTTON_SPACING_Y = 12;
+static constexpr int BUTTON_SPACING_X = 15;
+static constexpr int BUTTON_SPACING_Y = 15;
 
 static constexpr float LINE_WIDTH_TREE_MIN = 2.0f;
 static constexpr float LINE_WIDTH_TREE_MAX = 6.0f;
@@ -67,6 +66,8 @@ static constexpr int NODE_WIDTH_PATH = 30;
 static constexpr int TEXT_HEIGHT = 0.6 * CELL_SIZE;
 static constexpr int BIG_TEXT_HEIGHT = 0.8 * CELL_SIZE;
 static constexpr int SMALL_TEXT_HEIGHT = 0.5 * CELL_SIZE;
+
+static constexpr int BUTTON_ICON_SCALE = 5;
 
 // UI TIMES
 static constexpr float MOMENT_DURATION = 0.100f;

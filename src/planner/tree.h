@@ -72,7 +72,7 @@ Path extractPath(const Vector2 target, const Nodes& nodes) {
 
 Vector2 sampleNearGoal(const Vector2 goal) {
     static std::uniform_real_distribution<float> dist_goal_r(0, GOAL_RADIUS);
-    static std::uniform_real_distribution<float> dist_goal_t(0.0f, TWO_PI);
+    static std::uniform_real_distribution<float> dist_goal_t(0.0f, 2.0f * M_PI);
     const float r = dist_goal_r(rng);
     const float t = dist_goal_t(rng);
     const Vector2 delta = {r * std::cos(t), r * std::sin(t)};

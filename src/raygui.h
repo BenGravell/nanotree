@@ -2128,12 +2128,6 @@ int GuiToggle(Rectangle bounds, const char *text, bool *active)
     return result;
 }
 
-std::string ReplaceSpacesWithNewlines(const char* text) {
-    std::string result(text);
-    std::replace(result.begin(), result.end(), ' ', '\n');
-    return result;
-}
-
 // Toggle Group control
 int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
 {
@@ -2156,13 +2150,6 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
 
     int prevRow = rows[0];
 
-    std::vector<std::string> replacedItems;
-    replacedItems.reserve(itemCount);
-
-    for (int i = 0; i < itemCount; i++) {
-        replacedItems.push_back(ReplaceSpacesWithNewlines(items[i]));
-    }
-
     // Background connector.
     // NOTE: assumes vertical toggle group.
     const int CONNECTOR_SPACING_X = 2 * GuiGetStyle(TOGGLE, GROUP_PADDING);
@@ -2178,16 +2165,15 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
             prevRow = rows[i];
         }
 
-        const char *itemText = replacedItems[i].c_str();
         if (i == (*active))
         {
             toggle = true;
-            GuiToggle(bounds, itemText, &toggle);
+            GuiToggle(bounds, items[i], &toggle);
         }
         else
         {
             toggle = false;
-            GuiToggle(bounds, itemText, &toggle);
+            GuiToggle(bounds, items[i], &toggle);
             if (toggle) *active = i;
         }
 
@@ -3016,8 +3002,8 @@ int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int
     if (GuiButton(leftButtonBound, "<")) tempValue--;
     if (GuiButton(rightButtonBound, ">")) tempValue++;
 #else
-    if (GuiButton(leftButtonBound, NULL, SHAPE_CHEVRON_LEFT)) tempValue--;
-    if (GuiButton(rightButtonBound, NULL, SHAPE_CHEVRON_RIGHT)) tempValue++;
+    if (GuiButton(leftButtonBound, GuiIconText(ICON_ARROW_LEFT_FILL, NULL))) tempValue--;
+    if (GuiButton(rightButtonBound, GuiIconText(ICON_ARROW_RIGHT_FILL, NULL))) tempValue++;
 #endif
 
     if (!editMode)

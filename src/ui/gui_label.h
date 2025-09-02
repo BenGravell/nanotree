@@ -43,3 +43,10 @@ void GuiLabelTimingStat(const Rectangle bounds, const char* label_text, const fl
     const Color color = major ? computeFrameTimeColor(duration) : COLOR_MINOR_STAT;
     GuiLabelValueColor(bounds, label_text, value_text, color);
 }
+
+template <size_t N>
+void GuiLabelSpinner(Rectangle bounds, const char* label_text, int* ix, std::array<int, N> options) {
+    GuiSpinner(bounds, NULL, ix, 0, N - 1, false);
+    const Rectangle label_bounds = {bounds.x, bounds.y + bounds.height + BUTTON_SPACING_Y / 2, bounds.width, TEXT_HEIGHT};
+    GuiLabelValue(label_bounds, label_text, TextFormat("%6d", options[*ix]));
+}

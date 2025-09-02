@@ -2,6 +2,7 @@
 #include <raymath.h>
 
 #define RAYGUI_IMPLEMENTATION
+
 #include <algorithm>
 #include <memory>
 #include <optional>
@@ -24,15 +25,8 @@
 #include "ui/drawing/tree.h"
 #include "ui/timing.h"
 
-int snapToGridCenter(const float x, const int s) {
-    const int i = std::lround(x);
-    return i - (i % s) + (s / 2);
-}
-
-int snapToGridEdge(const float x, const int s) {
-    const int i = std::lround(x);
-    const int r = i % s;
-    return (r < (s / 2)) ? (i - r) : (i - r + s);
+bool goalReached(const Path& path, const Vector2 goal) {
+    return Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
 }
 
 int main() {
@@ -43,11 +37,12 @@ int main() {
     // GUI STYLE INIT
     Font font = LoadFontEx("assets/Bai_Jamjuree/BaiJamjuree-Regular.ttf", BIG_TEXT_HEIGHT, 0, 0);
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
-
     GuiSetFont(font);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
     GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, std::lround(0.9 * TEXT_HEIGHT));
+
+    GuiSetIconScale(BUTTON_ICON_SCALE);
 
     GuiSetStyle(DEFAULT, BORDER_WIDTH, BORDER_THICKNESS);
     GuiSetStyle(TOGGLE, GROUP_PADDING, BUTTON_SPACING_Y);
@@ -73,6 +68,9 @@ int main() {
 
     // GUI ELEMENTS INIT
     CtrlState ctrl_state;
+    const int num_carryover = NUM_CARRYOVER_OPTIONS[ctrl_state.num_carryover_ix];
+    const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
+
     TimingParts timing;
 
     // ENVIRONMENT INIT
@@ -85,9 +83,6 @@ int main() {
     tree.reset(start);
 
     Path path;
-
-    const int num_carryover = NUM_CARRYOVER_OPTIONS[ctrl_state.num_carryover_ix];
-    const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
 
     // TODO factor out to a free function
     // Run the planner until:
@@ -102,7 +97,7 @@ int main() {
             tree.grow(num_samples, goal, obstacles);
             tree.carryover(path, num_carryover, true);
             path = extractPath(goal, tree.nodes);
-            goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
+            goal_reached = goalReached(path, goal);
             num_init_attempts++;
             if (num_init_attempts >= num_init_attempts_max) {
                 break;
@@ -200,21 +195,20 @@ int main() {
 
         path = extractPath(goal, tree.nodes);
 
-        const bool goal_reached = Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
+        const bool goal_reached = goalReached(path, goal);
 
         const DurationParts duration = timing.averageDuration();
-        const int fps = std::lround(1.0f / std::max(1e-3f, duration.total));
 
         // ---- DRAWING LOGIC
         timing.draw.start();
         BeginDrawing();
 
         DrawEnvironment(brush_pos, ctrl_state.selector_mode, start, goal, goal_reached, obstacles, tree, path);
-        DrawStatBar(tree, path, goal, goal_reached, obstacles, duration, fps);
-        ctrl_state = DrawCtrlBar(ctrl_state, trigger_tree_reset, goal_reached);
+        DrawStatBar(tree, path, goal, goal_reached, obstacles, duration);
+        DrawCtrlBar(ctrl_state, trigger_tree_reset, goal_reached);
 
         // Border around whole screen
-        DrawRectangleLinesEx({0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}, BORDER_THICKNESS, COLOR_SCREEN_BORDER);
+        DrawRectangleLinesEx(SCREEN_REC, BORDER_THICKNESS, COLOR_SCREEN_BORDER);
 
         EndDrawing();
         timing.draw.record();

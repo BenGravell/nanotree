@@ -28,7 +28,7 @@ DrawObjectBrushParams getObjectBrushParams(const SelectorMode mode) {
 }
 
 void DrawEnvironment(const Vector2 brush_pos, const SelectorMode brush_mode, const Vector2 start, const Vector2 goal, const bool goal_reached, const Obstacles obstacles,  const Tree& tree, const Path& path) {
-    DrawRectangle(ENVIRONMENT_X_MIN, ENVIRONMENT_Y_MIN, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT, COLOR_BACKGROUND);
+    DrawRectangleRec(ENVIRONMENT_REC, COLOR_BACKGROUND);
     DrawFlatGrid(ENVIRONMENT_X_MIN, ENVIRONMENT_X_MAX, ENVIRONMENT_Y_MIN, ENVIRONMENT_Y_MAX, {GRID_SPACING, GRID_THICKNESS, COLOR_GRID});
     DrawObstacles(obstacles);
     DrawTree(tree, path, goal, goal_reached);

@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <array>
 
-constexpr std::array<std::array<uint8_t, 3>, 1024> guppy_r_hq_colormap = {{
+static constexpr std::array<std::array<uint8_t, 3>, 1024> guppy_r_hq_colormap = {{
     {30, 203, 191},
     {30, 203, 191},
     {30, 203, 191},

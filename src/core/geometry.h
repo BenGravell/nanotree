@@ -12,3 +12,14 @@ bool insideEnvironment(const Vector2 pos) {
 Vector2 clampToEnvironment(const Vector2 pos) {
     return Vector2Clamp(pos, {ENVIRONMENT_X_MIN, ENVIRONMENT_Y_MIN}, {ENVIRONMENT_X_MAX, ENVIRONMENT_Y_MAX});
 }
+
+int snapToGridCenter(const float x, const int s) {
+    const int i = std::lround(x);
+    return i - (i % s) + (s / 2);
+}
+
+int snapToGridEdge(const float x, const int s) {
+    const int i = std::lround(x);
+    const int r = i % s;
+    return (r < (s / 2)) ? (i - r) : (i - r + s);
+}
