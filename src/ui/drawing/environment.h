@@ -14,10 +14,10 @@
 // TODO move
 DrawObjectBrushParams getObjectBrushParams(const SelectorMode mode) {
     switch (mode) {
-        case SelectorMode::PLACE_GOAL:
-            return {GOAL_RADIUS, 0.4f, 8, 4.0f};
         case SelectorMode::PLACE_START:
             return {START_RADIUS, 0.4f, 8, 4.0f};
+        case SelectorMode::PLACE_GOAL:
+            return {GOAL_RADIUS, 0.4f, 8, 4.0f};
         case SelectorMode::ADD_OBSTACLE:
             return {OBSTACLE_RADIUS, 0.2f, 12, 5.0f};
         case SelectorMode::DEL_OBSTACLE:

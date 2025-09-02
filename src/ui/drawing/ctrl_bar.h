@@ -45,17 +45,18 @@ void ctrlProblemEdit(CtrlState& state) {
     char icon3[32];
     char icon4[32];
 
-    strcpy(icon1, GuiIconText(ICON_STEP_INTO, NULL));
-    strcpy(icon2, GuiIconText(ICON_STEP_OUT, NULL));
-    strcpy(icon3, GuiIconText(ICON_BREAKPOINT_ON, NULL));
-    strcpy(icon4, GuiIconText(ICON_BREAKPOINT_OFF, NULL));
+    strcpy(icon1, GuiIconText(ICON_LOCATION, NULL));
+    strcpy(icon2, GuiIconText(ICON_FLAG, NULL));
+    strcpy(icon3, GuiIconText(ICON_DISK_PLUS, NULL));
+    strcpy(icon4, GuiIconText(ICON_DISK_MINUS, NULL));
 
     const char* icons = TextFormat("%s\n%s\n%s\n%s", icon1, icon2, icon3, icon4);
-    // "Place Goal\nPlace Start\nAdd Obstacle\nRemove Obstacle"
 
+    // Place Goal, Place Start, Add Obstacle, Remove Obstacle
     GuiToggleGroup(selector_mode_bounds, icons, &selector_mode_int);
     state.selector_mode = static_cast<SelectorMode>(selector_mode_int);
 
+    // Snap to Grid
     GuiToggle((Rectangle){CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_GRID, NULL), &state.snap_to_grid);
 }
 
@@ -69,20 +70,25 @@ void ctrlTreeGrowth(CtrlState& state, const bool trigger_tree_reset, const bool 
     char icon3[32];
 
     strcpy(icon1, GuiIconText(ICON_PLAYER_PLAY, NULL));
-    strcpy(icon2, GuiIconText(ICON_LASER, NULL));
+    strcpy(icon2, GuiIconText(ICON_PLAYER_TO_FLAG, NULL));
     strcpy(icon3, GuiIconText(ICON_PLAYER_PAUSE, NULL));
 
     const char* icons = TextFormat("%s\n%s\n%s", icon1, icon2, icon3);
 
+    // Grow Continuously, Grow to Goal, Pause Growth
     GuiToggleGroup(tree_growth_mode_bounds, icons, &tree_growth_mode_int);
     state.tree_growth_mode = static_cast<TreeGrowthMode>(tree_growth_mode_int);
 
-    const bool tree_should_grow_once = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_7_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_PLAYER_NEXT, NULL));
-    state.tree_should_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_RESTART, NULL));
-    if (trigger_tree_reset) {
-        state.tree_should_reset = true;
-    }
-    state.tree_should_grow = (state.tree_growth_mode == TreeGrowthMode::ALWAYS) || ((state.tree_growth_mode == TreeGrowthMode::UNTIL_GOAL_REACHED) && !goal_reached) || tree_should_grow_once;
+    // Grow Single Iteration
+    const bool explicit_tree_grow = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_7_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_PLAYER_NEXT, NULL));
+
+    // Reset Tree
+    const bool explicit_tree_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_RESTART, NULL));
+
+    // Handle conditions.
+    state.tree_should_grow = explicit_tree_grow || (state.tree_growth_mode == TreeGrowthMode::ALWAYS) || ((state.tree_growth_mode == TreeGrowthMode::UNTIL_GOAL_REACHED) && !goal_reached);
+
+    state.tree_should_reset = explicit_tree_reset || trigger_tree_reset;
 }
 
 void ctrlTreeSize(CtrlState& state) {
