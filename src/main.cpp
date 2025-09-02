@@ -29,6 +29,35 @@ bool goalReached(const Path& path, const Vector2 goal) {
     return Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
 }
 
+void plan(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carryover, const int num_samples) {
+    tree.grow(num_samples, goal, obstacles);
+    tree.carryover(path, num_carryover, true);
+    path = extractPath(goal, tree.nodes);
+}
+
+void prepTree(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carryover, const int num_samples) {
+    tree.reset(start);
+
+    // Run the planner until:
+    // 1: tree filled up to carryover limit
+    // 2: goal reached
+    // 3: ran out of attempts
+    static constexpr int num_init_attempts_scale = 5;
+    const int num_init_attempts_max = num_init_attempts_scale * (num_carryover / num_samples);
+    int num_init_attempts = 0;
+    {
+        bool goal_reached = false;
+        while ((tree.nodes.size() < num_carryover) || !goal_reached) {
+            plan(tree, path, start, goal, obstacles, num_carryover, num_samples);
+            goal_reached = goalReached(path, goal);
+            num_init_attempts++;
+            if (num_init_attempts >= num_init_attempts_max) {
+                break;
+            }
+        }
+    }
+}
+
 int main() {
     // RAYLIB INIT
     SetTraceLogLevel(LOG_ERROR);
@@ -80,30 +109,8 @@ int main() {
 
     // PLANNER INIT
     Tree tree;
-    tree.reset(start);
-
     Path path;
-
-    // TODO factor out to a free function
-    // Run the planner until:
-    // 1: tree filled up to carryover limit
-    // 2: goal reached
-    // 3: ran out of attempts
-    const int num_init_attempts_max = 5 * (num_carryover / num_samples);
-    int num_init_attempts = 0;
-    {
-        bool goal_reached = false;
-        while ((tree.nodes.size() < num_carryover) || !goal_reached) {
-            tree.grow(num_samples, goal, obstacles);
-            tree.carryover(path, num_carryover, true);
-            path = extractPath(goal, tree.nodes);
-            goal_reached = goalReached(path, goal);
-            num_init_attempts++;
-            if (num_init_attempts >= num_init_attempts_max) {
-                break;
-            }
-        }
-    }
+    prepTree(tree, path, start, goal, obstacles, num_carryover, num_samples);
 
     while (!WindowShouldClose()) {
         timing.total.start();
