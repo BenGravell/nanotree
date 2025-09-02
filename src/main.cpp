@@ -118,15 +118,7 @@ int main() {
 
         // TODO factor to a function
         if (ctrl_state.snap_to_grid) {
-            // int bx = std::lround(brush_pos.x);
-            // int by = std::lround(brush_pos.y);
-            // brush_pos.x = bx - bx % CELL_SIZE + CELL_SIZE / 2;
-            // brush_pos.y = by - by % CELL_SIZE + CELL_SIZE / 2;
-            // if ((ctrl_state.selector_mode == SelectorMode::ADD_OBSTACLE) || (ctrl_state.selector_mode == SelectorMode::DEL_OBSTACLE)) {
-            //     brush_pos.x += CELL_SIZE / 2;
-            //     brush_pos.y += CELL_SIZE / 2;
-            // }
-            const bool snap_to_edge = (ctrl_state.selector_mode == SelectorMode::ADD_OBSTACLE) || (ctrl_state.selector_mode == SelectorMode::DEL_OBSTACLE);
+            const bool snap_to_edge = (ctrl_state.selector_mode == SelectorMode::ADD_OBSTACLE);
             if (snap_to_edge) {
                 brush_pos.x = snapToGridEdge(brush_pos.x, CELL_SIZE);
                 brush_pos.y = snapToGridEdge(brush_pos.y, CELL_SIZE);
