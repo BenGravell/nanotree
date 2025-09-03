@@ -178,7 +178,7 @@ int main() {
         }
 
         timing.carry.start();
-        if (ctrl_state.tree_should_grow) {
+        if (ctrl_state.tree_should_grow && !ctrl_state.tree_should_reset) {
             tree.carry(path, num_carry, obstacles);
         }
         timing.carry.record();
