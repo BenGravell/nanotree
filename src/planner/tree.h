@@ -44,7 +44,6 @@ NodePtr getNearest(const Vector2 target, const Nodes& nodes) {
 
 NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const float max_dist) {
     Nodes neighbors;
-    neighbors.reserve(nodes.size());
     for (const NodePtr& node : nodes) {
         if (Vector2Distance(node->pos, target) <= max_dist) {
             neighbors.push_back(node);
