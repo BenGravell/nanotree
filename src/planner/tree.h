@@ -206,7 +206,7 @@ struct Tree {
 
     void growOnce(Vector2 pos, const Obstacles& obstacles) {
         NodePtr parent = getCheapest(pos, nodes, CHEAP_PARENT_SEARCH_RADIUS);
-        
+
         pos = clampToEnvironment(pos);
         pos = attractByDistance(pos, parent);
         pos = attractByAngle(pos, parent);
