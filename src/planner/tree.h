@@ -110,13 +110,13 @@ Vector2 attractByAngle(const Vector2 pos, const NodePtr parent) {
     return Vector2Add(parent->pos, direction_out * distance_yz);
 }
 
-using ChildMap = std::unordered_map<NodePtr, std::vector<NodePtr>>;
+using ChildMap = std::unordered_map<NodePtr, std::unordered_set<NodePtr>>;
 
 inline ChildMap buildChildMap(const Nodes& nodes) {
     ChildMap child_map;
     for (const NodePtr& node : nodes) {
         if (node->parent) {
-            child_map[node->parent].push_back(node);
+            child_map[node->parent].insert(node);
         }
     }
     return child_map;
@@ -224,7 +224,7 @@ struct Tree {
         const float cost_to_come = computeHeuristicCost(parent, pos);
         NodePtr node = std::make_shared<Node>(Node{parent, pos, cost_to_come});
         nodes.push_back(node);
-        child_map[node->parent].push_back(node);
+        child_map[node->parent].insert(node);
     }
 
     void grow(const int num_samples, const Vector2 goal, const Obstacles& obstacles) {
