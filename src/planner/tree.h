@@ -124,9 +124,11 @@ inline ChildMap buildChildMap(const Nodes& nodes) {
 
 struct Tree {
     Nodes nodes;
+    ChildMap child_map;
 
     void reset(const Vector2 start) {
         nodes = {std::make_shared<Node>(Node{nullptr, start, 0.0f})};
+        child_map = buildChildMap(nodes);
     }
 
     void carry(const Path path, const int num_carry, const Obstacles& obstacles) {
@@ -167,6 +169,7 @@ struct Tree {
         }
 
         nodes = std::move(retained_nodes);
+        child_map = buildChildMap(nodes);
     }
 
     void cullByObstacles(const Obstacles& obstacles) {
@@ -175,8 +178,6 @@ struct Tree {
         // Ensure root is retained at the front.
         NodePtr root = nodes.front();
         retained_nodes.push_back(root);
-
-        const ChildMap child_map = buildChildMap(nodes);
 
         // Traverse from root and keep only collision-free nodes and subtrees.
         std::function<void(const NodePtr&)> dfs = [&](const NodePtr& node) {
@@ -202,6 +203,7 @@ struct Tree {
         dfs(root);
 
         nodes = std::move(retained_nodes);
+        child_map = buildChildMap(nodes);
     }
 
     void growOnce(Vector2 pos, const Obstacles& obstacles) {
@@ -219,7 +221,10 @@ struct Tree {
             return;
         }
 
-        nodes.push_back(std::make_shared<Node>(Node{parent, pos, computeHeuristicCost(parent, pos)}));
+        const float cost_to_come = computeHeuristicCost(parent, pos);
+        NodePtr node = std::make_shared<Node>(Node{parent, pos, cost_to_come});
+        nodes.push_back(node);
+        child_map[node->parent].push_back(node);
     }
 
     void grow(const int num_samples, const Vector2 goal, const Obstacles& obstacles) {
