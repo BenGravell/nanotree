@@ -37,7 +37,7 @@ static constexpr int CTRL_BAR_BUTTON_X_MAX = CTRL_BAR_BUTTON_X_MIN + CTRL_BAR_BU
 static constexpr int CTRL_BAR_WIDE_BUTTON_WIDTH = CTRL_BAR_WIDTH - 2 * BUTTON_SPACING_X;
 
 static constexpr int CTRL_BAR_VIS_BUTTON_WIDTH = (CTRL_BAR_WIDTH - 4 * BUTTON_SPACING_X) / 3;
-static constexpr int CTRL_BAR_VIS_BUTTON_HEIGHT = CTRL_BAR_ROW_HEIGHT - BUTTON_SPACING_Y;
+static constexpr int CTRL_BAR_VIS_BUTTON_HEIGHT = 2 * CTRL_BAR_ROW_HEIGHT - 2 * BUTTON_SPACING_Y;
 
 void ctrlProblemEdit(CtrlState& state) {
     int selector_mode_int = static_cast<int>(state.selector_mode);
@@ -113,9 +113,11 @@ void ctrlTreeSize(CtrlState& state) {
 void ctrlVisibility(CtrlState& state) {
     GuiSetIconScale(VISIBILITY_BUTTON_ICON_SCALE);
     // NOTE: Visibility toggles drawn in the Stat Bar
-    GuiToggle((Rectangle){STAT_BAR_X_MIN + 0 * CTRL_BAR_VIS_BUTTON_WIDTH + 1 * BUTTON_SPACING_X, CTRL_BAR_ROW_17_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_LINK_BOXES, NULL), &state.visibility.tree);
-    GuiToggle((Rectangle){STAT_BAR_X_MIN + 1 * CTRL_BAR_VIS_BUTTON_WIDTH + 2 * BUTTON_SPACING_X, CTRL_BAR_ROW_17_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_LINK_NET, NULL), &state.visibility.path);
-    GuiToggle((Rectangle){STAT_BAR_X_MIN + 2 * CTRL_BAR_VIS_BUTTON_WIDTH + 3 * BUTTON_SPACING_X, CTRL_BAR_ROW_17_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_EXPLOSION, NULL), &state.visibility.obstacles);
+    DrawLineEx({STAT_BAR_X_MIN + 2 * BUTTON_SPACING_X, CTRL_BAR_ROW_16_Y}, {STAT_BAR_X_MAX - 2 * BUTTON_SPACING_X, CTRL_BAR_ROW_16_Y}, BORDER_THICKNESS, COLOR_GRAY_064);
+
+    GuiToggle((Rectangle){STAT_BAR_X_MIN + 0 * CTRL_BAR_VIS_BUTTON_WIDTH + 1 * BUTTON_SPACING_X, CTRL_BAR_ROW_16_Y + BUTTON_SPACING_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_LINK_BOXES, NULL), &state.visibility.tree);
+    GuiToggle((Rectangle){STAT_BAR_X_MIN + 1 * CTRL_BAR_VIS_BUTTON_WIDTH + 2 * BUTTON_SPACING_X, CTRL_BAR_ROW_16_Y + BUTTON_SPACING_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_LINK_NET, NULL), &state.visibility.path);
+    GuiToggle((Rectangle){STAT_BAR_X_MIN + 2 * CTRL_BAR_VIS_BUTTON_WIDTH + 3 * BUTTON_SPACING_X, CTRL_BAR_ROW_16_Y + BUTTON_SPACING_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_EXPLOSION, NULL), &state.visibility.obstacles);
 
     GuiSetIconScale(BUTTON_ICON_SCALE);
 }

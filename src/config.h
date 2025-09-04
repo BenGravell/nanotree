@@ -69,7 +69,7 @@ static constexpr int SMALL_TEXT_HEIGHT = 0.5 * CELL_SIZE;
 
 static constexpr int BUTTON_ICON_SCALE = 5;
 static constexpr int SMALL_BUTTON_ICON_SCALE = 3;
-static constexpr int VISIBILITY_BUTTON_ICON_SCALE = 2;
+static constexpr int VISIBILITY_BUTTON_ICON_SCALE = 3;
 
 // UI TIMES
 static constexpr float MOMENT_DURATION = 0.100f;

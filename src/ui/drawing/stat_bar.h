@@ -80,13 +80,13 @@ void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bo
     // Timing parts
     // TODO factor this block to a function
     GuiSetStyle(DEFAULT, TEXT_SIZE, BIG_TEXT_HEIGHT);
-    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_13_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_ROW_HEIGHT}, "Frame", duration_parts.total, true);
+    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_12_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_ROW_HEIGHT}, "Frame", duration_parts.total, true);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, SMALL_TEXT_HEIGHT);
-    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_14_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Grow", duration_parts.grow, false);
-    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_14_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Carry", duration_parts.carry, false);
-    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_15_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Cull", duration_parts.cull, false);
-    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_15_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Draw", duration_parts.draw, false);
+    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_13_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Grow", duration_parts.grow, false);
+    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_13_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Carry", duration_parts.carry, false);
+    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_14_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Cull", duration_parts.cull, false);
+    GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, ROW_14_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Draw", duration_parts.draw, false);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
 
