@@ -124,16 +124,9 @@ int main() {
         Vector2 brush_pos = clampToEnvironment(mouse);
         const SelectorMode mode = ctrl_state.selector_mode;
 
-        // TODO factor to a function
         if (ctrl_state.snap_to_grid) {
-            const bool snap_to_edge = (ctrl_state.selector_mode == SelectorMode::ADD_OBSTACLE);
-            if (snap_to_edge) {
-                brush_pos.x = snapToGridEdge(brush_pos.x, CELL_SIZE);
-                brush_pos.y = snapToGridEdge(brush_pos.y, CELL_SIZE);
-            } else {
-                brush_pos.x = snapToGridCenter(brush_pos.x, CELL_SIZE);
-                brush_pos.y = snapToGridCenter(brush_pos.y, CELL_SIZE);
-            }
+            brush_pos.x = snapToGridCenter(brush_pos.x, CELL_SIZE);
+            brush_pos.y = snapToGridCenter(brush_pos.y, CELL_SIZE);
         }
 
         // TODO factor the mode action to a function and switch case on mode
