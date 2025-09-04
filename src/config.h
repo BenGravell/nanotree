@@ -4,11 +4,11 @@
 
 #include <array>
 
-// UI options
+// UI OPTIONS
 static constexpr std::array<int, 14> NUM_SAMPLES_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
 static constexpr std::array<int, 15> NUM_CARRY_OPTIONS = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000};
 
-// UI sizes
+// UI SIZES
 static constexpr int SCREEN_WIDTH = 1920;
 static constexpr int SCREEN_HEIGHT = 1080;
 static constexpr Rectangle SCREEN_REC = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
@@ -68,6 +68,7 @@ static constexpr int BIG_TEXT_HEIGHT = 0.8 * CELL_SIZE;
 static constexpr int SMALL_TEXT_HEIGHT = 0.5 * CELL_SIZE;
 
 static constexpr int BUTTON_ICON_SCALE = 5;
+static constexpr int SMALL_BUTTON_ICON_SCALE = 3;
 static constexpr int VISIBILITY_BUTTON_ICON_SCALE = 2;
 
 // UI TIMES
@@ -76,14 +77,10 @@ static constexpr float MOMENT_DURATION = 0.100f;
 // TIMING
 static constexpr float TIMING_WINDOW_SEC = 1.0f;
 
-// Physical elements
+// PHYSICAL ELEMENTS
 static constexpr float OBSTACLE_RADIUS = 0.8f * CELL_SIZE;
-static constexpr float DEVIATION_DISTANCE_MAX = 0.8f * OBSTACLE_RADIUS;
 static constexpr float GOAL_RADIUS = CELL_SIZE / 2;
 static constexpr float START_RADIUS = GOAL_RADIUS;
-static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 1.5f * GOAL_RADIUS;
-static constexpr float RADIUS_OF_CURVATURE_MIN = 0.95f * std::min(OBSTACLE_RADIUS, 2.0f * GOAL_RADIUS);
-static constexpr float GOAL_SAMPLE_PROBABILITY = 0.05;
 
 static constexpr float OBSTACLE_SPACING_MIN = 0.1f * OBSTACLE_RADIUS;
 static constexpr float OBSTACLE_DEL_RADIUS = 10.0f;
@@ -174,3 +171,14 @@ const std::vector<Vector2> DEFAULT_OBSTACLES = {
     {570, 390},
     {510, 390},
 };
+
+// PLANNER
+static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
+static constexpr float DEVIATION_DISTANCE_MAX = 0.8f * OBSTACLE_RADIUS;
+static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 1.5f * GOAL_RADIUS;
+
+static constexpr float REWIRE_RADIUS = std::min(DEVIATION_DISTANCE_MAX, CHEAP_PARENT_SEARCH_RADIUS);
+static constexpr float REWIRE_PROBABILITY = 0.1f;
+static constexpr float REWIRE_NEIGHBOR_PROBABILITY = 0.1f;
+
+static constexpr float RADIUS_OF_CURVATURE_MIN = 0.95f * std::min(OBSTACLE_RADIUS, 2.0f * GOAL_RADIUS);

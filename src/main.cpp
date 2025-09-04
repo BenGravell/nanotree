@@ -29,13 +29,13 @@ bool goalReached(const Path& path, const Vector2 goal) {
     return Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
 }
 
-void plan(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carry, const int num_samples) {
-    tree.grow(num_samples, goal, obstacles);
+void plan(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carry, const int num_samples, const bool rewire_enabled) {
+    tree.grow(num_samples, goal, obstacles, rewire_enabled);
     tree.carry(path, num_carry, obstacles);
     path = extractPath(goal, tree.nodes);
 }
 
-void prepTree(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carry, const int num_samples) {
+void prepTree(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carry, const int num_samples, const bool rewire_enabled) {
     tree.reset(start);
 
     // Run the planner until:
@@ -48,7 +48,7 @@ void prepTree(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, c
     {
         bool goal_reached = false;
         while ((tree.nodes.size() < num_carry) || !goal_reached) {
-            plan(tree, path, start, goal, obstacles, num_carry, num_samples);
+            plan(tree, path, start, goal, obstacles, num_carry, num_samples, rewire_enabled);
             goal_reached = goalReached(path, goal);
             num_init_attempts++;
             if (num_init_attempts >= num_init_attempts_max) {
@@ -99,6 +99,7 @@ int main() {
     CtrlState ctrl_state;
     const int num_carry = NUM_CARRY_OPTIONS[ctrl_state.num_carry_ix];
     const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
+    const bool rewire_enabled = ctrl_state.rewire_enabled;
 
     TimingParts timing;
 
@@ -112,7 +113,7 @@ int main() {
     // PLANNER INIT
     Tree tree;
     Path path;
-    prepTree(tree, path, start, goal, obstacles, num_carry, num_samples);
+    prepTree(tree, path, start, goal, obstacles, num_carry, num_samples, rewire_enabled);
 
     while (!WindowShouldClose()) {
         timing.total.start();
@@ -185,7 +186,7 @@ int main() {
 
         timing.grow.start();
         if (ctrl_state.tree_should_grow) {
-            tree.grow(num_samples, goal, obstacles);
+            tree.grow(num_samples, goal, obstacles, ctrl_state.rewire_enabled);
         }
         timing.grow.record();
 

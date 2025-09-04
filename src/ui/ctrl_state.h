@@ -24,5 +24,6 @@ struct CtrlState {
     int num_samples_ix = 9;
     int num_carry_ix = 11;
     bool snap_to_grid = false;
+    bool rewire_enabled = true;
     Visibility visibility;
 };

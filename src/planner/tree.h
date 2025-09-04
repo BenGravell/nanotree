@@ -205,7 +205,7 @@ struct Tree {
         child_map = buildChildMap(nodes);
     }
 
-    void growOnce(Vector2 pos, const Obstacles& obstacles) {
+    void growOnce(Vector2 pos, const Obstacles& obstacles, const bool rewire_enabled) {
         NodePtr parent = getCheapest(pos, nodes, CHEAP_PARENT_SEARCH_RADIUS);
 
         pos = clampToEnvironment(pos);
@@ -224,12 +224,67 @@ struct Tree {
         NodePtr node = std::make_shared<Node>(Node{parent, pos, cost_to_come});
         nodes.push_back(node);
         child_map[node->parent].insert(node);
+
+        if (rewire_enabled) {
+            static std::uniform_real_distribution<float> dist_select(0.0f, 1.0f);
+            if (dist_select(rng) < REWIRE_PROBABILITY) {
+                rewire(node, obstacles);
+            }
+        }
     }
 
-    void grow(const int num_samples, const Vector2 goal, const Obstacles& obstacles) {
+    void rewire(const NodePtr& new_node, const Obstacles& obstacles) {
+        for (NodePtr& neighbor : nodes) {
+            if (neighbor == new_node || neighbor == new_node->parent) {
+                continue;
+            }
+
+            const float cost = computeCost(new_node->pos, neighbor->pos);
+
+            if (cost > REWIRE_RADIUS) {
+                continue;
+            }
+
+            static std::uniform_real_distribution<float> dist_select(0.0f, 1.0f);
+            if (dist_select(rng) > REWIRE_NEIGHBOR_PROBABILITY) {
+                continue;
+            }
+
+            const float new_cost_to_come_of_neighbor = new_node->cost_to_come + cost;
+
+            if (new_cost_to_come_of_neighbor < neighbor->cost_to_come) {
+                // TODO check that new edge is collision-free
+                // TODO check that new edge honors attractByAngle constraint
+                static constexpr bool acceptable = false;
+                if (acceptable) {
+                    child_map[neighbor->parent].erase(neighbor);
+                    neighbor->parent = new_node;
+                    neighbor->cost_to_come = new_cost_to_come_of_neighbor;
+                    child_map[new_node].insert(neighbor);
+                    updateSubtreeCosts(neighbor);
+                }
+            }
+        }
+    }
+
+    void updateSubtreeCosts(const NodePtr& node) {
+        std::function<void(const NodePtr&)> dfs = [&](const NodePtr& current) {
+            auto it = child_map.find(current);
+            if (it != child_map.end()) {
+                for (const NodePtr& child : it->second) {
+                    child->cost_to_come = current->cost_to_come + computeCost(current->pos, child->pos);
+                    dfs(child);
+                }
+            }
+        };
+
+        dfs(node);
+    }
+
+    void grow(const int num_samples, const Vector2 goal, const Obstacles& obstacles, const bool rewire_enabled) {
         for (int i = 0; i < num_samples; ++i) {
             Vector2 pos = ((i + 1) == num_samples) ? goal : sample(goal);
-            growOnce(pos, obstacles);
+            growOnce(pos, obstacles, rewire_enabled);
         }
     }
 };

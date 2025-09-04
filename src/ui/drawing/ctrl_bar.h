@@ -36,6 +36,9 @@ static constexpr int CTRL_BAR_BUTTON_X_MIN = CTRL_BAR_X_MIN + BUTTON_SPACING_X;
 static constexpr int CTRL_BAR_BUTTON_X_MAX = CTRL_BAR_BUTTON_X_MIN + CTRL_BAR_BUTTON_WIDTH;
 static constexpr int CTRL_BAR_WIDE_BUTTON_WIDTH = CTRL_BAR_WIDTH - 2 * BUTTON_SPACING_X;
 
+static constexpr int CTRL_BAR_VIS_BUTTON_WIDTH = (CTRL_BAR_WIDTH - 4 * BUTTON_SPACING_X) / 3;
+static constexpr int CTRL_BAR_VIS_BUTTON_HEIGHT = CTRL_BAR_ROW_HEIGHT - BUTTON_SPACING_Y;
+
 void ctrlProblemEdit(CtrlState& state) {
     int selector_mode_int = static_cast<int>(state.selector_mode);
     const Rectangle selector_mode_bounds = {CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
@@ -85,6 +88,11 @@ void ctrlTreeGrowth(CtrlState& state, const bool trigger_tree_reset, const bool 
     // Reset Tree
     const bool explicit_tree_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_RESTART, NULL));
 
+    // Rewiring enabled
+    GuiSetIconScale(SMALL_BUTTON_ICON_SCALE);
+    GuiToggle((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_11_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_ROW_HEIGHT}, GuiIconText(ICON_SHUFFLE_FILL, NULL), &state.rewire_enabled);
+    GuiSetIconScale(BUTTON_ICON_SCALE);
+
     // Handle conditions.
     state.tree_should_grow = explicit_tree_grow || (state.tree_growth_mode == TreeGrowthMode::ALWAYS) || ((state.tree_growth_mode == TreeGrowthMode::UNTIL_GOAL_REACHED) && !goal_reached);
 
@@ -95,22 +103,19 @@ void ctrlTreeSize(CtrlState& state) {
     GuiSetStyle(VALUEBOX, SPINNER_BUTTON_WIDTH, CTRL_BAR_BUTTON_WIDTH);
     GuiSetStyle(DEFAULT, TEXT_SIZE, BIG_TEXT_HEIGHT);
 
-    GuiLabelSpinner((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_11_Y + BUTTON_SPACING_Y, CTRL_BAR_WIDE_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Carry", &state.num_carry_ix, NUM_CARRY_OPTIONS);
+    GuiLabelSpinner((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_12_Y + BUTTON_SPACING_Y, CTRL_BAR_WIDE_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Carry", &state.num_carry_ix, NUM_CARRY_OPTIONS);
 
-    GuiLabelSpinner((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_14_Y + BUTTON_SPACING_Y, CTRL_BAR_WIDE_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Samples", &state.num_samples_ix, NUM_SAMPLES_OPTIONS);
+    GuiLabelSpinner((Rectangle){CTRL_BAR_BUTTON_X_MIN, CTRL_BAR_ROW_15_Y + BUTTON_SPACING_Y, CTRL_BAR_WIDE_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, "Samples", &state.num_samples_ix, NUM_SAMPLES_OPTIONS);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
 }
 
 void ctrlVisibility(CtrlState& state) {
-    static constexpr int CTRL_BAR_VIS_BUTTON_WIDTH = (CTRL_BAR_WIDTH - 4 * BUTTON_SPACING_X) / 3;
-    static constexpr int CTRL_BAR_VIS_BUTTON_HEIGHT = CTRL_BAR_ROW_HEIGHT - BUTTON_SPACING_Y;
-
     GuiSetIconScale(VISIBILITY_BUTTON_ICON_SCALE);
-
-    GuiToggle((Rectangle){CTRL_BAR_X_MIN + 0 * CTRL_BAR_VIS_BUTTON_WIDTH + 1 * BUTTON_SPACING_X, CTRL_BAR_ROW_17_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_LINK_BOXES, NULL), &state.visibility.tree);
-    GuiToggle((Rectangle){CTRL_BAR_X_MIN + 1 * CTRL_BAR_VIS_BUTTON_WIDTH + 2 * BUTTON_SPACING_X, CTRL_BAR_ROW_17_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_LINK_NET, NULL), &state.visibility.path);
-    GuiToggle((Rectangle){CTRL_BAR_X_MIN + 2 * CTRL_BAR_VIS_BUTTON_WIDTH + 3 * BUTTON_SPACING_X, CTRL_BAR_ROW_17_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_EXPLOSION, NULL), &state.visibility.obstacles);
+    // NOTE: Visibility toggles drawn in the Stat Bar
+    GuiToggle((Rectangle){STAT_BAR_X_MIN + 0 * CTRL_BAR_VIS_BUTTON_WIDTH + 1 * BUTTON_SPACING_X, CTRL_BAR_ROW_17_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_LINK_BOXES, NULL), &state.visibility.tree);
+    GuiToggle((Rectangle){STAT_BAR_X_MIN + 1 * CTRL_BAR_VIS_BUTTON_WIDTH + 2 * BUTTON_SPACING_X, CTRL_BAR_ROW_17_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_LINK_NET, NULL), &state.visibility.path);
+    GuiToggle((Rectangle){STAT_BAR_X_MIN + 2 * CTRL_BAR_VIS_BUTTON_WIDTH + 3 * BUTTON_SPACING_X, CTRL_BAR_ROW_17_Y, CTRL_BAR_VIS_BUTTON_WIDTH, CTRL_BAR_VIS_BUTTON_HEIGHT}, GuiIconText(ICON_EXPLOSION, NULL), &state.visibility.obstacles);
 
     GuiSetIconScale(BUTTON_ICON_SCALE);
 }
@@ -126,9 +131,9 @@ void DrawCtrlBar(CtrlState& state, const bool trigger_tree_reset, const bool goa
     ctrlVisibility(state);
 
     // Vertical line separator
-    DrawLineEx({CTRL_BAR_COL_1_X, CTRL_BAR_ROW_1_Y + BUTTON_SPACING_Y}, {CTRL_BAR_COL_1_X, CTRL_BAR_ROW_11_Y}, BORDER_THICKNESS, COLOR_GRAY_064);
+    DrawLineEx({CTRL_BAR_COL_1_X, CTRL_BAR_ROW_1_Y + BUTTON_SPACING_Y}, {CTRL_BAR_COL_1_X, CTRL_BAR_ROW_11_Y + CTRL_BAR_ROW_HEIGHT / 2}, BORDER_THICKNESS, COLOR_GRAY_064);
     // Horizontal line separator
-    DrawLineEx({CTRL_BAR_COL_0_X + 2 * BUTTON_SPACING_X, CTRL_BAR_ROW_11_Y}, {CTRL_BAR_COL_1_X, CTRL_BAR_ROW_11_Y}, BORDER_THICKNESS, COLOR_GRAY_064);
+    DrawLineEx({CTRL_BAR_COL_0_X + 2 * BUTTON_SPACING_X, CTRL_BAR_ROW_11_Y + CTRL_BAR_ROW_HEIGHT / 2}, {CTRL_BAR_COL_1_X, CTRL_BAR_ROW_11_Y + CTRL_BAR_ROW_HEIGHT / 2}, BORDER_THICKNESS, COLOR_GRAY_064);
 
     // Border
     DrawRectangleLinesEx(CTRL_BAR_REC, 3, COLOR_STAT_BAR_BORDER);
