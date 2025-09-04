@@ -226,10 +226,7 @@ struct Tree {
         child_map[node->parent].insert(node);
 
         if (rewire_enabled) {
-            static std::uniform_real_distribution<float> dist_select(0.0f, 1.0f);
-            if (dist_select(rng) < REWIRE_PROBABILITY) {
-                rewire(node, obstacles);
-            }
+            rewire(node, obstacles);
         }
     }
 
@@ -240,13 +237,7 @@ struct Tree {
             }
 
             const float cost = computeCost(new_node->pos, neighbor->pos);
-
             if (cost > REWIRE_RADIUS) {
-                continue;
-            }
-
-            static std::uniform_real_distribution<float> dist_select(0.0f, 1.0f);
-            if (dist_select(rng) > REWIRE_NEIGHBOR_PROBABILITY) {
                 continue;
             }
 
@@ -255,7 +246,7 @@ struct Tree {
             if (new_cost_to_come_of_neighbor < neighbor->cost_to_come) {
                 // TODO check that new edge is collision-free
                 // TODO check that new edge honors attractByAngle constraint
-                static constexpr bool acceptable = false;
+                static constexpr bool acceptable = true;
                 if (acceptable) {
                     child_map[neighbor->parent].erase(neighbor);
                     neighbor->parent = new_node;

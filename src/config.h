@@ -178,7 +178,5 @@ static constexpr float DEVIATION_DISTANCE_MAX = 0.8f * OBSTACLE_RADIUS;
 static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 1.5f * GOAL_RADIUS;
 
 static constexpr float REWIRE_RADIUS = std::min(DEVIATION_DISTANCE_MAX, CHEAP_PARENT_SEARCH_RADIUS);
-static constexpr float REWIRE_PROBABILITY = 0.1f;
-static constexpr float REWIRE_NEIGHBOR_PROBABILITY = 0.1f;
 
 static constexpr float RADIUS_OF_CURVATURE_MIN = 0.95f * std::min(OBSTACLE_RADIUS, 2.0f * GOAL_RADIUS);
