@@ -85,7 +85,7 @@ static constexpr float CHEAP_PARENT_SEARCH_RADIUS = 1.5f * GOAL_RADIUS;
 static constexpr float RADIUS_OF_CURVATURE_MIN = 0.95f * std::min(OBSTACLE_RADIUS, 2.0f * GOAL_RADIUS);
 static constexpr float GOAL_SAMPLE_PROBABILITY = 0.05;
 
-static constexpr float OBSTACLE_SPACING_MIN = 0.25f * OBSTACLE_RADIUS;
+static constexpr float OBSTACLE_SPACING_MIN = 0.1f * OBSTACLE_RADIUS;
 static constexpr float OBSTACLE_DEL_RADIUS = 10.0f;
 static constexpr float START_CHANGED_DIST_MIN = 1.0f;
 

@@ -19,9 +19,9 @@ DrawObjectBrushParams getObjectBrushParams(const SelectorMode mode) {
         case SelectorMode::PLACE_GOAL:
             return {GOAL_RADIUS, 0.4f, 8, 4.0f};
         case SelectorMode::ADD_OBSTACLE:
-            return {OBSTACLE_RADIUS, 0.2f, 12, 5.0f};
+            return {OBSTACLE_RADIUS, 0.3f, 12, 5.0f};
         case SelectorMode::DEL_OBSTACLE:
-            return {OBSTACLE_DEL_RADIUS, 0.4f, 8, 4.0f};
+            return {OBSTACLE_DEL_RADIUS, 0.5f, 6, 3.0f};
         default:
             return {0, 0.0f, 0, 0.0f};
     }
