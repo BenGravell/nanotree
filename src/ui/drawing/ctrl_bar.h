@@ -59,6 +59,11 @@ void ctrlProblemEdit(CtrlState& state) {
     GuiToggleGroup(selector_mode_bounds, icons, &selector_mode_int);
     state.selector_mode = static_cast<SelectorMode>(selector_mode_int);
 
+    // Remove All Obstacles
+    GuiSetIconScale(SMALL_BUTTON_ICON_SCALE);
+    state.reset_obstacles = GuiButton((Rectangle){CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_11_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_ROW_HEIGHT}, GuiIconText(ICON_BIN, NULL));
+    GuiSetIconScale(BUTTON_ICON_SCALE);
+
     // Snap to Grid
     GuiToggle((Rectangle){CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_GRID, NULL), &state.snap_to_grid);
 }
@@ -88,7 +93,7 @@ void ctrlTreeGrowth(CtrlState& state, const bool trigger_tree_reset, const bool 
     // Reset Tree
     const bool explicit_tree_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_RESTART, NULL));
 
-    // Rewiring enabled
+    // Rewiring Enabled
     GuiSetIconScale(SMALL_BUTTON_ICON_SCALE);
     GuiToggle((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_11_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_ROW_HEIGHT}, GuiIconText(ICON_SHUFFLE_FILL, NULL), &state.rewire_enabled);
     GuiSetIconScale(BUTTON_ICON_SCALE);
@@ -131,11 +136,6 @@ void DrawCtrlBar(CtrlState& state, const bool trigger_tree_reset, const bool goa
     ctrlTreeGrowth(state, trigger_tree_reset, goal_reached);
     ctrlTreeSize(state);
     ctrlVisibility(state);
-
-    // Vertical line separator
-    DrawLineEx({CTRL_BAR_COL_1_X, CTRL_BAR_ROW_1_Y + BUTTON_SPACING_Y}, {CTRL_BAR_COL_1_X, CTRL_BAR_ROW_11_Y + CTRL_BAR_ROW_HEIGHT / 2}, BORDER_THICKNESS, COLOR_GRAY_064);
-    // Horizontal line separator
-    DrawLineEx({CTRL_BAR_COL_0_X + 2 * BUTTON_SPACING_X, CTRL_BAR_ROW_11_Y + CTRL_BAR_ROW_HEIGHT / 2}, {CTRL_BAR_COL_1_X, CTRL_BAR_ROW_11_Y + CTRL_BAR_ROW_HEIGHT / 2}, BORDER_THICKNESS, COLOR_GRAY_064);
 
     // Border
     DrawRectangleLinesEx(CTRL_BAR_REC, 3, COLOR_STAT_BAR_BORDER);

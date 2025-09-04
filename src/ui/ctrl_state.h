@@ -18,12 +18,13 @@ struct Visibility {
 
 struct CtrlState {
     SelectorMode selector_mode = SelectorMode::PLACE_GOAL;
+    bool snap_to_grid = false;
+    bool reset_obstacles = false;
     TreeGrowthMode tree_growth_mode = TreeGrowthMode::UNTIL_GOAL_REACHED;
     bool tree_should_reset = false;
     bool tree_should_grow = false;
-    int num_samples_ix = 9;
-    int num_carry_ix = 11;
-    bool snap_to_grid = false;
     bool rewire_enabled = true;
+    int num_samples_ix = 9;
+    int num_carry_ix = 11;    
     Visibility visibility;
 };

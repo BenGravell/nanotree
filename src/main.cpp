@@ -155,6 +155,9 @@ int main() {
                 obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, brush_pos) < (OBSTACLE_RADIUS + OBSTACLE_DEL_RADIUS); }), obstacles.end());
             }
         }
+        if (ctrl_state.reset_obstacles) {
+            obstacles = {};
+        }
 
         const int num_carry = NUM_CARRY_OPTIONS[ctrl_state.num_carry_ix];
         const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
