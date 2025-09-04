@@ -50,11 +50,11 @@ NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const float max_di
         }
     }
 
-    if (!neighbors.empty()) {
-        return *std::min_element(neighbors.begin(), neighbors.end(), TargetCostComparator{target});
+    if (neighbors.empty()) {
+        return getNearest(target, nodes);
     }
 
-    return getNearest(target, nodes);
+    return *std::min_element(neighbors.begin(), neighbors.end(), TargetCostComparator{target});
 }
 
 Path extractPath(const Vector2 target, const Nodes& nodes) {
