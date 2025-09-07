@@ -61,7 +61,7 @@ void DrawStatBar(const Tree& tree, const Path path, const Vector2 goal, const bo
     // TODO factor this out to a tree stats struct and compute just once, pass to tree draw func.
     int num_nodes_lo_cost = 0;
     int num_nodes_hi_cost = 0;
-    for (const NodePtr node : tree.nodes) {
+    for (const NodePtr& node : tree.nodes) {
         const float cost = computeHeuristicCost(node, goal);
         if (cost < path_cost) {
             num_nodes_lo_cost++;

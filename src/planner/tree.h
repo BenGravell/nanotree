@@ -117,6 +117,21 @@ bool goalReached(const Path& path, const Vector2 goal) {
     return goalReached(path.back(), goal);
 }
 
+bool edgeCollides(const Vector2 start, const Vector2 end, const Obstacles& obstacles) {
+    for (int i = 0; i < NUM_INTERMEDIATE_COLLISION_CHECK_POINTS; ++i) {
+        const float t = float(i) / float(NUM_INTERMEDIATE_COLLISION_CHECK_POINTS - 1);
+        const Vector2 intermediate_pos = Vector2Lerp(start, end, t);
+        if (collides(intermediate_pos, obstacles)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool edgeCollides(const NodePtr& node, const Obstacles& obstacles) {
+    return (node->parent) ? edgeCollides(node->parent->pos, node->pos, obstacles) : collides(node->pos, obstacles);
+}
+
 using ChildMap = std::unordered_map<NodePtr, std::unordered_set<NodePtr>>;
 
 inline ChildMap buildChildMap(const Nodes& nodes) {
@@ -148,10 +163,9 @@ struct Tree {
         child_map = buildChildMap(nodes);
     }
 
-    void resetRoot(const Vector2 start, const Vector2 goal) {
+    void resetRoot(const Vector2 start, const Vector2 goal, const Obstacles& obstacles) {
         // For every ancestor on any goal-reaching path, record the cheapest
         // downstream cost to a goal along the existing tree:
-        //   cheapest_down[n] = min_g ( cost_to_come(g) - cost_to_come(n) )
         Nodes goal_nodes = getNear(goal);
         std::unordered_map<NodePtr, float> cheapest_down;
         for (const NodePtr& g : goal_nodes) {
@@ -172,8 +186,7 @@ struct Tree {
         NodePtr new_root = std::make_shared<Node>(Node{nullptr, start, 0.0f});
         retained_nodes.push_back(new_root);
 
-        // Choose the child of the new root:
-        //   argmin_cand [ cost(start -> cand) + cheapest_down[cand] ].
+        // Choose the child of the new root.
         NodePtr best_child = nullptr;
         float best_total = std::numeric_limits<float>::infinity();
 
@@ -182,6 +195,9 @@ struct Tree {
                 const NodePtr& cand = kv.first;
                 const float dist = Vector2Distance(start, cand->pos);
                 if (dist > DEVIATION_DISTANCE_MAX) {
+                    continue;
+                }
+                if (edgeCollides(start, cand->pos, obstacles)) {
                     continue;
                 }
 
@@ -194,15 +210,16 @@ struct Tree {
                 }
             }
         } else if (!nodes.empty()) {
-            // No node in the current tree reaches the goal; 
+            // No node in the current tree reaches the goal;
             // fall back to attaching the nearest node.
             NodePtr cand = getNearest(start, nodes);
-            if (Vector2Distance(start, cand->pos) <= DEVIATION_DISTANCE_MAX) {
+            const float dist = Vector2Distance(start, cand->pos);
+            if (!((dist > DEVIATION_DISTANCE_MAX) || edgeCollides(start, cand->pos, obstacles))) {
                 best_child = cand;
             }
         }
 
-        // Retain only the subtree rooted at best_child (if any), 
+        // Retain only the subtree rooted at best_child (if any),
         // re-parent it to the new root,
         // and update costs throughout that subtree.
         if (best_child) {
@@ -279,7 +296,7 @@ struct Tree {
 
         // Traverse from root and keep only collision-free nodes and subtrees.
         std::function<void(const NodePtr&)> dfs = [&](const NodePtr& node) {
-            if (collides(node->pos, obstacles)) {
+            if (edgeCollides(node, obstacles)) {
                 // Prune entire subtree.
                 return;
             }
@@ -315,7 +332,7 @@ struct Tree {
             return;
         }
 
-        if (collides(pos, obstacles)) {
+        if (edgeCollides(parent->pos, pos, obstacles)) {
             return;
         }
 
@@ -341,18 +358,19 @@ struct Tree {
             }
 
             const float new_cost_to_come_of_neighbor = new_node->cost_to_come + cost;
-
-            if (new_cost_to_come_of_neighbor < neighbor->cost_to_come) {
-                // TODO check that new edge is collision-free
-                // TODO check that new edge honors attractByAngle constraint
-                static constexpr bool acceptable = true;
-                if (acceptable) {
-                    child_map[neighbor->parent].erase(neighbor);
-                    neighbor->parent = new_node;
-                    neighbor->cost_to_come = new_cost_to_come_of_neighbor;
-                    child_map[new_node].insert(neighbor);
-                    updateSubtreeCosts(neighbor);
+            const bool cost_improved = new_cost_to_come_of_neighbor < neighbor->cost_to_come;
+            if (cost_improved) {
+                if (edgeCollides(new_node->pos, neighbor->pos, obstacles)) {
+                    continue;
                 }
+
+                // TODO check that new edge honors attractByAngle constraint
+
+                child_map[neighbor->parent].erase(neighbor);
+                neighbor->parent = new_node;
+                neighbor->cost_to_come = new_cost_to_come_of_neighbor;
+                child_map[new_node].insert(neighbor);
+                updateSubtreeCosts(neighbor);
             }
         }
     }
