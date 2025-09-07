@@ -203,7 +203,7 @@ int main() {
         timing.draw.start();
         BeginDrawing();
 
-        // TODO draw env after ctrl bar so viz updates show up one frame faster
+        // TODO draw env after ctrl bar so viz updates show up one frame earlier
         DrawEnvironment(brush_pos, ctrl_state.selector_mode, start, goal, goal_reached, obstacles, tree, path, ctrl_state.visibility);
         DrawStatBar(tree, path, goal, goal_reached, obstacles, duration);
         DrawCtrlBar(ctrl_state, trigger_tree_reset, goal_reached);
