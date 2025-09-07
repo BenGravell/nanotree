@@ -31,7 +31,7 @@ static constexpr int CTRL_BAR_COL_0_X = CTRL_BAR_X_MIN + 0 * CTRL_BAR_COL_WIDTH;
 static constexpr int CTRL_BAR_COL_1_X = CTRL_BAR_X_MIN + 1 * CTRL_BAR_COL_WIDTH;
 
 static constexpr int CTRL_BAR_BUTTON_HEIGHT = 2 * CTRL_BAR_ROW_HEIGHT - BUTTON_SPACING_Y;
-static constexpr int CTRL_BAR_BUTTON_WIDTH = CTRL_BAR_COL_WIDTH - 2 * BUTTON_SPACING_X;
+static constexpr int CTRL_BAR_BUTTON_WIDTH = CTRL_BAR_COL_WIDTH - 1.5 * BUTTON_SPACING_X;
 static constexpr int CTRL_BAR_BUTTON_X_MIN = CTRL_BAR_X_MIN + BUTTON_SPACING_X;
 static constexpr int CTRL_BAR_BUTTON_X_MAX = CTRL_BAR_BUTTON_X_MIN + CTRL_BAR_BUTTON_WIDTH;
 static constexpr int CTRL_BAR_WIDE_BUTTON_WIDTH = CTRL_BAR_WIDTH - 2 * BUTTON_SPACING_X;
@@ -71,7 +71,7 @@ void ctrlProblemEdit(CtrlState& state) {
 void ctrlTreeGrowth(CtrlState& state, const bool trigger_tree_reset, const bool goal_reached) {
     int tree_growth_mode_int = static_cast<int>(state.tree_growth_mode);
 
-    const Rectangle tree_growth_mode_bounds = {CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
+    const Rectangle tree_growth_mode_bounds = {CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
 
     char icon1[32];
     char icon2[32];
@@ -88,14 +88,14 @@ void ctrlTreeGrowth(CtrlState& state, const bool trigger_tree_reset, const bool 
     state.tree_growth_mode = static_cast<TreeGrowthMode>(tree_growth_mode_int);
 
     // Grow Single Iteration
-    const bool explicit_tree_grow = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_7_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_PLAYER_NEXT, NULL));
+    const bool explicit_tree_grow = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_7_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_PLAYER_NEXT, NULL));
 
     // Reset Tree
-    const bool explicit_tree_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_RESTART, NULL));
+    const bool explicit_tree_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_RESTART, NULL));
 
     // Rewiring Enabled
     GuiSetIconScale(SMALL_BUTTON_ICON_SCALE);
-    GuiToggle((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X, CTRL_BAR_ROW_11_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_ROW_HEIGHT}, GuiIconText(ICON_SHUFFLE_FILL, NULL), &state.rewire_enabled);
+    GuiToggle((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_11_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_ROW_HEIGHT}, GuiIconText(ICON_SHUFFLE_FILL, NULL), &state.rewire_enabled);
     GuiSetIconScale(BUTTON_ICON_SCALE);
 
     // Handle conditions.

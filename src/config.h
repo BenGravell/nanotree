@@ -50,8 +50,8 @@ static constexpr Rectangle ENVIRONMENT_REC = {ENVIRONMENT_X_MIN, ENVIRONMENT_Y_M
 static constexpr int GRID_THICKNESS = BORDER_THICKNESS;
 static constexpr int GRID_SPACING = CELL_SIZE;
 
-static constexpr int BUTTON_SPACING_X = 15;
-static constexpr int BUTTON_SPACING_Y = 15;
+static constexpr int BUTTON_SPACING_X = 16;
+static constexpr int BUTTON_SPACING_Y = 16;
 
 static constexpr float LINE_WIDTH_TREE_MIN = 2.0f;
 static constexpr float LINE_WIDTH_TREE_MAX = 6.0f;
