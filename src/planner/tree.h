@@ -109,6 +109,14 @@ Vector2 attractByAngle(const Vector2 pos, const NodePtr parent) {
     return Vector2Add(parent->pos, direction_out * distance_yz);
 }
 
+bool goalReached(const NodePtr node, const Vector2 goal) {
+    return Vector2Distance(node->pos, goal) < GOAL_RADIUS;
+}
+
+bool goalReached(const Path& path, const Vector2 goal) {
+    return goalReached(path.back(), goal);
+}
+
 using ChildMap = std::unordered_map<NodePtr, std::unordered_set<NodePtr>>;
 
 inline ChildMap buildChildMap(const Nodes& nodes) {
@@ -125,9 +133,100 @@ struct Tree {
     Nodes nodes;
     ChildMap child_map;
 
+    Nodes getNear(const Vector2 target) const {
+        std::vector<NodePtr> near_nodes;
+        for (const NodePtr& node : nodes) {
+            if (goalReached(node, target)) {
+                near_nodes.push_back(node);
+            }
+        }
+        return near_nodes;
+    }
+
     void reset(const Vector2 start) {
         nodes = {std::make_shared<Node>(Node{nullptr, start, 0.0f})};
         child_map = buildChildMap(nodes);
+    }
+
+    void resetRoot(const Vector2 start, const Vector2 goal) {
+        // For every ancestor on any goal-reaching path, record the cheapest
+        // downstream cost to a goal along the existing tree:
+        //   cheapest_down[n] = min_g ( cost_to_come(g) - cost_to_come(n) )
+        Nodes goal_nodes = getNear(goal);
+        std::unordered_map<NodePtr, float> cheapest_down;
+        for (const NodePtr& g : goal_nodes) {
+            NodePtr cur = g;
+            while (cur) {
+                const float delta = g->cost_to_come - cur->cost_to_come;
+                auto it = cheapest_down.find(cur);
+                if (it == cheapest_down.end() || delta < it->second) {
+                    cheapest_down[cur] = delta;
+                }
+                cur = cur->parent;
+            }
+        }
+
+        Nodes retained_nodes;
+
+        // Always create a fresh root at start.
+        NodePtr new_root = std::make_shared<Node>(Node{nullptr, start, 0.0f});
+        retained_nodes.push_back(new_root);
+
+        // Choose the child of the new root:
+        //   argmin_cand [ cost(start -> cand) + cheapest_down[cand] ].
+        NodePtr best_child = nullptr;
+        float best_total = std::numeric_limits<float>::infinity();
+
+        if (!cheapest_down.empty()) {
+            for (const auto& kv : cheapest_down) {
+                const NodePtr& cand = kv.first;
+                const float dist = Vector2Distance(start, cand->pos);
+                if (dist > DEVIATION_DISTANCE_MAX) {
+                    continue;
+                }
+
+                const float down_cost = kv.second;
+                const float up_cost = computeCost(start, cand->pos);
+                const float total = up_cost + down_cost;
+                if (total < best_total) {
+                    best_total = total;
+                    best_child = cand;
+                }
+            }
+        } else if (!nodes.empty()) {
+            // No node in the current tree reaches the goal; 
+            // fall back to attaching the nearest node.
+            NodePtr cand = getNearest(start, nodes);
+            if (Vector2Distance(start, cand->pos) <= DEVIATION_DISTANCE_MAX) {
+                best_child = cand;
+            }
+        }
+
+        // Retain only the subtree rooted at best_child (if any), 
+        // re-parent it to the new root,
+        // and update costs throughout that subtree.
+        if (best_child) {
+            // Re-parent attachment point and set its new cost_to_come.
+            best_child->parent = new_root;
+            best_child->cost_to_come = computeHeuristicCost(new_root, best_child->pos);
+            retained_nodes.push_back(best_child);
+
+            // Collect descendants of best_child using the current child_map.
+            std::function<void(const NodePtr&)> dfs = [&](const NodePtr& n) {
+                auto it = child_map.find(n);
+                if (it != child_map.end()) {
+                    for (const NodePtr& child : it->second) {
+                        retained_nodes.push_back(child);
+                        dfs(child);
+                    }
+                }
+            };
+            dfs(best_child);
+        }
+
+        nodes = std::move(retained_nodes);
+        child_map = buildChildMap(nodes);
+        updateSubtreeCosts(new_root);
     }
 
     void carry(const Path path, const int num_carry, const Obstacles& obstacles) {
@@ -263,7 +362,7 @@ struct Tree {
             auto it = child_map.find(current);
             if (it != child_map.end()) {
                 for (const NodePtr& child : it->second) {
-                    child->cost_to_come = current->cost_to_come + computeCost(current->pos, child->pos);
+                    child->cost_to_come = computeHeuristicCost(current, child->pos);
                     dfs(child);
                 }
             }

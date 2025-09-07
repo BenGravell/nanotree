@@ -25,10 +25,6 @@
 #include "ui/drawing/tree.h"
 #include "ui/timing.h"
 
-bool goalReached(const Path& path, const Vector2 goal) {
-    return Vector2Distance(path.back()->pos, goal) < GOAL_RADIUS;
-}
-
 void plan(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carry, const int num_samples, const bool rewire_enabled) {
     tree.grow(num_samples, goal, obstacles, rewire_enabled);
     tree.carry(path, num_carry, obstacles);
@@ -162,16 +158,14 @@ int main() {
         const int num_carry = NUM_CARRY_OPTIONS[ctrl_state.num_carry_ix];
         const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
 
-        // CTRL STATE PRE-UPDATE
-        const bool trigger_tree_reset = start_changed;
-        if (trigger_tree_reset) {
-            ctrl_state.tree_should_reset = true;
-        }
-
         // ---- PLANNER LOGIC
 
         if (ctrl_state.tree_should_reset) {
             tree.reset(start);
+        }
+
+        if (start_changed) {
+            tree.resetRoot(start, goal);
         }
 
         timing.carry.start();
@@ -206,7 +200,7 @@ int main() {
         // TODO draw env after ctrl bar so viz updates show up one frame earlier
         DrawEnvironment(brush_pos, ctrl_state.selector_mode, start, goal, goal_reached, obstacles, tree, path, ctrl_state.visibility);
         DrawStatBar(tree, path, goal, goal_reached, obstacles, duration);
-        DrawCtrlBar(ctrl_state, trigger_tree_reset, goal_reached);
+        DrawCtrlBar(ctrl_state, goal_reached);
 
         // Border around whole screen
         DrawRectangleLinesEx(SCREEN_REC, BORDER_THICKNESS, COLOR_SCREEN_BORDER);

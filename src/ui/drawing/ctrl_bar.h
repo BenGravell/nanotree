@@ -68,7 +68,7 @@ void ctrlProblemEdit(CtrlState& state) {
     GuiToggle((Rectangle){CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_GRID, NULL), &state.snap_to_grid);
 }
 
-void ctrlTreeGrowth(CtrlState& state, const bool trigger_tree_reset, const bool goal_reached) {
+void ctrlTreeGrowth(CtrlState& state, const bool goal_reached) {
     int tree_growth_mode_int = static_cast<int>(state.tree_growth_mode);
 
     const Rectangle tree_growth_mode_bounds = {CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
@@ -90,18 +90,16 @@ void ctrlTreeGrowth(CtrlState& state, const bool trigger_tree_reset, const bool 
     // Grow Single Iteration
     const bool explicit_tree_grow = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_7_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_PLAYER_NEXT, NULL));
 
+    // Combine tree growth conditions.
+    state.tree_should_grow = explicit_tree_grow || (state.tree_growth_mode == TreeGrowthMode::ALWAYS) || ((state.tree_growth_mode == TreeGrowthMode::UNTIL_GOAL_REACHED) && !goal_reached);
+
     // Reset Tree
-    const bool explicit_tree_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_RESTART, NULL));
+    state.tree_should_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_RESTART, NULL));
 
     // Rewiring Enabled
     GuiSetIconScale(SMALL_BUTTON_ICON_SCALE);
     GuiToggle((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_11_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_ROW_HEIGHT}, GuiIconText(ICON_SHUFFLE_FILL, NULL), &state.rewire_enabled);
     GuiSetIconScale(BUTTON_ICON_SCALE);
-
-    // Handle conditions.
-    state.tree_should_grow = explicit_tree_grow || (state.tree_growth_mode == TreeGrowthMode::ALWAYS) || ((state.tree_growth_mode == TreeGrowthMode::UNTIL_GOAL_REACHED) && !goal_reached);
-
-    state.tree_should_reset = explicit_tree_reset || trigger_tree_reset;
 }
 
 void ctrlTreeSize(CtrlState& state) {
@@ -127,13 +125,13 @@ void ctrlVisibility(CtrlState& state) {
     GuiSetIconScale(BUTTON_ICON_SCALE);
 }
 
-void DrawCtrlBar(CtrlState& state, const bool trigger_tree_reset, const bool goal_reached) {
+void DrawCtrlBar(CtrlState& state, const bool goal_reached) {
     // Background
     DrawRectangleRec(CTRL_BAR_REC, COLOR_STAT_BAR_BACKGROUND);
 
     // Controls
     ctrlProblemEdit(state);
-    ctrlTreeGrowth(state, trigger_tree_reset, goal_reached);
+    ctrlTreeGrowth(state, goal_reached);
     ctrlTreeSize(state);
     ctrlVisibility(state);
 
