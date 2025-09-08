@@ -163,15 +163,28 @@ struct Tree {
         child_map = buildChildMap(nodes);
     }
 
-    void resetRoot(const Vector2 start, const Vector2 goal, const Obstacles& obstacles) {
-        // For every ancestor on any goal-reaching path, record the cheapest
-        // downstream cost to a goal along the existing tree:
-        Nodes goal_nodes = getNear(goal);
+    void resetRoot(const Vector2 start, const Vector2 goal, const Path& path, const Obstacles& obstacles) {
+        // Special case: tree has zero or one node(s), just reset the whole tree.
+        if (nodes.size() <= 1) {
+            reset(start);
+            return;
+        }
+
+        // Collect the target nodes. 
+        // Target is goal region if any node reaches goal, 
+        // otherwise use path end.
+        Nodes target_nodes = getNear(goal);
+        if ((target_nodes.size() == 0) && (path.size() > 0)) {
+            target_nodes = {path.back()};
+        }
+
+        // For every ancestor on any target-reaching path, record the cheapest
+        // downstream cost to a target along the existing tree.
         std::unordered_map<NodePtr, float> cheapest_down;
-        for (const NodePtr& g : goal_nodes) {
-            NodePtr cur = g;
+        for (const NodePtr& target_node : target_nodes) {
+            NodePtr cur = target_node;
             while (cur) {
-                const float delta = g->cost_to_come - cur->cost_to_come;
+                const float delta = target_node->cost_to_come - cur->cost_to_come;
                 auto it = cheapest_down.find(cur);
                 if (it == cheapest_down.end() || delta < it->second) {
                     cheapest_down[cur] = delta;
@@ -210,7 +223,7 @@ struct Tree {
                 }
             }
         } else if (!nodes.empty()) {
-            // No node in the current tree reaches the goal;
+            // No node in the current tree reaches the target;
             // fall back to attaching the nearest node.
             NodePtr cand = getNearest(start, nodes);
             const float dist = Vector2Distance(start, cand->pos);

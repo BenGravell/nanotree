@@ -165,7 +165,7 @@ int main() {
         }
 
         if (start_changed) {
-            tree.resetRoot(start, goal, obstacles);
+            tree.resetRoot(start, goal, path, obstacles);
         }
 
         timing.carry.start();
