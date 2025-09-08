@@ -24,7 +24,7 @@ struct CtrlState {
     bool tree_should_reset = false;
     bool tree_should_grow = false;
     bool rewire_enabled = true;
-    int num_samples_ix = 9;
-    int num_carry_ix = 11;    
+    int num_samples_ix = 5;
+    int num_carry_ix = 7;    
     Visibility visibility;
 };
