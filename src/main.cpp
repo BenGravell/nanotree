@@ -148,7 +148,7 @@ int main() {
             }
 
             if (is_down_lmb && mode == SelectorMode::DEL_OBSTACLE) {
-                obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, brush_pos) < (OBSTACLE_RADIUS + OBSTACLE_DEL_RADIUS); }), obstacles.end());
+                obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, brush_pos) < (OBSTACLE_RADIUS + OBSTACLE_DELETE_RADIUS); }), obstacles.end());
             }
         }
         if (ctrl_state.reset_obstacles) {
