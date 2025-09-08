@@ -404,7 +404,7 @@ struct Tree {
 
     void grow(const int num_samples, const Vector2 goal, const Obstacles& obstacles, const bool rewire_enabled) {
         for (int i = 0; i < num_samples; ++i) {
-            Vector2 pos = ((i + 1) == num_samples) ? goal : sample(goal);
+            const Vector2 pos = sample(goal);
             growOnce(pos, obstacles, rewire_enabled);
         }
     }
