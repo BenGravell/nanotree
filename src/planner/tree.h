@@ -170,8 +170,8 @@ struct Tree {
             return;
         }
 
-        // Collect the target nodes. 
-        // Target is goal region if any node reaches goal, 
+        // Collect the target nodes.
+        // Target is goal region if any node reaches goal,
         // otherwise use path end.
         Nodes target_nodes = getNear(goal);
         if ((target_nodes.size() == 0) && (path.size() > 0)) {
