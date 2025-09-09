@@ -79,6 +79,8 @@ static constexpr float TIMING_WINDOW_SEC = 1.0f;
 
 // PHYSICAL ELEMENTS
 static constexpr float OBSTACLE_RADIUS = 0.8f * CELL_SIZE;
+static constexpr float OBSTACLE_RADIUS_SQR = OBSTACLE_RADIUS * OBSTACLE_RADIUS;
+
 static constexpr float GOAL_RADIUS = CELL_SIZE / 2;
 static constexpr float START_RADIUS = GOAL_RADIUS;
 

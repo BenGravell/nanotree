@@ -12,7 +12,7 @@ using Obstacle = Vector2;
 using Obstacles = std::vector<Obstacle>;
 
 inline bool collides(const Vector2 pos, const Obstacle obstacle) {
-    return Vector2Distance(obstacle, pos) < OBSTACLE_RADIUS;
+    return Vector2DistanceSqr(obstacle, pos) < OBSTACLE_RADIUS_SQR;
 }
 
 inline bool collides(const Vector2 pos, const Obstacles obstacles) {
