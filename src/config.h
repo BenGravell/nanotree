@@ -86,7 +86,9 @@ static constexpr float START_RADIUS = GOAL_RADIUS;
 
 static constexpr float OBSTACLE_SPACING_MIN = 0.25f * CELL_SIZE;
 static constexpr float OBSTACLE_DELETE_RADIUS = 10.0f;
+
 static constexpr float START_CHANGED_DIST_MIN = 1.0f;
+static constexpr float START_CHANGED_DIST_MIN_SQR = START_CHANGED_DIST_MIN * START_CHANGED_DIST_MIN;
 
 static constexpr Vector2 DEFAULT_START = {630, 270};
 static constexpr Vector2 DEFAULT_GOAL = {1290, 270};

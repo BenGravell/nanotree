@@ -126,12 +126,13 @@ int main() {
             brush_pos.y = snapToGridCenter(brush_pos.y, CELL_SIZE);
         }
 
+        // TODO refactor all distance checks to use Vector2DistanceSqr
         // TODO factor the mode action to a function and switch case on mode
         start_changed = false;
         obstacle_added = false;
         if (mouse_in_environment) {
             if (is_down_lmb && mode == SelectorMode::PLACE_START) {
-                start_changed = Vector2Distance(start, brush_pos) > START_CHANGED_DIST_MIN;
+                start_changed = Vector2DistanceSqr(start, brush_pos) > START_CHANGED_DIST_MIN_SQR;
                 if (start_changed) {
                     start = brush_pos;
                 }
