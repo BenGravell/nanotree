@@ -61,7 +61,7 @@ NodePtr getCheapest(const Vector2 target, const Nodes& nodes) {
     return *std::min_element(nodes.begin(), nodes.end(), TargetCostComparator{target});
 }
 
-NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const Obstacles& obstacles, const float max_dist) {
+Nodes getNeighbors(const Vector2 target, const Nodes& nodes, const Obstacles& obstacles, const float max_dist) {
     Nodes neighbors;
     for (const NodePtr& node : nodes) {
         const float dist = Vector2Distance(node->pos, target);
@@ -76,6 +76,11 @@ NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const Obstacles& o
 
         neighbors.push_back(node);
     }
+    return neighbors;
+}
+
+NodePtr getParent(const Vector2 target, const Nodes& nodes, const Obstacles& obstacles, const float max_dist) {
+    const Nodes neighbors = getNeighbors(target, nodes, obstacles, max_dist);
 
     if (neighbors.empty()) {
         return getNearest(target, nodes);
@@ -86,7 +91,7 @@ NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const Obstacles& o
 
 Path extractPath(const Vector2 target, const Nodes& nodes, const Obstacles& obstacles) {
     Path path;
-    NodePtr node = getCheapest(target, nodes, obstacles, GOAL_RADIUS);
+    NodePtr node = getParent(target, nodes, obstacles, GOAL_RADIUS);
     while (node->parent) {
         path.push_back(node);
         node = node->parent;
@@ -351,7 +356,7 @@ struct Tree {
     }
 
     void growOnce(Vector2 pos, const Obstacles& obstacles, const bool rewire_enabled) {
-        NodePtr parent = getCheapest(pos, nodes, obstacles, REWIRE_RADIUS);
+        NodePtr parent = getParent(pos, nodes, obstacles, REWIRE_RADIUS);
 
         pos = clampToEnvironment(pos);
         pos = attractByDistance(pos, parent);
