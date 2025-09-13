@@ -8,12 +8,27 @@
 #include "ui/colors.h"
 
 void DrawPath(const Path& path, const bool goal_reached) {
+    const Color color = goal_reached ? COLOR_PATH_GOAL_REACHED : COLOR_PATH_GOAL_NOT_REACHED;
+    const Color color_node = ColorLerp(color, COLOR_GRAY_048, 0.6f);
+
     for (const NodePtr& node : path) {
         if (!node->parent) {
             continue;
         }
-        const Color color = goal_reached ? COLOR_PATH_GOAL_REACHED : COLOR_PATH_GOAL_NOT_REACHED;
         DrawLineEx(node->parent->pos, node->pos, LINE_WIDTH_PATH, color);
-        DrawCircleV(node->pos, 0.5f * NODE_WIDTH_PATH, color);
+    }
+
+    for (const NodePtr& node : path) {
+        if (!node->parent) {
+            continue;
+        }
+        DrawCircleV(node->pos, 0.5f * LINE_WIDTH_PATH, color);
+    }
+
+    for (const NodePtr& node : path) {
+        if (!node->parent) {
+            continue;
+        }
+        DrawCircleV(node->pos, 0.5f * NODE_WIDTH_PATH, color_node);
     }
 }
