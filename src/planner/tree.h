@@ -275,6 +275,10 @@ struct Tree {
         // Retain path.
         if (!path.empty()) {
             for (const NodePtr& node_add : path) {
+                if (retained_nodes.size() > num_carry) {
+                    break;
+                }
+
                 if (retained_set.find(node_add) == retained_set.end()) {
                     retained_nodes.push_back(node_add);
                     retained_set.insert(node_add);
