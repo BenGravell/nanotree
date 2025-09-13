@@ -185,4 +185,4 @@ static constexpr float DEVIATION_DISTANCE_MAX = NUM_INTERMEDIATE_COLLISION_CHECK
 
 static constexpr float REWIRE_RADIUS = std::min(DEVIATION_DISTANCE_MAX, 1.5f * GOAL_RADIUS);
 
-static constexpr float RADIUS_OF_CURVATURE_MIN = 0.95f * std::min(OBSTACLE_RADIUS, 2.0f * GOAL_RADIUS);
+static constexpr float RADIUS_OF_CURVATURE_MIN = 0.99f * std::min(OBSTACLE_RADIUS, 2.0f * GOAL_RADIUS);
