@@ -14,6 +14,21 @@
 #include "planner/node.h"
 #include "planner/path.h"
 
+bool edgeCollides(const Vector2 start, const Vector2 end, const Obstacles& obstacles) {
+    for (int i = 0; i < NUM_INTERMEDIATE_COLLISION_CHECK_POINTS; ++i) {
+        const float t = float(i) / float(NUM_INTERMEDIATE_COLLISION_CHECK_POINTS - 1);
+        const Vector2 intermediate_pos = Vector2Lerp(start, end, t);
+        if (collides(intermediate_pos, obstacles)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool edgeCollides(const NodePtr& node, const Obstacles& obstacles) {
+    return (node->parent) ? edgeCollides(node->parent->pos, node->pos, obstacles) : collides(node->pos, obstacles);
+}
+
 struct TargetDistanceComparator {
     Vector2 target;
 
@@ -42,6 +57,10 @@ NodePtr getNearest(const Vector2 target, const Nodes& nodes) {
     return *std::min_element(nodes.begin(), nodes.end(), TargetDistanceComparator{target});
 }
 
+NodePtr getCheapest(const Vector2 target, const Nodes& nodes) {
+    return *std::min_element(nodes.begin(), nodes.end(), TargetCostComparator{target});
+}
+
 NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const float max_dist) {
     Nodes neighbors;
     for (const NodePtr& node : nodes) {
@@ -54,7 +73,7 @@ NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const float max_di
         return getNearest(target, nodes);
     }
 
-    return *std::min_element(neighbors.begin(), neighbors.end(), TargetCostComparator{target});
+    return getCheapest(target, neighbors);
 }
 
 Path extractPath(const Vector2 target, const Nodes& nodes) {
@@ -115,21 +134,6 @@ bool goalReached(const NodePtr node, const Vector2 goal) {
 
 bool goalReached(const Path& path, const Vector2 goal) {
     return goalReached(path.back(), goal);
-}
-
-bool edgeCollides(const Vector2 start, const Vector2 end, const Obstacles& obstacles) {
-    for (int i = 0; i < NUM_INTERMEDIATE_COLLISION_CHECK_POINTS; ++i) {
-        const float t = float(i) / float(NUM_INTERMEDIATE_COLLISION_CHECK_POINTS - 1);
-        const Vector2 intermediate_pos = Vector2Lerp(start, end, t);
-        if (collides(intermediate_pos, obstacles)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool edgeCollides(const NodePtr& node, const Obstacles& obstacles) {
-    return (node->parent) ? edgeCollides(node->parent->pos, node->pos, obstacles) : collides(node->pos, obstacles);
 }
 
 using ChildMap = std::unordered_map<NodePtr, std::unordered_set<NodePtr>>;
@@ -335,7 +339,7 @@ struct Tree {
     }
 
     void growOnce(Vector2 pos, const Obstacles& obstacles, const bool rewire_enabled) {
-        NodePtr parent = getCheapest(pos, nodes, CHEAP_PARENT_SEARCH_RADIUS);
+        NodePtr parent = getCheapest(pos, nodes, REWIRE_RADIUS);
 
         pos = clampToEnvironment(pos);
         pos = attractByDistance(pos, parent);
