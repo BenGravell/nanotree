@@ -14,11 +14,11 @@
 #include "planner/node.h"
 #include "planner/path.h"
 
-bool edgeCollides(const Vector2 start, const Vector2 end, const Obstacles& obstacles) {
+bool edgeCollides(const Vector2 start, const Vector2 goal, const Obstacles& obstacles) {
+    static constexpr float LERP_DEN = NUM_INTERMEDIATE_COLLISION_CHECK_POINTS - 1;
     for (int i = 0; i < NUM_INTERMEDIATE_COLLISION_CHECK_POINTS; ++i) {
-        const float t = float(i) / float(NUM_INTERMEDIATE_COLLISION_CHECK_POINTS - 1);
-        const Vector2 intermediate_pos = Vector2Lerp(start, end, t);
-        if (collides(intermediate_pos, obstacles)) {
+        const float t = float(i) / LERP_DEN;
+        if (collides(Vector2Lerp(start, goal, t), obstacles)) {
             return true;
         }
     }
@@ -61,12 +61,20 @@ NodePtr getCheapest(const Vector2 target, const Nodes& nodes) {
     return *std::min_element(nodes.begin(), nodes.end(), TargetCostComparator{target});
 }
 
-NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const float max_dist) {
+NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const Obstacles& obstacles, const float max_dist) {
     Nodes neighbors;
     for (const NodePtr& node : nodes) {
-        if (Vector2Distance(node->pos, target) <= max_dist) {
-            neighbors.push_back(node);
+        const float dist = Vector2Distance(node->pos, target);
+        if (dist > max_dist) {
+            continue;
         }
+
+        const bool in_collision = (dist < MAX_DISTANCE_BETWEEN_POSES_FOR_COLLISION_CHECK) ? collides(node->pos, obstacles) : edgeCollides(node->pos, target, obstacles);
+        if (in_collision) {
+            continue;
+        }
+
+        neighbors.push_back(node);
     }
 
     if (neighbors.empty()) {
@@ -76,9 +84,9 @@ NodePtr getCheapest(const Vector2 target, const Nodes& nodes, const float max_di
     return getCheapest(target, neighbors);
 }
 
-Path extractPath(const Vector2 target, const Nodes& nodes) {
+Path extractPath(const Vector2 target, const Nodes& nodes, const Obstacles& obstacles) {
     Path path;
-    NodePtr node = getCheapest(target, nodes, GOAL_RADIUS);
+    NodePtr node = getCheapest(target, nodes, obstacles, GOAL_RADIUS);
     while (node->parent) {
         path.push_back(node);
         node = node->parent;
@@ -343,7 +351,7 @@ struct Tree {
     }
 
     void growOnce(Vector2 pos, const Obstacles& obstacles, const bool rewire_enabled) {
-        NodePtr parent = getCheapest(pos, nodes, REWIRE_RADIUS);
+        NodePtr parent = getCheapest(pos, nodes, obstacles, REWIRE_RADIUS);
 
         pos = clampToEnvironment(pos);
         pos = attractByDistance(pos, parent);

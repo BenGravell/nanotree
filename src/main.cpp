@@ -28,7 +28,7 @@
 void plan(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carry, const int num_samples, const bool rewire_enabled) {
     tree.grow(num_samples, goal, obstacles, rewire_enabled);
     tree.carry(path, num_carry, obstacles);
-    path = extractPath(goal, tree.nodes);
+    path = extractPath(goal, tree.nodes, obstacles);
 }
 
 void prepTree(Tree& tree, Path& path, const Vector2 start, const Vector2 goal, const Obstacles& obstacles, const int num_carry, const int num_samples, const bool rewire_enabled) {
@@ -188,7 +188,7 @@ int main() {
         }
         timing.grow.record();
 
-        path = extractPath(goal, tree.nodes);
+        path = extractPath(goal, tree.nodes, obstacles);
 
         const bool goal_reached = goalReached(path, goal);
 
