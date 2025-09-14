@@ -9,6 +9,8 @@ void DrawSquare(const Vector2 center, const float radius, const Color color) {
     DrawRectangle(center.x - radius, center.y - radius, 2 * radius, 2 * radius, color);
 }
 
+// TODO remove unused
+
 void DrawChevron(const Rectangle& rec, const int dir, const Color color, const float scale = 1.0f) {
     const Vector2 center = {rec.x + 0.5f * rec.width, rec.y + 0.5f * rec.height};
 
