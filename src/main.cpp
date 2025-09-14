@@ -80,8 +80,7 @@ int main() {
     GuiSetFont(font);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, TEXT_HEIGHT);
-    // TODO make line spacing a config param
-    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, std::lround(0.9 * TEXT_HEIGHT));
+    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, TEXT_LINE_SPACING_HEIGHT);
 
     GuiSetIconScale(BUTTON_ICON_SCALE);
 

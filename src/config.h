@@ -66,6 +66,8 @@ static constexpr int TEXT_HEIGHT = 0.6 * CELL_SIZE;
 static constexpr int BIG_TEXT_HEIGHT = 0.8 * CELL_SIZE;
 static constexpr int SMALL_TEXT_HEIGHT = 0.5 * CELL_SIZE;
 
+static constexpr int TEXT_LINE_SPACING_HEIGHT = 32;
+
 static constexpr int BUTTON_ICON_SCALE = 5;
 static constexpr int SMALL_BUTTON_ICON_SCALE = 3;
 static constexpr int VISIBILITY_BUTTON_ICON_SCALE = 3;
