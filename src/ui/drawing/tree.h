@@ -16,7 +16,7 @@ float computeLineWidth(const int tree_size) {
 float computeMaxCost(Nodes nodes, const Vector2 goal) {
     float cost_max = 0.0f;
     for (const NodePtr& node : nodes) {
-        cost_max = std::max(cost_max, computeHeuristicCost(node, goal));
+        cost_max = std::max(cost_max, node->estimateCostTo(goal));
     }
     return cost_max;
 }
@@ -40,7 +40,8 @@ Color computeCostColor(const float x, const bool goal_reached) {
 }
 
 void DrawTree(const Tree& tree, const Path& path, const Vector2 goal, const bool goal_reached) {
-    const float cost_root = computeHeuristicCost(tree.nodes.front(), goal);
+    const NodePtr root = tree.nodes.front();
+    const float cost_root = root->estimateCostTo(goal);
     const float cost_path = computeMaxCost(path, goal);
     const float cost_tree = computeMaxCost(tree.nodes, goal);
 
@@ -54,7 +55,7 @@ void DrawTree(const Tree& tree, const Path& path, const Vector2 goal, const bool
         if (!node->parent) {
             continue;
         }
-        const float cost = computeHeuristicCost(node, goal);
+        const float cost = node->estimateCostTo(goal);
         const float cost_normalized = normalizeCost(cost, cost_root, cost_path, cost_tree);
         const Color color = computeCostColor(cost_normalized, goal_reached);
         DrawLineEx(node->parent->pos, node->pos, line_width, color);

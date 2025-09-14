@@ -61,7 +61,7 @@ void DrawStatBar(const Problem& problem, const Planner& planner, const Vector2 b
     int num_nodes_lo_cost = 0;
     int num_nodes_hi_cost = 0;
     for (const NodePtr& node : planner.tree.nodes) {
-        const float cost = computeHeuristicCost(node, problem.goal);
+        const float cost = node->estimateCostTo(problem.goal);
         if (cost < path_cost) {
             num_nodes_lo_cost++;
         } else {

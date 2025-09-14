@@ -7,6 +7,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include "cost.h"
+
 struct Node;
 
 using NodePtr = std::shared_ptr<Node>;
@@ -16,6 +18,10 @@ struct Node {
     NodePtr parent;
     Vector2 pos;
     float cost_to_come;
+
+    float estimateCostTo(const Vector2 goal) {
+        return cost_to_come + computeCost(pos, goal);
+    }
 };
 
 struct NodePtrHash {

@@ -41,7 +41,7 @@ struct TargetCostComparator {
     Vector2 target;
 
     bool operator()(const NodePtr& a, const NodePtr& b) const {
-        return computeHeuristicCost(a, target) < computeHeuristicCost(b, target);
+        return a->estimateCostTo(target) < b->estimateCostTo(target);
     }
 };
 
@@ -49,7 +49,7 @@ struct TargetCostComparatorInv {
     Vector2 target;
 
     bool operator()(const NodePtr& a, const NodePtr& b) const {
-        return computeHeuristicCost(a, target) > computeHeuristicCost(b, target);
+        return a->estimateCostTo(target) > b->estimateCostTo(target);
     }
 };
 
@@ -255,7 +255,7 @@ struct Tree {
         if (best_child) {
             // Re-parent attachment point and set its new cost_to_come.
             best_child->parent = new_root;
-            best_child->cost_to_come = computeHeuristicCost(new_root, best_child->pos);
+            best_child->cost_to_come = new_root->estimateCostTo(best_child->pos);
             retained_nodes.push_back(best_child);
 
             // Collect descendants of best_child using the current child_map.
@@ -370,7 +370,7 @@ struct Tree {
             return;
         }
 
-        const float cost_to_come = computeHeuristicCost(parent, pos);
+        const float cost_to_come = parent->estimateCostTo(pos);
         NodePtr node = std::make_shared<Node>(Node{parent, pos, cost_to_come});
         nodes.push_back(node);
         child_map[node->parent].insert(node);
@@ -414,7 +414,7 @@ struct Tree {
             auto it = child_map.find(current);
             if (it != child_map.end()) {
                 for (const NodePtr& child : it->second) {
-                    child->cost_to_come = computeHeuristicCost(current, child->pos);
+                    child->cost_to_come = current->estimateCostTo(child->pos);
                     dfs(child);
                 }
             }
