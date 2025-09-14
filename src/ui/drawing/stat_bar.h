@@ -8,7 +8,6 @@
 #include "planner/tree.h"
 #include "ui/colors.h"
 #include "ui/gui_label.h"
-#include "ui/text.h"
 #include "ui/timing.h"
 
 static constexpr int STAT_BAR_BUTTON_X_MIN = STAT_BAR_X_MIN + BUTTON_SPACING_X;
