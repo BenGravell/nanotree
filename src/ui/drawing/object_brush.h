@@ -21,10 +21,8 @@ void DrawObjectBrush(const Vector2 pos, const DrawObjectBrushParams params) {
     const float current_time = GetTime();
     const float offset_angle = std::fmod(current_time / params.period_sec, 1.0f) * 360.0f;
     
-    //TODO put colors in config.h / colors.h
-    DrawCircleV(pos, params.radius, Fade(GRAY, 0.4f));
-
-    DrawRing(pos, ring_inner_radius, ring_outer_radius, 0, 360, 0, Fade(GRAY, 0.6f));
+    DrawCircleV(pos, params.radius, COLOR_OBJECT_BRUSH_BKGD);
+    DrawRing(pos, ring_inner_radius, ring_outer_radius, 0, 360, 0, COLOR_OBJECT_BRUSH_FRGD);
     
     for (int i = 0; i < params.num_segments; ++i) {
         const float start_angle = 2 * i * delta_angle + offset_angle;
