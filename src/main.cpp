@@ -37,28 +37,30 @@
 ProblemEdits editProblem(Problem& problem, const Vector2 brush_pos, const bool is_down_lmb, const ProblemEditMode mode, const bool mouse_in_environment, const bool reset_obstacles) {
     bool start_changed = false;
     bool obstacle_added = false;
-    // TODO use switch case on mode
     if (mouse_in_environment && is_down_lmb) {
-        if (mode == ProblemEditMode::PLACE_START) {
-            start_changed = isStartChanged(problem.start, brush_pos);
-            if (start_changed) {
-                problem.start = brush_pos;
+        switch (mode) {
+            case ProblemEditMode::PLACE_START: {
+                start_changed = isStartChanged(problem.start, brush_pos);
+                if (start_changed) {
+                    problem.start = brush_pos;
+                }
+                break;
             }
-        }
-
-        if (mode == ProblemEditMode::PLACE_GOAL) {
-            problem.goal = brush_pos;
-        }
-
-        if (mode == ProblemEditMode::ADD_OBSTACLE) {
-            if (std::none_of(problem.obstacles.begin(), problem.obstacles.end(), [&](auto& o) { return Vector2Distance(o, brush_pos) < OBSTACLE_SPACING_MIN; })) {
-                problem.obstacles.push_back(brush_pos);
-                obstacle_added = true;
+            case ProblemEditMode::PLACE_GOAL: {
+                problem.goal = brush_pos;
+                break;
             }
-        }
-
-        if (mode == ProblemEditMode::DEL_OBSTACLE) {
-            problem.obstacles.erase(std::remove_if(problem.obstacles.begin(), problem.obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, brush_pos) < (OBSTACLE_RADIUS + OBSTACLE_DELETE_RADIUS); }), problem.obstacles.end());
+            case ProblemEditMode::ADD_OBSTACLE: {
+                if (std::none_of(problem.obstacles.begin(), problem.obstacles.end(), [&](auto& o) { return Vector2Distance(o, brush_pos) < OBSTACLE_SPACING_MIN; })) {
+                    problem.obstacles.push_back(brush_pos);
+                    obstacle_added = true;
+                }
+                break;
+            }
+            case ProblemEditMode::DEL_OBSTACLE: {
+                problem.obstacles.erase(std::remove_if(problem.obstacles.begin(), problem.obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, brush_pos) < (OBSTACLE_RADIUS + OBSTACLE_DELETE_RADIUS); }), problem.obstacles.end());
+                break;
+            }
         }
     }
 
