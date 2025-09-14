@@ -111,7 +111,7 @@ int main() {
     const int num_carry = NUM_CARRY_OPTIONS[ctrl_state.num_carry_ix];
     const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
     const bool rewire_enabled = ctrl_state.rewire_enabled;
-    PlanSettings plan_settings = {num_carry, num_samples, rewire_enabled};
+    const PlanSettings plan_settings = {num_carry, num_samples, rewire_enabled};
 
     // TIMING INIT
     AppTimingParts app_timing;
@@ -140,6 +140,8 @@ int main() {
 
         const int num_carry = NUM_CARRY_OPTIONS[ctrl_state.num_carry_ix];
         const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
+        const bool rewire_enabled = ctrl_state.rewire_enabled;
+        const PlanSettings plan_settings = {num_carry, num_samples, rewire_enabled};
 
         // ---- PLANNER LOGIC
         const ActionSettings action_settings = {problem_edits, ctrl_state.tree_edits};
