@@ -119,7 +119,7 @@ int main() {
         const bool is_down_lmb = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
         const bool mouse_in_environment = insideEnvironment(mouse);
         Vector2 brush_pos = clampToEnvironment(mouse);
-        const SelectorMode mode = ctrl_state.selector_mode;
+        const ProblemEditMode mode = ctrl_state.problem_edit_mode;
 
         if (ctrl_state.snap_to_grid) {
             brush_pos.x = snapToGridCenter(brush_pos.x, CELL_SIZE);
@@ -131,24 +131,24 @@ int main() {
         start_changed = false;
         obstacle_added = false;
         if (mouse_in_environment) {
-            if (is_down_lmb && mode == SelectorMode::PLACE_START) {
+            if (is_down_lmb && mode == ProblemEditMode::PLACE_START) {
                 start_changed = Vector2DistanceSqr(start, brush_pos) > START_CHANGED_DIST_MIN_SQR;
                 if (start_changed) {
                     start = brush_pos;
                 }
             }
-            if (is_down_lmb && mode == SelectorMode::PLACE_GOAL) {
+            if (is_down_lmb && mode == ProblemEditMode::PLACE_GOAL) {
                 goal = brush_pos;
             }
 
-            if (is_down_lmb && mode == SelectorMode::ADD_OBSTACLE) {
+            if (is_down_lmb && mode == ProblemEditMode::ADD_OBSTACLE) {
                 if (std::none_of(obstacles.begin(), obstacles.end(), [&](auto& o) { return Vector2Distance(o, brush_pos) < OBSTACLE_SPACING_MIN; })) {
                     obstacles.push_back(brush_pos);
                     obstacle_added = true;
                 }
             }
 
-            if (is_down_lmb && mode == SelectorMode::DEL_OBSTACLE) {
+            if (is_down_lmb && mode == ProblemEditMode::DEL_OBSTACLE) {
                 obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, brush_pos) < (OBSTACLE_RADIUS + OBSTACLE_DELETE_RADIUS); }), obstacles.end());
             }
         }
@@ -198,7 +198,7 @@ int main() {
         timing.draw.start();
         BeginDrawing();
 
-        DrawEnvironment(brush_pos, ctrl_state.selector_mode, start, goal, goal_reached, obstacles, tree, path, ctrl_state.visibility);
+        DrawEnvironment(brush_pos, ctrl_state.problem_edit_mode, start, goal, goal_reached, obstacles, tree, path, ctrl_state.visibility);
         DrawStatBar(tree, path, goal, goal_reached, obstacles, duration);
         DrawCtrlBar(ctrl_state, goal_reached);
 

@@ -2,7 +2,7 @@
 
 #include <raylib.h>
 
-#include "ui/selector_mode.h"
+#include "ui/problem_edit_mode.h"
 
 enum class TreeGrowthMode {
     ALWAYS = 0,
@@ -17,7 +17,7 @@ struct Visibility {
 };
 
 struct CtrlState {
-    SelectorMode selector_mode = SelectorMode::PLACE_GOAL;
+    ProblemEditMode problem_edit_mode = ProblemEditMode::PLACE_GOAL;
     bool snap_to_grid = false;
     bool reset_obstacles = false;
     TreeGrowthMode tree_growth_mode = TreeGrowthMode::UNTIL_GOAL_REACHED;

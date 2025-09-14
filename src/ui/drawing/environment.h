@@ -9,25 +9,25 @@
 #include "ui/drawing/path.h"
 #include "ui/drawing/start_goal.h"
 #include "ui/drawing/tree.h"
-#include "ui/selector_mode.h"
+#include "ui/problem_edit_mode.h"
 
 // TODO move
-DrawObjectBrushParams getObjectBrushParams(const SelectorMode mode) {
+DrawObjectBrushParams getObjectBrushParams(const ProblemEditMode mode) {
     switch (mode) {
-        case SelectorMode::PLACE_START:
+        case ProblemEditMode::PLACE_START:
             return {START_RADIUS, 0.4f, 8, 4.0f};
-        case SelectorMode::PLACE_GOAL:
+        case ProblemEditMode::PLACE_GOAL:
             return {GOAL_RADIUS, 0.4f, 8, 4.0f};
-        case SelectorMode::ADD_OBSTACLE:
+        case ProblemEditMode::ADD_OBSTACLE:
             return {OBSTACLE_RADIUS, 0.3f, 12, 5.0f};
-        case SelectorMode::DEL_OBSTACLE:
+        case ProblemEditMode::DEL_OBSTACLE:
             return {OBSTACLE_DELETE_RADIUS, 0.5f, 6, 3.0f};
         default:
             return {0, 0.0f, 0, 0.0f};
     }
 }
 
-void DrawEnvironment(const Vector2 brush_pos, const SelectorMode brush_mode, const Vector2 start, const Vector2 goal, const bool goal_reached, const Obstacles obstacles, const Tree& tree, const Path& path, const Visibility& visibility) {
+void DrawEnvironment(const Vector2 brush_pos, const ProblemEditMode brush_mode, const Vector2 start, const Vector2 goal, const bool goal_reached, const Obstacles obstacles, const Tree& tree, const Path& path, const Visibility& visibility) {
     DrawRectangleRec(ENVIRONMENT_REC, COLOR_BACKGROUND);
     DrawFlatGrid(ENVIRONMENT_X_MIN, ENVIRONMENT_X_MAX, ENVIRONMENT_Y_MIN, ENVIRONMENT_Y_MAX, {GRID_SPACING, GRID_THICKNESS, COLOR_GRID});
     if (visibility.obstacles) {

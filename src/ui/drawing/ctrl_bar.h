@@ -40,8 +40,8 @@ static constexpr int CTRL_BAR_VIS_BUTTON_WIDTH = (CTRL_BAR_WIDTH - 4 * BUTTON_SP
 static constexpr int CTRL_BAR_VIS_BUTTON_HEIGHT = 2 * CTRL_BAR_ROW_HEIGHT - 2 * BUTTON_SPACING_Y;
 
 void ctrlProblemEdit(CtrlState& state) {
-    int selector_mode_int = static_cast<int>(state.selector_mode);
-    const Rectangle selector_mode_bounds = {CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
+    int problem_edit_mode_int = static_cast<int>(state.problem_edit_mode);
+    const Rectangle problem_edit_mode_bounds = {CTRL_BAR_COL_0_X + BUTTON_SPACING_X, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
 
     char icon1[32];
     char icon2[32];
@@ -56,8 +56,8 @@ void ctrlProblemEdit(CtrlState& state) {
     const char* icons = TextFormat("%s\n%s\n%s\n%s", icon1, icon2, icon3, icon4);
 
     // Place Goal, Place Start, Add Obstacle, Remove Obstacle
-    GuiToggleGroup(selector_mode_bounds, icons, &selector_mode_int);
-    state.selector_mode = static_cast<SelectorMode>(selector_mode_int);
+    GuiToggleGroup(problem_edit_mode_bounds, icons, &problem_edit_mode_int);
+    state.problem_edit_mode = static_cast<ProblemEditMode>(problem_edit_mode_int);
 
     // Remove All Obstacles
     GuiSetIconScale(SMALL_BUTTON_ICON_SCALE);
