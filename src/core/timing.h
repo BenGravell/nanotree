@@ -6,6 +6,8 @@
 #include <numeric>
 #include <utility>
 
+#include "config.h"
+
 struct Observation {
     float timestamp;
     float duration;
@@ -37,25 +39,5 @@ struct Timing {
         const float sum = std::accumulate(history.begin(), history.end(), 0.0f,
                                           [](float s, const auto& h) { return s + h.duration; });
         return sum / history.size();
-    }
-};
-
-struct DurationParts {
-    float grow;
-    float carry;
-    float cull;
-    float draw;
-    float total;
-};
-
-struct TimingParts {
-    Timing grow;
-    Timing carry;
-    Timing cull;
-    Timing draw;
-    Timing total;
-
-    DurationParts averageDuration() const {
-        return {grow.averageDuration(), carry.averageDuration(), cull.averageDuration(), draw.averageDuration(), total.averageDuration()};
     }
 };

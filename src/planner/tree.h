@@ -89,9 +89,9 @@ NodePtr getParent(const Vector2 target, const Nodes& nodes, const Obstacles& obs
     return getCheapest(target, neighbors);
 }
 
-Path extractPath(const Vector2 target, const Nodes& nodes, const Obstacles& obstacles) {
+Path extractPath(const Nodes& nodes, const Problem& problem) {
     Path path;
-    NodePtr node = getParent(target, nodes, obstacles, GOAL_RADIUS);
+    NodePtr node = getParent(problem.goal, nodes, problem.obstacles, GOAL_RADIUS);
     while (node->parent) {
         path.push_back(node);
         node = node->parent;
@@ -180,17 +180,17 @@ struct Tree {
         child_map = buildChildMap(nodes);
     }
 
-    void resetRoot(const Vector2 start, const Vector2 goal, const Path& path, const Obstacles& obstacles) {
+    void resetRoot(const Problem& problem, const Path& path) {
         // Special case: tree has zero or one node(s), just reset the whole tree.
         if (nodes.size() <= 1) {
-            reset(start);
+            reset(problem.start);
             return;
         }
 
         // Collect the target nodes.
         // Target is goal region if any node reaches goal,
         // otherwise use path end.
-        Nodes target_nodes = getNear(goal);
+        Nodes target_nodes = getNear(problem.goal);
         if ((target_nodes.size() == 0) && (path.size() > 0)) {
             target_nodes = {path.back()};
         }
@@ -213,7 +213,7 @@ struct Tree {
         Nodes retained_nodes;
 
         // Always create a fresh root at start.
-        NodePtr new_root = std::make_shared<Node>(Node{nullptr, start, 0.0f});
+        NodePtr new_root = std::make_shared<Node>(Node{nullptr, problem.start, 0.0f});
         retained_nodes.push_back(new_root);
 
         // Choose the child of the new root.
@@ -223,16 +223,16 @@ struct Tree {
         if (!cheapest_down.empty()) {
             for (const auto& kv : cheapest_down) {
                 const NodePtr& cand = kv.first;
-                const float dist = Vector2Distance(start, cand->pos);
+                const float dist = Vector2Distance(problem.start, cand->pos);
                 if (dist > DEVIATION_DISTANCE_MAX) {
                     continue;
                 }
-                if (edgeCollides(start, cand->pos, obstacles)) {
+                if (edgeCollides(problem.start, cand->pos, problem.obstacles)) {
                     continue;
                 }
 
                 const float down_cost = kv.second;
-                const float up_cost = computeCost(start, cand->pos);
+                const float up_cost = computeCost(problem.start, cand->pos);
                 const float total = up_cost + down_cost;
                 if (total < best_total) {
                     best_total = total;
@@ -242,9 +242,9 @@ struct Tree {
         } else if (!nodes.empty()) {
             // No node in the current tree reaches the target;
             // fall back to attaching the nearest node.
-            NodePtr cand = getNearest(start, nodes);
-            const float dist = Vector2Distance(start, cand->pos);
-            if (!((dist > DEVIATION_DISTANCE_MAX) || edgeCollides(start, cand->pos, obstacles))) {
+            NodePtr cand = getNearest(problem.start, nodes);
+            const float dist = Vector2Distance(problem.start, cand->pos);
+            if (!((dist > DEVIATION_DISTANCE_MAX) || edgeCollides(problem.start, cand->pos, problem.obstacles))) {
                 best_child = cand;
             }
         }
@@ -423,10 +423,10 @@ struct Tree {
         dfs(node);
     }
 
-    void grow(const int num_samples, const Vector2 goal, const Obstacles& obstacles, const bool rewire_enabled) {
+    void grow(const Problem& problem, const int num_samples, const bool rewire_enabled) {
         for (int i = 0; i < num_samples; ++i) {
-            const Vector2 pos = sample(goal);
-            growOnce(pos, obstacles, rewire_enabled);
+            const Vector2 pos = sample(problem.goal);
+            growOnce(pos, problem.obstacles, rewire_enabled);
         }
     }
 };

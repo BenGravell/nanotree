@@ -3,8 +3,8 @@
 #include <raylib.h>
 
 #include "config.h"
+#include "core/ctrl_state.h"
 #include "ui/colors.h"
-#include "ui/ctrl_state.h"
 #include "ui/gui_label.h"
 
 static constexpr int CTRL_BAR_ROW_0_Y = CTRL_BAR_Y_MIN + 0 * CTRL_BAR_ROW_HEIGHT;
@@ -71,7 +71,7 @@ void ctrlProblemEdit(CtrlState& state) {
 void ctrlTreeGrowth(CtrlState& state, const bool goal_reached) {
     int tree_growth_mode_int = static_cast<int>(state.tree_growth_mode);
 
-    const Rectangle tree_growth_mode_bounds = {CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
+    const Rectangle tree_growth_mode_bounds = {CTRL_BAR_COL_1_X + BUTTON_SPACING_X / 2, CTRL_BAR_ROW_1_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT};
 
     char icon1[32];
     char icon2[32];
@@ -88,17 +88,17 @@ void ctrlTreeGrowth(CtrlState& state, const bool goal_reached) {
     state.tree_growth_mode = static_cast<TreeGrowthMode>(tree_growth_mode_int);
 
     // Grow Single Iteration
-    const bool explicit_tree_grow = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_7_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_PLAYER_NEXT, NULL));
+    const bool explicit_tree_grow = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X / 2, CTRL_BAR_ROW_7_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_PLAYER_NEXT, NULL));
 
     // Combine tree growth conditions.
-    state.tree_should_grow = explicit_tree_grow || (state.tree_growth_mode == TreeGrowthMode::ALWAYS) || ((state.tree_growth_mode == TreeGrowthMode::UNTIL_GOAL_REACHED) && !goal_reached);
+    state.tree_edits.should_grow = explicit_tree_grow || (state.tree_growth_mode == TreeGrowthMode::ALWAYS) || ((state.tree_growth_mode == TreeGrowthMode::UNTIL_GOAL_REACHED) && !goal_reached);
 
     // Reset Tree
-    state.tree_should_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_RESTART, NULL));
+    state.tree_edits.should_reset = GuiButton((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X / 2, CTRL_BAR_ROW_9_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_BUTTON_HEIGHT}, GuiIconText(ICON_RESTART, NULL));
 
     // Rewiring Enabled
     GuiSetIconScale(SMALL_BUTTON_ICON_SCALE);
-    GuiToggle((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X/2, CTRL_BAR_ROW_11_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_ROW_HEIGHT}, GuiIconText(ICON_SHUFFLE_FILL, NULL), &state.rewire_enabled);
+    GuiToggle((Rectangle){CTRL_BAR_COL_1_X + BUTTON_SPACING_X / 2, CTRL_BAR_ROW_11_Y, CTRL_BAR_BUTTON_WIDTH, CTRL_BAR_ROW_HEIGHT}, GuiIconText(ICON_SHUFFLE_FILL, NULL), &state.rewire_enabled);
     GuiSetIconScale(BUTTON_ICON_SCALE);
 }
 
@@ -136,5 +136,5 @@ void DrawCtrlBar(CtrlState& state, const bool goal_reached) {
     ctrlVisibility(state);
 
     // Border
-    DrawRectangleLinesEx(CTRL_BAR_REC, 3, COLOR_STAT_BAR_BORDER);
+    DrawRectangleLinesEx(CTRL_BAR_REC, BORDER_THICKNESS, COLOR_STAT_BAR_BORDER);
 }

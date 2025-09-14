@@ -5,6 +5,10 @@
 
 #include "config.h"
 
+bool isStartChanged(const Vector2 previous, const Vector2 current) {
+    return Vector2DistanceSqr(previous, current) > START_CHANGED_DIST_MIN_SQR;
+}
+
 bool insideEnvironment(const Vector2 pos) {
     return (ENVIRONMENT_X_MIN < pos.x) && (pos.x < ENVIRONMENT_X_MAX) && (ENVIRONMENT_Y_MIN < pos.y) && (pos.y < ENVIRONMENT_Y_MAX);
 }
