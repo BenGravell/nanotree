@@ -22,6 +22,8 @@ DrawObjectBrushParams getObjectBrushParams(const ProblemEditMode mode) {
             return {OBSTACLE_RADIUS, 0.3f, 12, 5.0f};
         case ProblemEditMode::DEL_OBSTACLE:
             return {OBSTACLE_DELETE_RADIUS, 0.5f, 6, 3.0f};
+        default:
+            throw std::logic_error("Unhandled ProblemEditMode");
     }
 }
 

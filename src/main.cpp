@@ -61,6 +61,9 @@ ProblemEdits editProblem(Problem& problem, const Vector2 brush_pos, const bool i
                 problem.obstacles.erase(std::remove_if(problem.obstacles.begin(), problem.obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, brush_pos) < (OBSTACLE_RADIUS + OBSTACLE_DELETE_RADIUS); }), problem.obstacles.end());
                 break;
             }
+            default: {
+                throw std::logic_error("Unhandled ProblemEditMode");
+            }
         }
     }
 
