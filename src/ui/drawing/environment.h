@@ -22,8 +22,6 @@ DrawObjectBrushParams getObjectBrushParams(const ProblemEditMode mode) {
             return {OBSTACLE_RADIUS, 0.3f, 12, 5.0f};
         case ProblemEditMode::DEL_OBSTACLE:
             return {OBSTACLE_DELETE_RADIUS, 0.5f, 6, 3.0f};
-        default:
-            return {0, 0.0f, 0, 0.0f};
     }
 }
 
