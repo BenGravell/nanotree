@@ -32,11 +32,10 @@ float normalizeCost(const float cost, const float cost_root, const float cost_pa
 }
 
 Color computeCostColor(const float x, const bool goal_reached) {
-    if (goal_reached && (x > 0.5)) {
+    if (goal_reached && (x > 0.5f)) {
         return COLOR_GRAY_064;
     }
-    static constexpr float r = 0.4f;
-    return guppyColor(r * x);
+    return guppyColor(x);
 }
 
 void DrawTree(const Tree& tree, const Path& path, const Vector2 goal, const bool goal_reached) {
