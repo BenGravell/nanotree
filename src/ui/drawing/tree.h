@@ -35,7 +35,9 @@ Color computeCostColor(const float x, const bool goal_reached) {
     if (goal_reached && (x > 0.5f)) {
         return COLOR_GRAY_064;
     }
-    return guppyColor(x);
+    static constexpr double s = 0.3f;
+    const double y = (x < 0.5f) ? Remap(x, 0.0f, 0.5f, 0.0f, s) : Remap(x, 0.5f, 1.0f, 1.0f - s, 1.0f);
+    return guppyColor(y);
 }
 
 void DrawTree(const Tree& tree, const Path& path, const Vector2 goal, const bool goal_reached) {
