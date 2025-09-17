@@ -36,7 +36,7 @@ Color computeCostColor(const float x, const bool goal_reached) {
         return COLOR_GRAY_064;
     }
     static constexpr double s = 0.3f;
-    const double y = (x < 0.5f) ? Remap(x, 0.0f, 0.5f, 0.0f, s) : Remap(x, 0.5f, 1.0f, 1.0f - s, 1.0f);
+    const double y = (x <= 0.5f) ? Remap(x, 0.0f, 0.5f, 0.0f, s) : Remap(x, 0.5f, 1.0f, 1.0f - s, 1.0f);
     return guppyColor(y);
 }
 
