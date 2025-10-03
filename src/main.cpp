@@ -34,10 +34,24 @@
 // - should take actions as const input
 // - should mutate problem
 // - should return artifact describing how problem was edited
-ProblemEdits editProblem(Problem& problem, const Vector2 brush_pos, const bool is_down_lmb, const ProblemEditMode mode, const bool mouse_in_environment, const bool reset_obstacles) {
+ProblemEdits editProblem(Problem& problem, const Vector2 brush_pos, const Vector2 brush_pos_prev, const bool is_down_lmb, const ProblemEditMode mode, const ProblemEditMode mode_prev, const bool mouse_in_environment, const bool reset_obstacles, const bool active_prev) {
     bool start_changed = false;
     bool obstacle_added = false;
     if (mouse_in_environment && is_down_lmb) {
+        int n = 0;
+        if (mode == mode_prev && active_prev) {
+            float s = 1.0f;
+            if (mode == ProblemEditMode::ADD_OBSTACLE) {
+                s = 1.2 * OBSTACLE_SPACING_MIN;
+            }
+            if (mode == ProblemEditMode::DEL_OBSTACLE) {
+                s = 0.5 * OBSTACLE_SPACING_MIN;
+            }
+            n = std::max(static_cast<int>(std::ceil(Vector2Distance(brush_pos, brush_pos_prev) / s)), 1);
+        } else {
+            n = 1;
+        }
+
         switch (mode) {
             case ProblemEditMode::PLACE_START: {
                 start_changed = isStartChanged(problem.start, brush_pos);
@@ -51,14 +65,22 @@ ProblemEdits editProblem(Problem& problem, const Vector2 brush_pos, const bool i
                 break;
             }
             case ProblemEditMode::ADD_OBSTACLE: {
-                if (std::none_of(problem.obstacles.begin(), problem.obstacles.end(), [&](auto& o) { return Vector2Distance(o, brush_pos) < OBSTACLE_SPACING_MIN; })) {
-                    problem.obstacles.push_back(brush_pos);
-                    obstacle_added = true;
+                for (int i = 1; i <= n; ++i) {
+                    const float t = static_cast<float>(i) / static_cast<float>(n);
+                    const Vector2 new_obs_pos = Vector2Lerp(brush_pos_prev, brush_pos, t);
+                    if (std::none_of(problem.obstacles.begin(), problem.obstacles.end(), [&](auto& o) { return Vector2Distance(o, new_obs_pos) < OBSTACLE_SPACING_MIN; })) {
+                        problem.obstacles.push_back(new_obs_pos);
+                        obstacle_added = true;
+                    }
                 }
                 break;
             }
             case ProblemEditMode::DEL_OBSTACLE: {
-                problem.obstacles.erase(std::remove_if(problem.obstacles.begin(), problem.obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, brush_pos) < (OBSTACLE_RADIUS + OBSTACLE_DELETE_RADIUS); }), problem.obstacles.end());
+                for (int i = 1; i <= n; ++i) {
+                    const float t = static_cast<float>(i) / static_cast<float>(n);
+                    const Vector2 del_pos = Vector2Lerp(brush_pos_prev, brush_pos, t);
+                    problem.obstacles.erase(std::remove_if(problem.obstacles.begin(), problem.obstacles.end(), [&](Vector2 o) { return Vector2Distance(o, del_pos) < (OBSTACLE_RADIUS + OBSTACLE_DELETE_RADIUS); }), problem.obstacles.end());
+                }
                 break;
             }
             default: {
@@ -128,6 +150,10 @@ int main() {
     Planner planner;
     planner.prep(problem, plan_settings);
 
+    Vector2 brush_pos_prev = clampToEnvironment({0, 0});
+    ProblemEditMode mode_prev = ctrl_state.problem_edit_mode;
+    bool active_prev = false;
+
     while (!WindowShouldClose()) {
         app_timing.total.start();
 
@@ -141,7 +167,11 @@ int main() {
             brush_pos.y = snapToGridCenter(brush_pos.y, CELL_SIZE);
         }
 
-        const ProblemEdits problem_edits = editProblem(problem, brush_pos, is_down_lmb, ctrl_state.problem_edit_mode, mouse_in_environment, ctrl_state.reset_obstacles);
+        const ProblemEdits problem_edits = editProblem(problem, brush_pos, brush_pos_prev, is_down_lmb, ctrl_state.problem_edit_mode, mode_prev, mouse_in_environment, ctrl_state.reset_obstacles, active_prev);
+
+        brush_pos_prev = brush_pos;
+        mode_prev = ctrl_state.problem_edit_mode;
+        active_prev = mouse_in_environment && is_down_lmb;
 
         const int num_carry = NUM_CARRY_OPTIONS[ctrl_state.num_carry_ix];
         const int num_samples = NUM_SAMPLES_OPTIONS[ctrl_state.num_samples_ix];
