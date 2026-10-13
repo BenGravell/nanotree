@@ -3,6 +3,10 @@
 #include <raylib.h>
 
 #include <cmath>
+#include <stdexcept>
+
+#include "core/problem/problem_edit_mode.h"
+#include "ui/colors.h"
 
 #include "config.h"
 
@@ -27,5 +31,20 @@ void DrawObjectBrush(const Vector2 pos, const DrawObjectBrushParams params) {
     for (int i = 0; i < params.num_segments; ++i) {
         const float start_angle = 2 * i * delta_angle + offset_angle;
         DrawRing(pos, ring_inner_radius, ring_outer_radius, start_angle, start_angle + delta_angle, 0, LIGHTGRAY);
+    }
+}
+
+DrawObjectBrushParams getObjectBrushParams(const ProblemEditMode mode) {
+    switch (mode) {
+        case ProblemEditMode::PLACE_START:
+            return {START_RADIUS, 0.4f, 8, 4.0f};
+        case ProblemEditMode::PLACE_GOAL:
+            return {GOAL_RADIUS, 0.4f, 8, 4.0f};
+        case ProblemEditMode::ADD_OBSTACLE:
+            return {OBSTACLE_RADIUS, 0.3f, 12, 5.0f};
+        case ProblemEditMode::DEL_OBSTACLE:
+            return {OBSTACLE_DELETE_RADIUS, 0.5f, 6, 3.0f};
+        default:
+            throw std::logic_error("Unhandled ProblemEditMode");
     }
 }

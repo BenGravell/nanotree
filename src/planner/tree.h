@@ -1,153 +1,12 @@
 #pragma once
 
-#include <raylib.h>
-#include <raymath.h>
+#include <functional>
+#include <limits>
+#include <unordered_map>
 
-#include <algorithm>
-#include <memory>
-#include <random>
-
-#include "core/geometry.h"
-#include "core/obstacle.h"
-#include "core/rng.h"
-#include "planner/cost.h"
-#include "planner/node.h"
 #include "planner/path.h"
-
-bool edgeCollides(const Vector2 start, const Vector2 goal, const Obstacles& obstacles) {
-    static constexpr float LERP_DEN = NUM_INTERMEDIATE_COLLISION_CHECK_POINTS - 1;
-    for (int i = 0; i < NUM_INTERMEDIATE_COLLISION_CHECK_POINTS; ++i) {
-        const float t = float(i) / LERP_DEN;
-        if (collides(Vector2Lerp(start, goal, t), obstacles)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool edgeCollides(const NodePtr& node, const Obstacles& obstacles) {
-    return (node->parent) ? edgeCollides(node->parent->pos, node->pos, obstacles) : collides(node->pos, obstacles);
-}
-
-struct TargetDistanceComparator {
-    Vector2 target;
-
-    bool operator()(const NodePtr& a, const NodePtr& b) const {
-        return computeCost(a->pos, target) < computeCost(b->pos, target);
-    }
-};
-
-struct TargetCostComparator {
-    Vector2 target;
-
-    bool operator()(const NodePtr& a, const NodePtr& b) const {
-        return a->estimateCostTo(target) < b->estimateCostTo(target);
-    }
-};
-
-struct TargetCostComparatorInv {
-    Vector2 target;
-
-    bool operator()(const NodePtr& a, const NodePtr& b) const {
-        return a->estimateCostTo(target) > b->estimateCostTo(target);
-    }
-};
-
-NodePtr getNearest(const Vector2 target, const Nodes& nodes) {
-    return *std::min_element(nodes.begin(), nodes.end(), TargetDistanceComparator{target});
-}
-
-NodePtr getCheapest(const Vector2 target, const Nodes& nodes) {
-    return *std::min_element(nodes.begin(), nodes.end(), TargetCostComparator{target});
-}
-
-Nodes getNeighbors(const Vector2 target, const Nodes& nodes, const Obstacles& obstacles, const float max_dist) {
-    Nodes neighbors;
-    for (const NodePtr& node : nodes) {
-        const float dist = Vector2Distance(node->pos, target);
-        if (dist > max_dist) {
-            continue;
-        }
-
-        const bool in_collision = (dist < MAX_DISTANCE_BETWEEN_POSES_FOR_COLLISION_CHECK) ? collides(node->pos, obstacles) : edgeCollides(node->pos, target, obstacles);
-        if (in_collision) {
-            continue;
-        }
-
-        neighbors.push_back(node);
-    }
-    return neighbors;
-}
-
-NodePtr getParent(const Vector2 target, const Nodes& nodes, const Obstacles& obstacles, const float max_dist) {
-    const Nodes neighbors = getNeighbors(target, nodes, obstacles, max_dist);
-
-    if (neighbors.empty()) {
-        return getNearest(target, nodes);
-    }
-
-    return getCheapest(target, neighbors);
-}
-
-Path extractPath(const Nodes& nodes, const Problem& problem) {
-    Path path;
-    NodePtr node = getParent(problem.goal, nodes, problem.obstacles, GOAL_RADIUS);
-    while (node->parent) {
-        path.push_back(node);
-        node = node->parent;
-    }
-    path.push_back(node);
-    std::reverse(path.begin(), path.end());
-    return path;
-}
-
-Vector2 sampleNearGoal(const Vector2 goal) {
-    static std::uniform_real_distribution<float> dist_goal_r(0, GOAL_RADIUS);
-    static std::uniform_real_distribution<float> dist_goal_t(0.0f, 2.0f * M_PI);
-    const float r = dist_goal_r(rng);
-    const float t = dist_goal_t(rng);
-    const Vector2 delta = {r * std::cos(t), r * std::sin(t)};
-    return clampToEnvironment(goal + delta);
-}
-
-Vector2 sampleEnv() {
-    static std::uniform_real_distribution<float> dist_x(ENVIRONMENT_X_MIN, ENVIRONMENT_X_MAX);
-    static std::uniform_real_distribution<float> dist_y(ENVIRONMENT_Y_MIN, ENVIRONMENT_Y_MAX);
-    return Vector2{dist_x(rng), dist_y(rng)};
-}
-
-Vector2 sample(const Vector2 goal) {
-    static std::uniform_real_distribution<float> dist_select(0.0f, 1.0f);
-    return (dist_select(rng) < GOAL_SAMPLE_PROBABILITY) ? sampleNearGoal(goal) : sampleEnv();
-}
-
-Vector2 attractByDistance(const Vector2 pos, const NodePtr parent) {
-    const Vector2 direction = Vector2Normalize(pos - parent->pos);
-    const float distance = std::min(DEVIATION_DISTANCE_MAX, Vector2Distance(parent->pos, pos));
-    return Vector2Add(parent->pos, direction * distance);
-}
-
-Vector2 attractByAngle(const Vector2 pos, const NodePtr parent) {
-    const Vector2 x = parent->parent ? parent->parent->pos : parent->pos - (pos - parent->pos);
-    const Vector2 y = parent->pos;
-    const Vector2 z = pos;
-    const Vector2 direction_yz = Vector2Normalize(z - y);
-    const Vector2 direction_xy = Vector2Normalize(y - x);
-    const float distance_yz = Vector2Distance(y, z);
-    const float distance_xy = Vector2Distance(x, y);
-    const float deviation_angle_max = std::asin(std::clamp(0.5f * (distance_xy + distance_yz) / RADIUS_OF_CURVATURE_MIN, 0.0f, 1.0f));
-    const float deviation_angle = std::clamp(Vector2Angle(direction_xy, direction_yz), -deviation_angle_max, deviation_angle_max);
-    const Vector2 direction_out = Vector2Rotate(direction_xy, deviation_angle);
-    return Vector2Add(parent->pos, direction_out * distance_yz);
-}
-
-bool goalReached(const NodePtr node, const Vector2 goal) {
-    return Vector2Distance(node->pos, goal) < GOAL_RADIUS;
-}
-
-bool goalReached(const Path& path, const Vector2 goal) {
-    return goalReached(path.back(), goal);
-}
+#include "planner/sampling.h"
+#include "planner/steering.h"
 
 using ChildMap = std::unordered_map<NodePtr, std::unordered_set<NodePtr>>;
 
@@ -174,12 +33,10 @@ struct Tree {
         }
         return near_nodes;
     }
-
     void reset(const Vector2 start) {
         nodes = {std::make_shared<Node>(Node{nullptr, start, 0.0f})};
         child_map = buildChildMap(nodes);
     }
-
     void resetRoot(const Problem& problem, const Path& path) {
         // Special case: tree has zero or one node(s), just reset the whole tree.
         if (nodes.size() <= 1) {
@@ -195,20 +52,7 @@ struct Tree {
             target_nodes = {path.back()};
         }
 
-        // For every ancestor on any target-reaching path, record the cheapest
-        // downstream cost to a target along the existing tree.
-        std::unordered_map<NodePtr, float> cheapest_down;
-        for (const NodePtr& target_node : target_nodes) {
-            NodePtr cur = target_node;
-            while (cur) {
-                const float delta = target_node->cost_to_come - cur->cost_to_come;
-                auto it = cheapest_down.find(cur);
-                if (it == cheapest_down.end() || delta < it->second) {
-                    cheapest_down[cur] = delta;
-                }
-                cur = cur->parent;
-            }
-        }
+        const auto cheapest_down = targetCosts(target_nodes);
 
         Nodes retained_nodes;
 
@@ -216,38 +60,7 @@ struct Tree {
         NodePtr new_root = std::make_shared<Node>(Node{nullptr, problem.start, 0.0f});
         retained_nodes.push_back(new_root);
 
-        // Choose the child of the new root.
-        NodePtr best_child = nullptr;
-        float best_total = std::numeric_limits<float>::infinity();
-
-        if (!cheapest_down.empty()) {
-            for (const auto& kv : cheapest_down) {
-                const NodePtr& cand = kv.first;
-                const float dist = Vector2Distance(problem.start, cand->pos);
-                if (dist > DEVIATION_DISTANCE_MAX) {
-                    continue;
-                }
-                if (edgeCollides(problem.start, cand->pos, problem.obstacles)) {
-                    continue;
-                }
-
-                const float down_cost = kv.second;
-                const float up_cost = computeCost(problem.start, cand->pos);
-                const float total = up_cost + down_cost;
-                if (total < best_total) {
-                    best_total = total;
-                    best_child = cand;
-                }
-            }
-        } else if (!nodes.empty()) {
-            // No node in the current tree reaches the target;
-            // fall back to attaching the nearest node.
-            NodePtr cand = getNearest(problem.start, nodes);
-            const float dist = Vector2Distance(problem.start, cand->pos);
-            if (!((dist > DEVIATION_DISTANCE_MAX) || edgeCollides(problem.start, cand->pos, problem.obstacles))) {
-                best_child = cand;
-            }
-        }
+        const NodePtr best_child = selectRootChild(problem, cheapest_down);
 
         // Retain only the subtree rooted at best_child (if any),
         // re-parent it to the new root,
@@ -258,24 +71,13 @@ struct Tree {
             best_child->cost_to_come = new_root->estimateCostTo(best_child->pos);
             retained_nodes.push_back(best_child);
 
-            // Collect descendants of best_child using the current child_map.
-            std::function<void(const NodePtr&)> dfs = [&](const NodePtr& n) {
-                auto it = child_map.find(n);
-                if (it != child_map.end()) {
-                    for (const NodePtr& child : it->second) {
-                        retained_nodes.push_back(child);
-                        dfs(child);
-                    }
-                }
-            };
-            dfs(best_child);
+            collectDescendants(best_child, retained_nodes);
         }
 
         nodes = std::move(retained_nodes);
         child_map = buildChildMap(nodes);
         updateSubtreeCosts(new_root);
     }
-
     void carry(const Path path, const int num_carry, const Obstacles& obstacles) {
         Nodes retained_nodes;
         NodeSet retained_set;
@@ -320,7 +122,6 @@ struct Tree {
         nodes = std::move(retained_nodes);
         child_map = buildChildMap(nodes);
     }
-
     void cullByObstacles(const Obstacles& obstacles) {
         Nodes retained_nodes;
 
@@ -354,7 +155,6 @@ struct Tree {
         nodes = std::move(retained_nodes);
         child_map = buildChildMap(nodes);
     }
-
     void growOnce(Vector2 pos, const Obstacles& obstacles, const bool rewire_enabled) {
         NodePtr parent = getParent(pos, nodes, obstacles, REWIRE_RADIUS);
 
@@ -366,7 +166,7 @@ struct Tree {
             return;
         }
 
-        if (edgeCollides(parent->pos, pos, obstacles)) {
+        if (collides(parent->pos, pos, obstacles)) {
             return;
         }
 
@@ -379,7 +179,6 @@ struct Tree {
             rewire(node, obstacles);
         }
     }
-
     void rewire(const NodePtr& new_node, const Obstacles& obstacles) {
         for (NodePtr& neighbor : nodes) {
             if (neighbor == new_node || neighbor == new_node->parent) {
@@ -394,7 +193,7 @@ struct Tree {
             const float new_cost_to_come_of_neighbor = new_node->cost_to_come + cost;
             const bool cost_improved = new_cost_to_come_of_neighbor < neighbor->cost_to_come;
             if (cost_improved) {
-                if (edgeCollides(new_node->pos, neighbor->pos, obstacles)) {
+                if (collides(new_node->pos, neighbor->pos, obstacles)) {
                     continue;
                 }
 
@@ -408,7 +207,6 @@ struct Tree {
             }
         }
     }
-
     void updateSubtreeCosts(const NodePtr& node) {
         std::function<void(const NodePtr&)> dfs = [&](const NodePtr& current) {
             auto it = child_map.find(current);
@@ -422,11 +220,78 @@ struct Tree {
 
         dfs(node);
     }
-
     void grow(const Problem& problem, const int num_samples, const bool rewire_enabled) {
         for (int i = 0; i < num_samples; ++i) {
             const Vector2 pos = sample(problem.goal);
             growOnce(pos, problem.obstacles, rewire_enabled);
         }
     }
+
+private:
+    using DownstreamCosts = std::unordered_map<NodePtr, float>;
+
+    static DownstreamCosts targetCosts(const Nodes& target_nodes) {
+        // For every ancestor on any target-reaching path, record the cheapest
+        // downstream cost to a target along the existing tree.
+        DownstreamCosts cheapest_down;
+        for (const NodePtr& target_node : target_nodes) {
+            NodePtr cur = target_node;
+            while (cur) {
+                const float delta = target_node->cost_to_come - cur->cost_to_come;
+                auto it = cheapest_down.find(cur);
+                if (it == cheapest_down.end() || delta < it->second) {
+                    cheapest_down[cur] = delta;
+                }
+                cur = cur->parent;
+            }
+        }
+
+        return cheapest_down;
+    }
+    NodePtr selectRootChild(const Problem& problem, const DownstreamCosts& cheapest_down) const {
+        // Choose the child of the new root.
+        NodePtr best_child = nullptr;
+        float best_total = std::numeric_limits<float>::infinity();
+
+        if (!cheapest_down.empty()) {
+            for (const auto& kv : cheapest_down) {
+                const NodePtr& cand = kv.first;
+                const float dist = Vector2Distance(problem.start, cand->pos);
+                if (dist > DEVIATION_DISTANCE_MAX) {
+                    continue;
+                }
+                if (collides(problem.start, cand->pos, problem.obstacles)) {
+                    continue;
+                }
+
+                const float down_cost = kv.second;
+                const float up_cost = computeCost(problem.start, cand->pos);
+                const float total = up_cost + down_cost;
+                if (total < best_total) {
+                    best_total = total;
+                    best_child = cand;
+                }
+            }
+        } else if (!nodes.empty()) {
+            // No node in the current tree reaches the target;
+            // fall back to attaching the nearest node.
+            NodePtr cand = getNearest(problem.start, nodes);
+            const float dist = Vector2Distance(problem.start, cand->pos);
+            if (!((dist > DEVIATION_DISTANCE_MAX) || collides(problem.start, cand->pos, problem.obstacles))) {
+                best_child = cand;
+            }
+        }
+
+        return best_child;
+    }
+    void collectDescendants(const NodePtr& node, Nodes& retained_nodes) const {
+        auto it = child_map.find(node);
+        if (it != child_map.end()) {
+            for (const NodePtr& child : it->second) {
+                retained_nodes.push_back(child);
+                collectDescendants(child, retained_nodes);
+            }
+        }
+    }
+
 };

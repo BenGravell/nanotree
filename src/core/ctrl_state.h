@@ -2,7 +2,7 @@
 
 #include <raylib.h>
 
-#include "core/problem_edit_mode.h"
+#include "core/problem/problem_edit_mode.h"
 #include "core/tree_edits.h"
 #include "core/tree_growth_mode.h"
 #include "core/visibility.h"

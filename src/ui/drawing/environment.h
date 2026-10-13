@@ -3,29 +3,13 @@
 #include <raylib.h>
 
 #include "config.h"
-#include "core/problem_edit_mode.h"
+#include "core/problem/problem_edit_mode.h"
 #include "ui/drawing/flat_grid.h"
 #include "ui/drawing/object_brush.h"
 #include "ui/drawing/obstacles.h"
 #include "ui/drawing/path.h"
 #include "ui/drawing/start_goal.h"
 #include "ui/drawing/tree.h"
-
-// TODO move
-DrawObjectBrushParams getObjectBrushParams(const ProblemEditMode mode) {
-    switch (mode) {
-        case ProblemEditMode::PLACE_START:
-            return {START_RADIUS, 0.4f, 8, 4.0f};
-        case ProblemEditMode::PLACE_GOAL:
-            return {GOAL_RADIUS, 0.4f, 8, 4.0f};
-        case ProblemEditMode::ADD_OBSTACLE:
-            return {OBSTACLE_RADIUS, 0.3f, 12, 5.0f};
-        case ProblemEditMode::DEL_OBSTACLE:
-            return {OBSTACLE_DELETE_RADIUS, 0.5f, 6, 3.0f};
-        default:
-            throw std::logic_error("Unhandled ProblemEditMode");
-    }
-}
 
 void DrawEnvironment(const Problem& problem, const Planner& planner, const Vector2 brush_pos, const CtrlState& ctrl_state, const bool goal_reached) {
     // Background

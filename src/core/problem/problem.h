@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/obstacle.h"
+#include "core/problem/obstacle.h"
 
 struct Problem {
     Obstacles obstacles;

@@ -3,6 +3,8 @@
 #include <raylib.h>
 
 #include <array>
+#include <algorithm>
+#include <vector>
 
 // UI OPTIONS
 static constexpr std::array<int, 10> NUM_SAMPLES_OPTIONS = {0, 1, 10, 100, 200, 500, 1000, 2000, 5000, 10000};

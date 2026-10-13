@@ -3,7 +3,7 @@
 #include <raylib.h>
 
 #include "config.h"
-#include "core/obstacle.h"
+#include "core/problem/obstacle.h"
 #include "ui/colors.h"
 
 void DrawObstacles(const Obstacles& obstacles) {

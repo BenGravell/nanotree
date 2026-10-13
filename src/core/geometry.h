@@ -22,6 +22,12 @@ int snapToGridCenter(const float x, const int s) {
     return i - (i % s) + (s / 2);
 }
 
+Vector2 snapToGridCenter(Vector2 pos, const int s) {
+    pos.x = snapToGridCenter(pos.x, s);
+    pos.y = snapToGridCenter(pos.y, s);
+    return pos;
+}
+
 int snapToGridEdge(const float x, const int s) {
     const int i = std::lround(x);
     const int r = i % s;
