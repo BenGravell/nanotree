@@ -249,6 +249,7 @@ private:
         return cheapest_down;
     }
     NodePtr selectRootChild(const Problem& problem, const DownstreamCosts& cheapest_down) const {
+        // TODO use Vector2DistanceSqr for both deviation distance checks below.
         // Choose the child of the new root.
         NodePtr best_child = nullptr;
         float best_total = std::numeric_limits<float>::infinity();
