@@ -7,6 +7,7 @@
 #include "core/timing/timing_parts.h"
 #include "planner/cost.h"
 #include "planner/planner.h"
+#include "planner/tree_stats.h"
 #include "ui/colors.h"
 #include "ui/gui_label.h"
 
@@ -38,29 +39,16 @@ void DrawPathStats(const float path_cost_to_come, const float path_cost_to_go, c
     GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, STAT_BAR_ROW_4_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Cost-to-Go", TextFormat("%d", std::lround(path_cost_to_go)), COLOR_MINOR_STAT);
 }
 
-void DrawNodeStats(const Planner& planner, const Vector2 goal, const float path_cost) {
+void DrawNodeStats(const TreeStats& stats) {
     // Node counts
     GuiSetStyle(DEFAULT, TEXT_SIZE, BIG_TEXT_HEIGHT);
-    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, STAT_BAR_ROW_6_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_ROW_HEIGHT}, "Nodes", TextFormat("%d", planner.tree.nodes.size()), COLOR_STAT);
+    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, STAT_BAR_ROW_6_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_ROW_HEIGHT}, "Nodes", TextFormat("%d", stats.num_nodes), COLOR_STAT);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, SMALL_TEXT_HEIGHT);
-    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, STAT_BAR_ROW_7_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Path", TextFormat("%d", planner.path.size()), COLOR_MINOR_STAT);
+    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, STAT_BAR_ROW_7_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Path", TextFormat("%d", stats.num_path_nodes), COLOR_MINOR_STAT);
 
-    // Count low and high cost nodes.
-    // TODO factor this out to a tree stats struct and compute just once, pass to tree draw func.
-    int num_nodes_lo_cost = 0;
-    int num_nodes_hi_cost = 0;
-    for (const NodePtr& node : planner.tree.nodes) {
-        const float cost = node->estimateCostTo(goal);
-        if (cost < path_cost) {
-            num_nodes_lo_cost++;
-        } else {
-            num_nodes_hi_cost++;
-        }
-    }
-
-    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, STAT_BAR_ROW_7_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Low Cost", TextFormat("%d", num_nodes_lo_cost), COLOR_MINOR_STAT);
-    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, STAT_BAR_ROW_8_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "High Cost", TextFormat("%d", num_nodes_hi_cost), COLOR_MINOR_STAT);
+    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, STAT_BAR_ROW_7_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Low Cost", TextFormat("%d", stats.num_nodes_lo_cost), COLOR_MINOR_STAT);
+    GuiLabelValueColor((Rectangle){STAT_BAR_BUTTON_X_MIN, STAT_BAR_ROW_8_Y, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "High Cost", TextFormat("%d", stats.num_nodes_hi_cost), COLOR_MINOR_STAT);
 }
 
 void DrawTimingStats(const DurationParts duration_parts) {
@@ -75,13 +63,10 @@ void DrawTimingStats(const DurationParts duration_parts) {
     GuiLabelTimingStat((Rectangle){STAT_BAR_BUTTON_X_MIN, STAT_BAR_ROW_14_Y + STAT_BAR_HALF_ROW_HEIGHT, STAT_BAR_BUTTON_WIDTH, STAT_BAR_HALF_ROW_HEIGHT}, "Draw", duration_parts.draw, false);
 }
 
-void DrawStatBar(const Problem& problem, const Planner& planner, const bool goal_reached, const DurationParts duration_parts) {
+void DrawStatBar(const Problem& problem, const TreeStats& stats, const bool goal_reached, const DurationParts duration_parts) {
     DrawRectangleRec(STAT_BAR_REC, COLOR_STAT_BAR_BACKGROUND);
-    const float path_cost_to_come = planner.path.back()->cost_to_come;
-    const float path_cost_to_go = computeCost(planner.path.back()->pos, problem.goal);
-    const float path_cost = path_cost_to_come + path_cost_to_go;
-    DrawPathStats(path_cost_to_come, path_cost_to_go, goal_reached);
-    DrawNodeStats(planner, problem.goal, path_cost);
+    DrawPathStats(stats.path_cost_to_come, stats.path_cost_to_go, goal_reached);
+    DrawNodeStats(stats);
 
     // Env info
     GuiSetStyle(DEFAULT, TEXT_SIZE, BIG_TEXT_HEIGHT);

@@ -51,15 +51,15 @@ int main() {
         planner.plan(problem, plan_settings, action_settings);
 
         const bool goal_reached = goalReached(planner.path, problem.goal);
-
         const DurationParts duration = averageDurations(planner.timing, app_timing);
+        const TreeStats tree_stats = computeTreeStats(planner.tree.nodes, planner.path, problem.goal);
 
         // DRAWING
         app_timing.draw.start();
         BeginDrawing();
 
-        DrawEnvironment(problem, planner, brush_pos, ctrl_state, goal_reached);
-        DrawStatBar(problem, planner, goal_reached, duration);
+        DrawEnvironment(problem, planner, tree_stats, brush_pos, ctrl_state, goal_reached);
+        DrawStatBar(problem, tree_stats, goal_reached, duration);
         DrawCtrlBar(ctrl_state, goal_reached);
         DrawScreenBorder();
 

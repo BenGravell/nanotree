@@ -11,7 +11,7 @@
 #include "ui/drawing/start_goal.h"
 #include "ui/drawing/tree.h"
 
-void DrawEnvironment(const Problem& problem, const Planner& planner, const Vector2 brush_pos, const CtrlState& ctrl_state, const bool goal_reached) {
+void DrawEnvironment(const Problem& problem, const Planner& planner, const TreeStats& stats, const Vector2 brush_pos, const CtrlState& ctrl_state, const bool goal_reached) {
     // Background
     DrawRectangleRec(ENVIRONMENT_REC, COLOR_BACKGROUND);
 
@@ -23,7 +23,7 @@ void DrawEnvironment(const Problem& problem, const Planner& planner, const Vecto
         DrawObstacles(problem.obstacles);
     }
     if (ctrl_state.visibility.tree) {
-        DrawTree(planner.tree, planner.path, problem.goal, goal_reached);
+        DrawTree(planner.tree, stats, problem.goal, goal_reached);
     }
     if (ctrl_state.visibility.path) {
         DrawPath(planner.path, goal_reached);
