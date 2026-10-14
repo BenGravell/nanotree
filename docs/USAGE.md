@@ -25,7 +25,7 @@ cd ~/emsdk
 source emsdk_env.sh
 cd ~/nanotree
 
-emrun index.html
+emrun dist/index.html
 ```
 
 ## Controls

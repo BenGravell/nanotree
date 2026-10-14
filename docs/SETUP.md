@@ -17,95 +17,41 @@ cmake --build build/release --config Release
 
 ## Web app
 
-Follow the guides
+### GitHub Pages
 
-- <https://anguscheng.com/post/2023-12-12-wasm-game-in-c-raylib/>
-- <https://dev.to/marcosplusplus/how-to-install-raylib-with-web-support-l71>
+The workflow in `.github/workflows/pages.yml` builds and deploys on every push to `master`.
+You can also run it manually from the Actions tab.
 
-### Build
+Set **Settings → Pages → Build and deployment → Source → GitHub Actions**
+in the GitHub repository before the first deployment.
 
-#### Get EMSDK
+The build uses Emscripten and raylib.
+Generated HTML, JavaScript, WebAssembly, and asset data are uploaded from `dist/` directly to Pages; do not commit them.
+Keep `shell.html`, `src/`, and `assets/` in version control.
 
-```bash
-# Change to home dir
-cd
+### Local web build
 
-# Clone the emsdk repo
-git clone https://github.com/emscripten-core/emsdk
-
-# Enter the repo directory
-cd emsdk
-
-# Download and install the latest SDK tools.
-./emsdk install latest
-```
-
-#### Activate EMSDK
+Install the EMSDK once:
 
 ```bash
-# Change to emsdk dir
-cd ~/emsdk
-
-# Make the "latest" SDK "active" for the current user. (writes .emscripten file)
-./emsdk activate latest
-
-# Activate PATH and other environment variables in the current terminal
-source ./emsdk_env.sh
+git clone --depth 1 --branch 6.0.12 https://github.com/emscripten-core/emsdk.git ~/emsdk
+~/emsdk/emsdk install 6.0.12
+~/emsdk/emsdk activate 6.0.12
 ```
 
-#### build raylib for web
+If `~/emsdk` already exists, use that checkout to install and activate.
+Clone the web dependency once from the nanotree repository root:
 
 ```bash
-# Change to home dir
-cd
-
-# Clone the raylib repo
-git clone https://github.com/raysan5/raylib
-
-# Enter the repo directory
-cd raylib
-
-emcmake cmake . -DPLATFORM=Web -DSUPPORT_TRACELOG=OFF
-
-emmake make
-
-sudo make install
+git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git build/web-raylib
 ```
 
-#### build raylib for for desktop
+Build after changing the source or assets:
 
 ```bash
-cmake -B build -DPLATFORM=PLATFORM_DESKTOP -DPLATFORM=Desktop;Web -DSUPPORT_TRACELOG=OFF
-cmake --build build
-sudo cmake --install build/
+source ~/emsdk/emsdk_env.sh
+bash scripts/build-web.sh
 ```
 
-#### Get HTML base file
-
-```bash
-# Change directory up out of emsdk
-cd ~/nanotree
-
-# Download base shell.html from raylib
-wget https://raw.githubusercontent.com/raysan5/raylib/refs/heads/master/src/shell.html
-```
-
-#### Build to Web Assembly
-
-```bash
-cd ~/emsdk
-source emsdk_env.sh
-cd ~/nanotree
-
-em++ -o index.html src/main.cpp -O3 -Wall \
--I src \
--I ~/emsdk/upstream/emscripten/cache/sysroot/include \
--L ~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a \
--s USE_GLFW=3 -s ASYNCIFY \
---preload-file assets \
---shell-file shell.html \
--DPLATFORM_WEB \
-~/emsdk/upstream/emscripten/cache/sysroot/lib/libraylib.a
-```
-
-See [Usage](USAGE.md) to run the app and [Development](DEVELOPMENT.md) for debug builds and source layout.
+This requires CMake and Make, and writes the site to `dist/`.
+No system-wide raylib installation is needed.
