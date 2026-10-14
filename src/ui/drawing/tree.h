@@ -10,51 +10,53 @@
 #include "ui/colors.h"
 
 float computeLineWidth(const int tree_size) {
-    const int n = std::clamp(tree_size, LINE_WIDTH_TREE_SIZE_MIN, LINE_WIDTH_TREE_SIZE_MAX);
-    return Remap(1.0f / n, TREE_SIZE_INV_MIN, TREE_SIZE_INV_MAX, LINE_WIDTH_TREE_MIN, LINE_WIDTH_TREE_MAX);
+  const int n = std::clamp(tree_size, LINE_WIDTH_TREE_SIZE_MIN, LINE_WIDTH_TREE_SIZE_MAX);
+  return Remap(1.0f / n, TREE_SIZE_INV_MIN, TREE_SIZE_INV_MAX, LINE_WIDTH_TREE_MIN, LINE_WIDTH_TREE_MAX);
 }
 
 float normalizeCost(const float cost, const float cost_root, const float cost_path, const float cost_tree) {
-    float x = 0.0f;
-    if (cost < cost_path) {
-        x = Remap((cost - cost_root) / (cost_path - cost_root), 0.0f, 1.0f, 0.0f, 0.5f);
-    } else {
-        x = Remap((cost - cost_path) / (cost_tree - cost_path), 0.0f, 1.0f, 0.5f, 1.0f);
-    }
-    return std::clamp(x, 0.0f, 1.0f);
+  float x = 0.0f;
+  if (cost < cost_path) {
+    const float ratio = (cost - cost_root) / (cost_path - cost_root);
+    x = Remap(ratio, 0.0f, 1.0f, 0.0f, 0.5f);
+  } else {
+    const float ratio = (cost - cost_path) / (cost_tree - cost_path);
+    x = Remap(ratio, 0.0f, 1.0f, 0.5f, 1.0f);
+  }
+  return std::clamp(x, 0.0f, 1.0f);
 }
 
 Color computeCostColor(const float x, const bool goal_reached) {
-    if (goal_reached && (x > 0.5f)) {
-        return COLOR_GRAY_064;
-    }
-    static constexpr float s = 0.3f;
-    static constexpr float e = 0.01f;
-    float y = 0.0f;
-    if (x <= 0.5f) {
-        y = Remap(x, 0.0f, 0.5f, 0.0f, s);
-    } else if (x >= 0.5f + e) {
-        y = Remap(x, 0.5f + e, 1.0f, 1.0f - s, 1.0f);
-    } else {
-        y = Remap(x, 0.5f, 0.5f + e, s, 1.0f - s);
-    }
-    return guppyColor(y);
+  if (goal_reached && (x > 0.5f)) {
+    return COLOR_GRAY_064;
+  }
+  static constexpr float s = 0.3f;
+  static constexpr float e = 0.01f;
+  float y = 0.0f;
+  if (x <= 0.5f) {
+    y = Remap(x, 0.0f, 0.5f, 0.0f, s);
+  } else if (x >= 0.5f + e) {
+    y = Remap(x, 0.5f + e, 1.0f, 1.0f - s, 1.0f);
+  } else {
+    y = Remap(x, 0.5f, 0.5f + e, s, 1.0f - s);
+  }
+  return guppyColor(y);
 }
 
-void DrawTree(const Tree& tree, const TreeStats& stats, const Vector2 goal, const bool goal_reached) {
-    // Sort by heuristic cost.
-    Nodes sorted_nodes = tree.nodes;
-    std::sort(sorted_nodes.begin(), sorted_nodes.end(), TargetCostComparatorInv{goal});
+void DrawTree(const Tree &tree, const TreeStats &stats, const Vector2 goal, const bool goal_reached) {
+  // Sort by heuristic cost.
+  Nodes sorted_nodes = tree.nodes;
+  std::sort(sorted_nodes.begin(), sorted_nodes.end(), TargetCostComparatorInv{goal});
 
-    // Draw in sorted order.
-    const float line_width = computeLineWidth(tree.nodes.size());
-    for (const NodePtr& node : sorted_nodes) {
-        if (!node->parent) {
-            continue;
-        }
-        const float cost = node->estimateCostTo(goal);
-        const float cost_normalized = normalizeCost(cost, stats.cost_root, stats.cost_path_max, stats.cost_tree_max);
-        const Color color = computeCostColor(cost_normalized, goal_reached);
-        DrawLineEx(node->parent->pos, node->pos, line_width, color);
+  // Draw in sorted order.
+  const float line_width = computeLineWidth(tree.nodes.size());
+  for (const NodePtr &node : sorted_nodes) {
+    if (!node->parent) {
+      continue;
     }
+    const float cost = node->estimateCostTo(goal);
+    const float cost_normalized = normalizeCost(cost, stats.cost_root, stats.cost_path_max, stats.cost_tree_max);
+    const Color color = computeCostColor(cost_normalized, goal_reached);
+    DrawLineEx(node->parent->pos, node->pos, line_width, color);
+  }
 }

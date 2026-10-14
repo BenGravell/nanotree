@@ -12,6 +12,36 @@ cmake -B build/debug -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_
 cmake --build build/debug --config Debug
 ```
 
+## C++ formatting
+
+Install `clang-format`:
+
+```bash
+sudo apt install clang-format
+```
+
+The root `.clang-format` controls the formatting rules.
+
+Check formatting:
+
+```bash
+bash scripts/format-cpp.sh check
+```
+
+Apply formatting:
+
+```bash
+bash scripts/format-cpp.sh apply
+```
+
+Apply formatting to a single file:
+
+```bash
+bash scripts/format-cpp.sh apply path/to/file.h
+```
+
+The script defaults to `check`. Optional file paths are relative to the repository root.
+
 ## Source layout
 
 - `src/main.cpp`: application lifecycle and frame loop.

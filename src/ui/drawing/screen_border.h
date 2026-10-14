@@ -6,5 +6,5 @@
 #include "ui/colors.h"
 
 void DrawScreenBorder() {
-    DrawRectangleLinesEx(SCREEN_REC, BORDER_THICKNESS, COLOR_SCREEN_BORDER);
+  DrawRectangleLinesEx(SCREEN_REC, BORDER_THICKNESS, COLOR_SCREEN_BORDER);
 }

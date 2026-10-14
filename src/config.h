@@ -2,13 +2,40 @@
 
 #include <raylib.h>
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <vector>
 
 // UI OPTIONS
-static constexpr std::array<int, 10> NUM_SAMPLES_OPTIONS = {0, 1, 10, 100, 200, 500, 1000, 2000, 5000, 10000};
-static constexpr std::array<int, 11> NUM_CARRY_OPTIONS = {0, 1, 10, 100, 200, 500, 1000, 2000, 5000, 10000, 20000};
+// clang-format off
+static constexpr std::array<int, 10> NUM_SAMPLES_OPTIONS = {
+    0,
+    1,
+    10,
+    100,
+    200,
+    500,
+    1000,
+    2000,
+    5000,
+    10000,
+};
+// clang-format on
+// clang-format off
+static constexpr std::array<int, 11> NUM_CARRY_OPTIONS = {
+    0,
+    1,
+    10,
+    100,
+    200,
+    500,
+    1000,
+    2000,
+    5000,
+    10000,
+    20000,
+};
+// clang-format on
 
 // UI SIZES
 static constexpr int SCREEN_WIDTH = 1920;
@@ -47,7 +74,8 @@ static constexpr int ENVIRONMENT_X_MIN = STAT_BAR_X_MAX;
 static constexpr int ENVIRONMENT_X_MAX = CTRL_BAR_X_MIN;
 static constexpr int ENVIRONMENT_Y_MIN = 0;
 static constexpr int ENVIRONMENT_Y_MAX = ENVIRONMENT_HEIGHT;
-static constexpr Rectangle ENVIRONMENT_REC = {ENVIRONMENT_X_MIN, ENVIRONMENT_Y_MIN, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT};
+static constexpr Rectangle ENVIRONMENT_REC = {
+    ENVIRONMENT_X_MIN, ENVIRONMENT_Y_MIN, ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT};
 
 static constexpr int GRID_THICKNESS = BORDER_THICKNESS;
 static constexpr int GRID_SPACING = CELL_SIZE;
@@ -95,6 +123,7 @@ static constexpr float START_CHANGED_DIST_MIN = 1.0f;
 static constexpr Vector2 DEFAULT_START = {630, 270};
 static constexpr Vector2 DEFAULT_GOAL = {1290, 270};
 
+// clang-format off
 const std::vector<Vector2> DEFAULT_OBSTACLES = {
     {1530, 510},
     {1470, 510},
@@ -177,13 +206,15 @@ const std::vector<Vector2> DEFAULT_OBSTACLES = {
     {570, 390},
     {510, 390},
 };
+// clang-format on
 
 // PLANNER
 static constexpr float GOAL_SAMPLE_PROBABILITY = 0.02;
 
 static constexpr float MAX_DISTANCE_BETWEEN_POSES_FOR_COLLISION_CHECK = 0.5f * OBSTACLE_RADIUS;
 static constexpr int NUM_INTERMEDIATE_COLLISION_CHECK_POINTS = 8;
-static constexpr float DEVIATION_DISTANCE_MAX = NUM_INTERMEDIATE_COLLISION_CHECK_POINTS * MAX_DISTANCE_BETWEEN_POSES_FOR_COLLISION_CHECK;
+static constexpr float DEVIATION_DISTANCE_MAX =
+    NUM_INTERMEDIATE_COLLISION_CHECK_POINTS * MAX_DISTANCE_BETWEEN_POSES_FOR_COLLISION_CHECK;
 
 static constexpr float REWIRE_RADIUS = std::min(DEVIATION_DISTANCE_MAX, 1.5f * GOAL_RADIUS);
 

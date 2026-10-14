@@ -4,8 +4,8 @@
 #include "core/tree_edits.h"
 
 struct ActionSettings {
-    ProblemEdits problem_edits;
-    TreeEdits tree_edits;
+  ProblemEdits problem_edits;
+  TreeEdits tree_edits;
 };
 
 static constexpr ActionSettings PREP_ACTION_SETTINGS = {

@@ -6,10 +6,10 @@
 #include "ui/guppy_r_hq.h"
 
 Color guppyColor(const float x) {
-    static constexpr int n = guppy_r_hq_colormap.size();
-    const int idx = std::clamp(static_cast<int>(x * float(n - 1) + 0.5f), 0, n - 1);
-    const auto& rgb = guppy_r_hq_colormap[idx];
-    return Color{rgb[0], rgb[1], rgb[2], 255};
+  static constexpr int n = guppy_r_hq_colormap.size();
+  const int idx = std::clamp(static_cast<int>(x * float(n - 1) + 0.5f), 0, n - 1);
+  const auto &rgb = guppy_r_hq_colormap[idx];
+  return Color{rgb[0], rgb[1], rgb[2], 255};
 }
 
 static constexpr Color COLOR_GRAY_008 = {8, 8, 8, 255};
@@ -54,8 +54,14 @@ const Color COLOR_STAT = COLOR_LITE;
 const Color COLOR_MINOR_STAT = COLOR_GRAY_160;
 
 Color computeFrameTimeColor(const float duration) {
-    if (duration < 0.020f) return COLOR_GREAT;
-    if (duration < 0.050f) return COLOR_GOOD;
-    if (duration < 0.100f) return COLOR_WARN;
-    return COLOR_BAD;
+  if (duration < 0.020f) {
+    return COLOR_GREAT;
+  }
+  if (duration < 0.050f) {
+    return COLOR_GOOD;
+  }
+  if (duration < 0.100f) {
+    return COLOR_WARN;
+  }
+  return COLOR_BAD;
 }

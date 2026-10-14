@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include <cstdint>
 #include <array>
+#include <cstdint>
 
+// clang-format off
 static constexpr std::array<std::array<uint8_t, 3>, 1024> guppy_r_hq_colormap = {{
     {30, 203, 191},
     {30, 203, 191},
@@ -1031,3 +1032,4 @@ static constexpr std::array<std::array<uint8_t, 3>, 1024> guppy_r_hq_colormap = 
     {250, 144, 79},
     {250, 144, 79}
 }};
+// clang-format on

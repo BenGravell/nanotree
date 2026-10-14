@@ -1,6 +1,6 @@
 #pragma once
 
 struct TreeEdits {
-    bool should_reset;
-    bool should_grow;
+  bool should_reset;
+  bool should_grow;
 };

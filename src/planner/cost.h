@@ -4,5 +4,5 @@
 #include <raymath.h>
 
 float computeCost(const Vector2 a, const Vector2 b) {
-    return Vector2Distance(a, b);
+  return Vector2Distance(a, b);
 }
