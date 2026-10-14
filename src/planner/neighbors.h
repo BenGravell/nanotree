@@ -8,8 +8,7 @@ struct TargetDistanceComparator {
     Vector2 target;
 
     bool operator()(const NodePtr& a, const NodePtr& b) const {
-        // TODO compare Vector2DistanceSqr values when ranking by distance alone.
-        return computeCost(a->pos, target) < computeCost(b->pos, target);
+        return Vector2DistanceSqr(a->pos, target) < Vector2DistanceSqr(b->pos, target);
     }
 };
 
@@ -38,7 +37,6 @@ NodePtr getCheapest(const Vector2 target, const Nodes& nodes) {
 }
 
 Nodes getNeighbors(const Vector2 target, const Nodes& nodes, const Obstacles& obstacles, const float max_dist) {
-    // TODO use Vector2DistanceSqr and squared thresholds for neighbor distance checks.
     Nodes neighbors;
     for (const NodePtr& node : nodes) {
         const float dist = Vector2Distance(node->pos, target);

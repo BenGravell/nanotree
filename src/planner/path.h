@@ -20,7 +20,6 @@ Path extractPath(const Nodes& nodes, const Problem& problem) {
 }
 
 bool goalReached(const NodePtr node, const Vector2 goal) {
-    // TODO use Vector2DistanceSqr and a squared goal radius.
     return Vector2Distance(node->pos, goal) < GOAL_RADIUS;
 }
 

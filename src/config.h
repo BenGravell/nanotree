@@ -82,16 +82,15 @@ static constexpr float TIMING_WINDOW_SEC = 1.0f;
 
 // PHYSICAL ELEMENTS
 static constexpr float OBSTACLE_RADIUS = 0.8f * CELL_SIZE;
-static constexpr float OBSTACLE_RADIUS_SQR = OBSTACLE_RADIUS * OBSTACLE_RADIUS;
 
 static constexpr float GOAL_RADIUS = CELL_SIZE / 2;
 static constexpr float START_RADIUS = GOAL_RADIUS;
 
 static constexpr float OBSTACLE_SPACING_MIN = 0.4f * CELL_SIZE;
 static constexpr float OBSTACLE_DELETE_RADIUS = 10.0f;
+static constexpr float OBSTACLE_DELETE_EFFECTIVE_RADIUS = OBSTACLE_RADIUS + OBSTACLE_DELETE_RADIUS;
 
 static constexpr float START_CHANGED_DIST_MIN = 1.0f;
-static constexpr float START_CHANGED_DIST_MIN_SQR = START_CHANGED_DIST_MIN * START_CHANGED_DIST_MIN;
 
 static constexpr Vector2 DEFAULT_START = {630, 270};
 static constexpr Vector2 DEFAULT_GOAL = {1290, 270};

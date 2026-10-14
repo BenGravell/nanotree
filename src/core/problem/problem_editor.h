@@ -14,7 +14,6 @@ int brushStepCount(const Vector2 previous, const Vector2 current, const ProblemE
     return std::max(static_cast<int>(std::ceil(Vector2Distance(current, previous) / spacing)), 1);
 }
 
-// TODO use Vector2DistanceSqr for obstacle spacing checks.
 bool addObstacles(Obstacles& obstacles, const Vector2 previous, const Vector2 current, const int steps) {
     bool added = false;
     for (int i = 1; i <= steps; ++i) {
@@ -29,12 +28,11 @@ bool addObstacles(Obstacles& obstacles, const Vector2 previous, const Vector2 cu
     return added;
 }
 
-// TODO use Vector2DistanceSqr for obstacle deletion radius checks.
 void deleteObstacles(Obstacles& obstacles, const Vector2 previous, const Vector2 current, const int steps) {
     for (int i = 1; i <= steps; ++i) {
         const Vector2 pos = Vector2Lerp(previous, current, static_cast<float>(i) / steps);
         obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(), [&](const Vector2 o) {
-            return Vector2Distance(o, pos) < (OBSTACLE_RADIUS + OBSTACLE_DELETE_RADIUS);
+            return Vector2Distance(o, pos) < OBSTACLE_DELETE_EFFECTIVE_RADIUS;
         }), obstacles.end());
     }
 }

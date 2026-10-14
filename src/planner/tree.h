@@ -249,7 +249,6 @@ private:
         return cheapest_down;
     }
     NodePtr selectRootChild(const Problem& problem, const DownstreamCosts& cheapest_down) const {
-        // TODO use Vector2DistanceSqr for both deviation distance checks below.
         // Choose the child of the new root.
         NodePtr best_child = nullptr;
         float best_total = std::numeric_limits<float>::infinity();
@@ -257,8 +256,7 @@ private:
         if (!cheapest_down.empty()) {
             for (const auto& kv : cheapest_down) {
                 const NodePtr& cand = kv.first;
-                const float dist = Vector2Distance(problem.start, cand->pos);
-                if (dist > DEVIATION_DISTANCE_MAX) {
+                if (Vector2Distance(problem.start, cand->pos) > DEVIATION_DISTANCE_MAX) {
                     continue;
                 }
                 if (collides(problem.start, cand->pos, problem.obstacles)) {
@@ -277,8 +275,8 @@ private:
             // No node in the current tree reaches the target;
             // fall back to attaching the nearest node.
             NodePtr cand = getNearest(problem.start, nodes);
-            const float dist = Vector2Distance(problem.start, cand->pos);
-            if (!((dist > DEVIATION_DISTANCE_MAX) || collides(problem.start, cand->pos, problem.obstacles))) {
+            if (!(Vector2Distance(problem.start, cand->pos) > DEVIATION_DISTANCE_MAX) &&
+                !collides(problem.start, cand->pos, problem.obstacles)) {
                 best_child = cand;
             }
         }
