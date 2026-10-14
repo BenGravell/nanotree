@@ -2,7 +2,9 @@
 
 #include <stdexcept>
 
+#include "core/ctrl_state.h"
 #include "core/geometry.h"
+#include "core/mouse_state.h"
 #include "core/problem/problem.h"
 #include "core/problem/problem_edit_mode.h"
 #include "core/problem/problem_edits.h"
@@ -37,43 +39,59 @@ void deleteObstacles(Obstacles& obstacles, const Vector2 previous, const Vector2
     }
 }
 
-// TODO make editProblem a class method; ProblemEditor::update currently only wraps it.
-ProblemEdits editProblem(Problem& problem, const Vector2 brush_pos, const Vector2 brush_pos_prev, const bool is_down_lmb, const ProblemEditMode mode, const ProblemEditMode mode_prev, const bool mouse_in_environment, const bool reset_obstacles, const bool active_prev) {
-    bool start_changed = false;
-    bool obstacle_added = false;
-    if (mouse_in_environment && is_down_lmb) {
-        const int n = (mode == mode_prev && active_prev)
-            ? brushStepCount(brush_pos_prev, brush_pos, mode) : 1;
+struct ProblemEditor {
+    Vector2 previous_mouse_pos = clampToEnvironment({0, 0});
+    ProblemEditMode previous_mode = ProblemEditMode::PLACE_GOAL;
+    bool previous_active = false;
 
+    ProblemEdits update(Problem& problem, const CtrlState& state, const MouseState& mouse) {
+        const ProblemEditMode mode = state.problem_edit_mode;
+        ProblemEdits edits{};
+        const bool active = mouse.inside && mouse.down;
+        if (active) {
+            const int n = (mode == previous_mode && previous_active)
+                ? brushStepCount(previous_mouse_pos, mouse.pos, mode) : 1;
+
+            edits = applyEdit(problem, mode, mouse.pos, n);
+        }
+
+        if (state.reset_obstacles) {
+            problem.obstacles = {};
+        }
+
+        previous_mouse_pos = mouse.pos;
+        previous_mode = mode;
+        previous_active = active;
+        return edits;
+    }
+
+private:
+    ProblemEdits applyEdit(Problem& problem, const ProblemEditMode mode, const Vector2 pos, const int steps) const {
+        ProblemEdits edits{};
         switch (mode) {
             case ProblemEditMode::PLACE_START: {
-                start_changed = isStartChanged(problem.start, brush_pos);
-                if (start_changed) {
-                    problem.start = brush_pos;
+                edits.start_changed = isStartChanged(problem.start, pos);
+                if (edits.start_changed) {
+                    problem.start = pos;
                 }
                 break;
             }
             case ProblemEditMode::PLACE_GOAL: {
-                problem.goal = brush_pos;
+                problem.goal = pos;
                 break;
             }
             case ProblemEditMode::ADD_OBSTACLE: {
-                obstacle_added = addObstacles(problem.obstacles, brush_pos_prev, brush_pos, n);
+                edits.obstacle_added = addObstacles(problem.obstacles, previous_mouse_pos, pos, steps);
                 break;
             }
             case ProblemEditMode::DEL_OBSTACLE: {
-                deleteObstacles(problem.obstacles, brush_pos_prev, brush_pos, n);
+                deleteObstacles(problem.obstacles, previous_mouse_pos, pos, steps);
                 break;
             }
             default: {
                 throw std::logic_error("Unhandled ProblemEditMode");
             }
         }
+        return edits;
     }
-
-    if (reset_obstacles) {
-        problem.obstacles = {};
-    }
-
-    return {start_changed, obstacle_added};
-}
+};

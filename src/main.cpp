@@ -3,7 +3,8 @@
 
 #define RAYGUI_IMPLEMENTATION
 
-#include "ui/problem_editor.h"
+#include "core/problem/problem_editor.h"
+#include "core/mouse_state.h"
 #include "core/timing/timing_parts.h"
 #include "planner/planner.h"
 #include "ui/style.h"
@@ -41,8 +42,8 @@ int main() {
     while (!WindowShouldClose()) {
         app_timing.total.start();
 
-        const Vector2 brush_pos = editor.brushPosition(ctrl_state.snap_to_grid);
-        const ProblemEdits problem_edits = editor.update(problem, ctrl_state, brush_pos);
+        const MouseState mouse = getMouseState(ctrl_state.snap_to_grid);
+        const ProblemEdits problem_edits = editor.update(problem, ctrl_state, mouse);
         const PlanSettings plan_settings = getPlanSettings(ctrl_state);
 
         // PLANNING
@@ -58,7 +59,7 @@ int main() {
         app_timing.draw.start();
         BeginDrawing();
 
-        DrawEnvironment(problem, planner, tree_stats, brush_pos, ctrl_state, goal_reached);
+        DrawEnvironment(problem, planner, tree_stats, mouse.pos, ctrl_state, goal_reached);
         DrawStatBar(problem, tree_stats, goal_reached, duration);
         DrawCtrlBar(ctrl_state, goal_reached);
         DrawScreenBorder();
