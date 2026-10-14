@@ -1,15 +1,7 @@
 #pragma once
 
 #include <raylib.h>
-#include <raymath.h>
-
-#include <cmath>
-
-void DrawSquare(const Vector2 center, const float radius, const Color color) {
-    DrawRectangle(center.x - radius, center.y - radius, 2 * radius, 2 * radius, color);
-}
-
-// TODO remove unused
+#include <algorithm>
 
 void DrawChevron(const Rectangle& rec, const int dir, const Color color, const float scale = 1.0f) {
     const Vector2 center = {rec.x + 0.5f * rec.width, rec.y + 0.5f * rec.height};
@@ -51,18 +43,4 @@ void DrawChevron(const Rectangle& rec, const int dir, const Color color, const f
         DrawTriangle(v[2], v[3], v[5], color);
         DrawTriangle(v[3], v[4], v[5], color);
     }
-}
-
-void DrawDoubleChevron(const Rectangle& rec, const float dir, const Color color, const float scale = 1.0f) {
-    const float offset = 0.18f * rec.width;
-    const float mult = (dir > 0.0f) ? 1.0f : -1.0f;
-
-    Rectangle rec1 = rec;
-    Rectangle rec2 = rec;
-
-    rec1.x += mult * offset;
-    rec2.x -= mult * offset;
-
-    DrawChevron(rec1, dir, color, scale);
-    DrawChevron(rec2, dir, color, scale);
 }
