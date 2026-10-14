@@ -197,8 +197,6 @@ struct Tree {
           continue;
         }
 
-        // TODO check that new edge honors attractByAngle constraint
-
         child_map[neighbor->parent].erase(neighbor);
         neighbor->parent = new_node;
         neighbor->cost_to_come = new_cost_to_come_of_neighbor;
