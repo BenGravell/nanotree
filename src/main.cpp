@@ -2,6 +2,8 @@
 #include <raymath.h>
 
 #define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
+#undef RAYGUI_IMPLEMENTATION
 
 #include "core/mouse_state.h"
 #include "core/problem/problem_editor.h"
