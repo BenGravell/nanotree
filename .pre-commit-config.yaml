@@ -1,0 +1,20 @@
+exclude: ^src/raygui\.h$
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+      - id: end-of-file-fixer
+        exclude: ^assets/
+      - id: trailing-whitespace
+        exclude: ^assets/
+  - repo: local
+    hooks:
+      - id: clang-format
+        name: Check C++ formatting
+        entry: bash scripts/format-cpp.sh check
+        language: system
+        files: ^src/.*\.(cpp|h)$

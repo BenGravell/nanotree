@@ -2,6 +2,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+if [[ -f build/emsdk/emsdk_env.sh ]]; then
+  source build/emsdk/emsdk_env.sh
+fi
+
 emcmake cmake -S build/web-raylib -B build/web-raylib-build \
   -DPLATFORM=Web -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=OFF
 cmake --build build/web-raylib-build --parallel 2

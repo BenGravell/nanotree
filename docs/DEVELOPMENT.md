@@ -5,11 +5,7 @@ Run the following commands from the repository root.
 ## Debug build
 
 ```bash
-conan install . --build=missing -of=build/conan --settings=build_type=Debug
-
-cmake -B build/debug -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE="build/conan/conan_toolchain.cmake"
-
-cmake --build build/debug --config Debug
+bash scripts/build-desktop.sh debug
 ```
 
 ## C++ formatting
